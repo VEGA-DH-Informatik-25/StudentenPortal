@@ -1,0 +1,7 @@
+# docker-compose.yml
+# Services will be added later.
+
+version: "3.9"
+
+services:
+  # TODO: add frontend, backend, and database services here

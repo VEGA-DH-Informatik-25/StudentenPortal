@@ -1,0 +1,37 @@
+import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth-guard';
+
+export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./layout/shell/shell').then(m => m.Shell),
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'feed', pathMatch: 'full' },
+      {
+        path: 'feed',
+        loadComponent: () => import('./features/feed/feed-page/feed-page').then(m => m.FeedPage),
+      },
+      {
+        path: 'mensa',
+        loadComponent: () => import('./features/mensa/mensa-page/mensa-page').then(m => m.MensaPage),
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./features/calendar/calendar-page/calendar-page').then(m => m.CalendarPage),
+      },
+      {
+        path: 'grades',
+        loadComponent: () => import('./features/grades/grades-page/grades-page').then(m => m.GradesPage),
+      },
+      {
+        path: 'groups',
+        loadComponent: () => import('./features/groups/groups-page/groups-page').then(m => m.GroupsPage),
+      },
+      {
+        path: 'admin',
+        loadComponent: () => import('./features/admin/admin-page/admin-page').then(m => m.AdminPage),
+      },
+    ],
+  },
+];

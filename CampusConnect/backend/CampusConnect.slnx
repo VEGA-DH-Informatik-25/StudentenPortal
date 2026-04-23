@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="CampusConnect.API.Tests/CampusConnect.API.Tests.csproj" />
+  <Project Path="CampusConnect.API/CampusConnect.API.csproj" />
+  <Project Path="CampusConnect.Application.Tests/CampusConnect.Application.Tests.csproj" />
+  <Project Path="CampusConnect.Application/CampusConnect.Application.csproj" />
+  <Project Path="CampusConnect.Domain/CampusConnect.Domain.csproj" />
+  <Project Path="CampusConnect.Infrastructure/CampusConnect.Infrastructure.csproj" />
+</Solution>
