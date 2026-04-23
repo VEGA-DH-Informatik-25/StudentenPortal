@@ -1,1 +1,39 @@
-<p>feed-page works!</p>
+<div class="feed-page">
+  <h2>News-Feed</h2>
+
+  <div class="feed-page__compose">
+    <textarea
+      [value]="_newContent()"
+      (input)="updateContent($any($event.target).value)"
+      placeholder="Was möchtest du teilen?"
+      rows="3">
+    </textarea>
+    <button (click)="onPost()" [disabled]="!_newContent().trim()">Posten</button>
+  </div>
+
+  @if (_error()) {
+    <p class="feed-page__error">{{ _error() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="feed-page__loading">Lade Feed…</p>
+  }
+
+  @if (!_isLoading() && _posts().length === 0) {
+    <p class="feed-page__empty">Noch keine Beiträge. Sei der Erste!</p>
+  }
+
+  <div class="feed-page__posts">
+    @for (post of _posts(); track post.id) {
+      <div class="post-card">
+        <div class="post-card__meta">
+          <strong>{{ post.authorName }}</strong>
+          <span>{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
+        </div>
+        <p class="post-card__content">{{ post.content }}</p>
+        <button class="post-card__delete" (click)="onDelete(post.id)">✕</button>
+      </div>
+    }
+  </div>
+</div>
+

@@ -1,0 +1,104 @@
+.grades-page {
+  h2 { margin-top: 0; color: #1a3a5c; }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+
+    button {
+      background: #1a3a5c;
+      color: white;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: #22497a; }
+    }
+  }
+
+  &__form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: flex-end;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+
+      input {
+        padding: 0.5rem;
+        border: 1px solid #d1d9e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        width: 140px;
+      }
+    }
+
+    button {
+      background: #1a3a5c;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &__summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.summary-card {
+  background: #1a3a5c;
+  color: white;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &__label { font-size: 0.8rem; opacity: 0.75; }
+  &__value { font-size: 2rem; font-weight: 700; }
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+
+  th {
+    background: #f8fafc;
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    color: #555;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 0.95rem;
+
+    &.good { color: #16a34a; font-weight: 600; }
+    &.bad { color: #dc2626; font-weight: 600; }
+    &.empty { color: #aaa; text-align: center; }
+  }
+}

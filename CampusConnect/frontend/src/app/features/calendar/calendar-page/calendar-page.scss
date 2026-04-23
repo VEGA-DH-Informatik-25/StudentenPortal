@@ -1,0 +1,100 @@
+.calendar-page {
+  h2 { margin-top: 0; color: #1a3a5c; }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+
+    button {
+      background: #1a3a5c;
+      color: white;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: #22497a; }
+    }
+  }
+
+  &__form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: flex-end;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      input {
+        padding: 0.5rem;
+        border: 1px solid #d1d9e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+      }
+    }
+
+    button {
+      background: #1a3a5c;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &__empty { color: #aaa; text-align: center; padding: 2rem 0; }
+  &__list { display: flex; flex-direction: column; gap: 0.75rem; }
+}
+
+.exam-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  position: relative;
+
+  &__date {
+    background: #1a3a5c;
+    color: white;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+    color: #555;
+    strong { color: #1a1a1a; font-size: 1rem; }
+  }
+
+  &__notes { color: #888; font-style: italic; }
+
+  &__delete {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    &:hover { color: #c0392b; }
+  }
+}

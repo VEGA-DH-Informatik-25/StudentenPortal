@@ -1,1 +1,39 @@
-<p>mensa-page works!</p>
+<div class="mensa-page">
+  <h2>🍽️ Mensa Speiseplan</h2>
+
+  @if (_isLoading()) {
+    <p>Lade Speiseplan…</p>
+  }
+
+  @if (_menu().length > 0) {
+    <div class="mensa-page__tabs">
+      @for (day of _menu(); track day.date; let i = $index) {
+        <button [class.active]="_selectedDay() === i" (click)="selectDay(i)">
+          {{ day.date | date:'EEE dd.MM':'':'de' }}
+        </button>
+      }
+    </div>
+
+    @if (currentDay) {
+      <div class="mensa-page__dishes">
+        @for (dish of currentDay.dishes; track dish.name) {
+          <div class="dish-card">
+            <div class="dish-card__header">
+              <span class="dish-card__name">{{ dish.name }}</span>
+              <div class="dish-card__badges">
+                @if (dish.isVegan) { <span class="badge badge--vegan">vegan</span> }
+                @if (dish.isVegetarian && !dish.isVegan) { <span class="badge badge--veg">vegetarisch</span> }
+              </div>
+              <span class="dish-card__price">{{ dish.priceStudent | number:'1.2-2' }} €</span>
+            </div>
+            <div class="dish-card__meta">
+              <span class="dish-card__category">{{ dish.category }}</span>
+              @if (dish.allergens) { <span class="dish-card__allergens">Allergene: {{ dish.allergens }}</span> }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
