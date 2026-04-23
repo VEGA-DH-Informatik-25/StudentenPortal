@@ -5,6 +5,7 @@ import { GradeSummary } from '../../../core/models/grade.model';
 
 @Component({
   selector: 'app-grades-page',
+  standalone: true,
   imports: [FormsModule],
   templateUrl: './grades-page.html',
   styleUrl: './grades-page.scss',

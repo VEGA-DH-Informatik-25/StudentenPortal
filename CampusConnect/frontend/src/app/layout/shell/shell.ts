@@ -4,6 +4,7 @@ import { Navbar } from '../navbar/navbar';
 
 @Component({
   selector: 'app-shell',
+  standalone: true,
   imports: [RouterOutlet, Navbar],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',

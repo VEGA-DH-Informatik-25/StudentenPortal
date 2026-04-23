@@ -6,6 +6,7 @@ import { ExamEntry } from '../../../core/models/exam.model';
 
 @Component({
   selector: 'app-calendar-page',
+  standalone: true,
   imports: [FormsModule, DatePipe],
   templateUrl: './calendar-page.html',
   styleUrl: './calendar-page.scss',

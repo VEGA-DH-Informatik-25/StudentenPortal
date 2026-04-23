@@ -5,6 +5,7 @@ import { MensaDay } from '../../../core/models/mensa.model';
 
 @Component({
   selector: 'app-mensa-page',
+  standalone: true,
   imports: [DatePipe, DecimalPipe],
   templateUrl: './mensa-page.html',
   styleUrl: './mensa-page.scss',

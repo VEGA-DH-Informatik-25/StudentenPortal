@@ -6,6 +6,7 @@ import { FeedPost } from '../../../core/models/feed.model';
 
 @Component({
   selector: 'app-feed-page',
+  standalone: true,
   imports: [FormsModule, DatePipe],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.scss',
