@@ -18,6 +18,11 @@
 | GET | `/api/groups` | Alle Lerngruppen auflisten | Ja |
 | POST | `/api/groups` | Lerngruppe erstellen | Ja |
 | POST | `/api/groups/{id}/join` | Lerngruppe beitreten | Ja |
+| GET | `/api/contacts` | Alle Adressbuch-Einträge abrufen | Ja |
+| GET | `/api/contacts/{id}` | Einzelnen Kontakt abrufen | Ja |
+| POST | `/api/contacts` | Neuen Kontakt anlegen (Admin) | Ja |
+| PUT | `/api/contacts/{id}` | Kontakt aktualisieren (Admin) | Ja |
+| DELETE | `/api/contacts/{id}` | Kontakt löschen (Admin) | Ja |
 
 > **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
 > ```

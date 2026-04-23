@@ -99,7 +99,6 @@ Tabellen oder Notizen verwaltet.
 |---|---|
 | Mobile App | Keine native iOS- oder Android-App; die Web-App ist responsive, aber kein PWA-Schwerpunkt |
 | LMS / Moodle-Ersatz | Keine Lernplattform, kein Upload von Lernmaterialien, keine Kursverwaltung |
-| Stundenplan | Keine Integration des DHBW-Vorlesungsplans (separates System) |
 | Echtzeit-Chat | Kein privates Messaging oder Live-Chat zwischen Studierenden |
 | Notenverwaltung der Hochschule | Keine Anbindung an Dualis oder offizielle Notensysteme; nur manueller persönlicher Tracker |
 | Multi-Mandant-Betrieb | Keine Unterstützung anderer Hochschulen; Scope ist ausschließlich DHBW Lörrach |

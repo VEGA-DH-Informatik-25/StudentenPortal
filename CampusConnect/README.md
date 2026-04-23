@@ -1,6 +1,6 @@
 # CampusConnect
 
-CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen News-Feed, den Mensa-Speiseplan, einen Prüfungskalender/Studenplan, eine Notenverwaltung sowie eine Lerngruppen-Matching-Funktion.
+CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen News-Feed, den Mensa-Speiseplan, einen Prüfungskalender/Stundenplan, eine Notenverwaltung, eine Lerngruppen-Matching-Funktion sowie ein Adressbuch mit wichtigen Kontakten (z. B. Professoren, Sekretariat, Studiengangsleitung).
 
 ---
 
@@ -106,6 +106,11 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 | GET | `/api/groups` | Alle Lerngruppen auflisten | Ja |
 | POST | `/api/groups` | Lerngruppe erstellen | Ja |
 | POST | `/api/groups/{id}/join` | Lerngruppe beitreten | Ja |
+| GET | `/api/contacts` | Alle Adressbuch-Einträge abrufen | Ja |
+| GET | `/api/contacts/{id}` | Einzelnen Kontakt abrufen | Ja |
+| POST | `/api/contacts` | Neuen Kontakt anlegen (Admin) | Ja |
+| PUT | `/api/contacts/{id}` | Kontakt aktualisieren (Admin) | Ja |
+| DELETE | `/api/contacts/{id}` | Kontakt löschen (Admin) | Ja |
 
 > **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
 > ```
