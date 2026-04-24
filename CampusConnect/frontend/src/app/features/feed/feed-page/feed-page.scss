@@ -1,5 +1,5 @@
 .feed-page {
-  h2 { margin-top: 0; color: #1a3a5c; }
+  h2 { margin-top: 0; color: var(--dhbw-red); }
 
   &__compose {
     display: flex;
@@ -9,36 +9,37 @@
 
     textarea {
       padding: 0.75rem;
-      border: 1px solid #d1d9e0;
+      border: 1px solid var(--dhbw-border);
       border-radius: 8px;
       font-size: 0.95rem;
       resize: vertical;
       font-family: inherit;
-      &:focus { outline: none; border-color: #1a3a5c; }
+      background: var(--dhbw-surface);
+      &:focus { outline: none; border-color: var(--dhbw-red); box-shadow: 0 0 0 2px var(--dhbw-focus); }
     }
 
     button {
       align-self: flex-end;
-      background: #1a3a5c;
-      color: white;
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
       border: none;
       padding: 0.5rem 1.25rem;
       border-radius: 6px;
       cursor: pointer;
-      &:hover:not(:disabled) { background: #22497a; }
+      &:hover:not(:disabled) { background: var(--dhbw-red-dark); }
       &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
   }
 
-  &__error { color: #c0392b; }
-  &__loading, &__empty { color: #888; text-align: center; padding: 2rem 0; }
+  &__error { color: var(--dhbw-red-dark); }
+  &__loading, &__empty { color: var(--dhbw-text-muted); text-align: center; padding: 2rem 0; }
 
   &__posts { display: flex; flex-direction: column; gap: 0.75rem; }
 }
 
 .post-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   position: relative;
@@ -48,8 +49,8 @@
     justify-content: space-between;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
-    color: #555;
-    strong { color: #1a3a5c; }
+    color: var(--dhbw-text-muted);
+    strong { color: var(--dhbw-red); }
   }
 
   &__content { margin: 0; white-space: pre-wrap; }
@@ -60,9 +61,9 @@
     right: 0.75rem;
     background: none;
     border: none;
-    color: #aaa;
+    color: #8a919b;
     cursor: pointer;
     font-size: 0.8rem;
-    &:hover { color: #c0392b; }
+    &:hover { color: var(--dhbw-red-dark); }
   }
 }

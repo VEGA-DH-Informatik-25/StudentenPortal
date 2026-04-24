@@ -1,5 +1,5 @@
 .mensa-page {
-  h2 { margin-top: 0; color: #1a3a5c; }
+  h2 { margin-top: 0; color: var(--dhbw-red); }
 
   &__tabs {
     display: flex;
@@ -8,13 +8,13 @@
     flex-wrap: wrap;
 
     button {
-      background: #f0f4f8;
-      border: 1px solid #d1d9e0;
+      background: var(--dhbw-bg-accent);
+      border: 1px solid var(--dhbw-border);
       border-radius: 6px;
       padding: 0.4rem 0.9rem;
       cursor: pointer;
       font-size: 0.85rem;
-      &.active { background: #1a3a5c; color: white; border-color: #1a3a5c; }
+      &.active { background: var(--dhbw-red); color: var(--dhbw-surface); border-color: var(--dhbw-red); }
     }
   }
 
@@ -22,8 +22,8 @@
 }
 
 .dish-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
 
@@ -35,11 +35,11 @@
   }
 
   &__name { font-weight: 600; flex: 1; }
-  &__price { font-weight: 600; color: #1a3a5c; white-space: nowrap; }
+  &__price { font-weight: 600; color: var(--dhbw-red); white-space: nowrap; }
 
   &__badges { display: flex; gap: 0.3rem; }
 
-  &__meta { display: flex; gap: 1rem; font-size: 0.8rem; color: #888; }
+  &__meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--dhbw-text-muted); }
 }
 
 .badge {

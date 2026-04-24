@@ -15,7 +15,7 @@
       <form (ngSubmit)="onLogin()" class="login-card__form">
         <label>
           E-Mail
-          <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@student.dhbw-loerrach.de" required />
+          <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
         </label>
         <label>
           Passwort
@@ -33,8 +33,8 @@
     @if (_mode() === 'register') {
       <form (ngSubmit)="onRegister()" class="login-card__form">
         <label>
-          E-Mail (@student.dhbw-loerrach.de)
-          <input type="email" [(ngModel)]="_registerForm.email" name="email" placeholder="name@student.dhbw-loerrach.de" required />
+          E-Mail (@dhbw-loerrach.de)
+          <input type="email" [(ngModel)]="_registerForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
         </label>
         <label>
           Passwort

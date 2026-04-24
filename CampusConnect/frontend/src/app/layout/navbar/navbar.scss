@@ -1,8 +1,8 @@
 .navbar {
   display: flex;
   align-items: center;
-  background: #1a3a5c;
-  color: white;
+  background: var(--dhbw-red);
+  color: var(--dhbw-surface);
   padding: 0 1.5rem;
   height: 56px;
   gap: 1.5rem;
@@ -24,7 +24,7 @@
     flex: 1;
 
     a {
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.88);
       text-decoration: none;
       padding: 0.4rem 0.75rem;
       border-radius: 4px;
@@ -32,8 +32,8 @@
       transition: background 0.15s;
 
       &:hover, &.active {
-        background: rgba(255,255,255,0.15);
-        color: white;
+        background: rgba(255,255,255,0.18);
+        color: var(--dhbw-surface);
       }
     }
   }
@@ -52,7 +52,7 @@
 
   &__logout {
     background: rgba(255,255,255,0.15);
-    color: white;
+    color: var(--dhbw-surface);
     border: 1px solid rgba(255,255,255,0.3);
     padding: 0.3rem 0.7rem;
     border-radius: 4px;

@@ -1,5 +1,5 @@
 .calendar-page {
-  h2 { margin-top: 0; color: #1a3a5c; }
+  h2 { margin-top: 0; color: var(--dhbw-red); }
 
   &__header {
     display: flex;
@@ -8,13 +8,13 @@
     margin-bottom: 1.25rem;
 
     button {
-      background: #1a3a5c;
-      color: white;
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
       border: none;
       padding: 0.45rem 1rem;
       border-radius: 6px;
       cursor: pointer;
-      &:hover { background: #22497a; }
+      &:hover { background: var(--dhbw-red-dark); }
     }
   }
 
@@ -22,8 +22,8 @@
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1.5rem;
@@ -37,15 +37,15 @@
       font-weight: 500;
       input {
         padding: 0.5rem;
-        border: 1px solid #d1d9e0;
+        border: 1px solid var(--dhbw-border);
         border-radius: 6px;
         font-size: 0.95rem;
       }
     }
 
     button {
-      background: #1a3a5c;
-      color: white;
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
       border: none;
       padding: 0.5rem 1.25rem;
       border-radius: 6px;
@@ -53,13 +53,13 @@
     }
   }
 
-  &__empty { color: #aaa; text-align: center; padding: 2rem 0; }
+  &__empty { color: var(--dhbw-text-muted); text-align: center; padding: 2rem 0; }
   &__list { display: flex; flex-direction: column; gap: 0.75rem; }
 }
 
 .exam-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   display: flex;
@@ -68,8 +68,8 @@
   position: relative;
 
   &__date {
-    background: #1a3a5c;
-    color: white;
+    background: var(--dhbw-red);
+    color: var(--dhbw-surface);
     border-radius: 6px;
     padding: 0.4rem 0.75rem;
     font-size: 0.85rem;
@@ -81,11 +81,11 @@
     flex-direction: column;
     gap: 0.2rem;
     font-size: 0.9rem;
-    color: #555;
-    strong { color: #1a1a1a; font-size: 1rem; }
+    color: var(--dhbw-text-muted);
+    strong { color: var(--dhbw-ink); font-size: 1rem; }
   }
 
-  &__notes { color: #888; font-style: italic; }
+  &__notes { color: var(--dhbw-text-muted); font-style: italic; }
 
   &__delete {
     position: absolute;
@@ -93,8 +93,8 @@
     right: 0.75rem;
     background: none;
     border: none;
-    color: #aaa;
+    color: #8a919b;
     cursor: pointer;
-    &:hover { color: #c0392b; }
+    &:hover { color: var(--dhbw-red-dark); }
   }
 }

@@ -24,8 +24,8 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
 
     public async Task<Result<AuthResult>> RegisterAsync(RegisterCommand cmd)
     {
-        if (!cmd.Email.EndsWith("@student.dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
-            return Result<AuthResult>.Failure("Nur @student.dhbw-loerrach.de E-Mail-Adressen sind erlaubt.");
+        if (!cmd.Email.EndsWith("@dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
+            return Result<AuthResult>.Failure("Nur @dhbw-loerrach.de E-Mail-Adressen sind erlaubt.");
 
         if (await userRepo.FindByEmailAsync(cmd.Email) is not null)
             return Result<AuthResult>.Failure("Diese E-Mail-Adresse ist bereits registriert.");

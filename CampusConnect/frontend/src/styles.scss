@@ -2,13 +2,35 @@
   box-sizing: border-box;
 }
 
+:root {
+  --dhbw-red: #e2001a;
+  --dhbw-red-dark: #b00015;
+  --dhbw-red-soft: #ffe5e8;
+  --dhbw-ink: #1f2328;
+  --dhbw-text-muted: #5c6672;
+  --dhbw-bg: #f4f5f7;
+  --dhbw-bg-accent: #eef1f5;
+  --dhbw-surface: #ffffff;
+  --dhbw-border: #d7dce3;
+  --dhbw-focus: rgba(226, 0, 26, 0.2);
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f0f4f8;
-  color: #1a1a1a;
+  background:
+    radial-gradient(circle at top right, rgba(226, 0, 26, 0.08), transparent 40%),
+    linear-gradient(180deg, var(--dhbw-bg-accent) 0%, var(--dhbw-bg) 40%, var(--dhbw-bg) 100%);
+  color: var(--dhbw-ink);
   font-size: 16px;
 }
 
 h1, h2, h3 { margin-top: 0; }
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
 

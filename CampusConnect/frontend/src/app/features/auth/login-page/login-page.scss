@@ -3,13 +3,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0f4f8;
+  background: transparent;
 }
 
 .login-card {
-  background: white;
+  background: var(--dhbw-surface);
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  border: 1px solid var(--dhbw-border);
+  box-shadow: 0 12px 40px rgba(31, 35, 40, 0.08);
   padding: 2rem;
   width: 100%;
   max-width: 420px;
@@ -18,15 +19,15 @@
     text-align: center;
     margin-bottom: 1.5rem;
 
-    h1 { margin: 0.25rem 0 0; font-size: 1.6rem; color: #1a3a5c; }
-    p { color: #666; margin: 0.25rem 0 0; font-size: 0.9rem; }
+    h1 { margin: 0.25rem 0 0; font-size: 1.6rem; color: var(--dhbw-red); }
+    p { color: var(--dhbw-text-muted); margin: 0.25rem 0 0; font-size: 0.9rem; }
   }
 
   &__logo { font-size: 2.5rem; }
 
   &__tabs {
     display: flex;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--dhbw-border);
     margin-bottom: 1.5rem;
 
     button {
@@ -36,13 +37,13 @@
       padding: 0.6rem;
       cursor: pointer;
       font-size: 0.95rem;
-      color: #666;
+      color: var(--dhbw-text-muted);
       border-bottom: 2px solid transparent;
       margin-bottom: -2px;
 
       &.active {
-        color: #1a3a5c;
-        border-bottom-color: #1a3a5c;
+        color: var(--dhbw-red);
+        border-bottom-color: var(--dhbw-red);
         font-weight: 600;
       }
     }
@@ -59,22 +60,23 @@
       gap: 0.3rem;
       font-size: 0.85rem;
       font-weight: 500;
-      color: #444;
+      color: var(--dhbw-ink);
     }
 
     input {
       padding: 0.6rem 0.75rem;
-      border: 1px solid #d1d9e0;
+      border: 1px solid var(--dhbw-border);
       border-radius: 6px;
       font-size: 0.95rem;
       outline: none;
+      background: var(--dhbw-surface);
 
-      &:focus { border-color: #1a3a5c; box-shadow: 0 0 0 2px rgba(26,58,92,0.15); }
+      &:focus { border-color: var(--dhbw-red); box-shadow: 0 0 0 2px var(--dhbw-focus); }
     }
 
     button[type="submit"] {
-      background: #1a3a5c;
-      color: white;
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
       border: none;
       padding: 0.7rem;
       border-radius: 6px;
@@ -82,7 +84,7 @@
       cursor: pointer;
       margin-top: 0.5rem;
 
-      &:hover:not(:disabled) { background: #22497a; }
+      &:hover:not(:disabled) { background: var(--dhbw-red-dark); }
       &:disabled { opacity: 0.6; cursor: not-allowed; }
     }
   }
@@ -94,12 +96,12 @@
   }
 
   &__error {
-    color: #c0392b;
+    color: var(--dhbw-red-dark);
     font-size: 0.85rem;
     margin: 0;
     padding: 0.5rem 0.75rem;
-    background: #fef2f2;
+    background: var(--dhbw-red-soft);
     border-radius: 4px;
-    border: 1px solid #fecaca;
+    border: 1px solid #f7b5be;
   }
 }
