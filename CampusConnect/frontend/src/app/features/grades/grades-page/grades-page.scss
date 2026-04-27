@@ -1,0 +1,265 @@
+.grades-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.hero,
+.panel,
+.stats article {
+  background: #ffffff;
+  border: 1px solid #dce4ef;
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgb(24 52 91 / 8%);
+}
+
+.hero {
+  align-items: stretch;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.eyebrow {
+  color: #1f6feb;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  color: #10213f;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+  margin-bottom: 1rem;
+  max-width: 900px;
+}
+
+h2 {
+  color: #10213f;
+  font-size: 1.2rem;
+}
+
+.hero p {
+  color: #60708d;
+  font-size: 1.05rem;
+  max-width: 760px;
+}
+
+.hero-card,
+.simulation-result {
+  background: linear-gradient(135deg, #12376f, #1f6feb);
+  border-radius: 20px;
+  color: #ffffff;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.5rem;
+}
+
+.hero-card strong,
+.simulation-result strong {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.content-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+}
+
+.panel {
+  padding: 1.5rem;
+}
+
+.grade-form,
+.simulator {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+label {
+  color: #485978;
+  display: grid;
+  font-weight: 700;
+  gap: 0.4rem;
+}
+
+input,
+select {
+  background: #f7f9fc;
+  border: 1px solid #cdd7e5;
+  border-radius: 14px;
+  color: #172033;
+  font: inherit;
+  padding: 0.85rem 1rem;
+}
+
+button {
+  background: #1f6feb;
+  border: 0;
+  border-radius: 14px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 0.85rem 1rem;
+}
+
+button:hover {
+  background: #1657bf;
+}
+
+.target-hint {
+  background: #eef5ff;
+  border-radius: 14px;
+  color: #12376f;
+  font-weight: 700;
+  margin: 0;
+  padding: 0.9rem;
+}
+
+.stats {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stats article {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1.25rem;
+}
+
+.stats span,
+.section-header span,
+.module-card small,
+.hero-card small {
+  color: #60708d;
+}
+
+.stats strong {
+  color: #10213f;
+  font-size: 2rem;
+}
+
+.section-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  align-items: start;
+  background: #f7f9fc;
+  border: 1px dashed #b9c7da;
+  border-radius: 18px;
+  color: #60708d;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem;
+}
+
+.empty-state strong {
+  color: #10213f;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e4ebf4;
+  padding: 0.9rem;
+  text-align: left;
+}
+
+th {
+  color: #60708d;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.grade-badge {
+  background: #eaf7ef;
+  border-radius: 999px;
+  color: #16703a;
+  display: inline-block;
+  font-weight: 800;
+  min-width: 3.2rem;
+  padding: 0.35rem 0.65rem;
+  text-align: center;
+}
+
+.grade-badge.failed {
+  background: #fff1f0;
+  color: #bf1d1d;
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid #cdd7e5;
+  color: #38516f;
+  padding: 0.55rem 0.75rem;
+}
+
+.ghost-button:hover {
+  background: #eef5ff;
+}
+
+.module-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.module-card {
+  background: #f7f9fc;
+  border-radius: 18px;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.module-card span {
+  color: #485978;
+  font-weight: 800;
+}
+
+.module-card strong {
+  color: #10213f;
+  font-size: 2rem;
+}
+
+@media (max-width: 760px) {
+  .hero,
+  .content-grid,
+  .stats,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

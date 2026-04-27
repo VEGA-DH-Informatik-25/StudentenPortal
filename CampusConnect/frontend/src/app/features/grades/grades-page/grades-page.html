@@ -1,1 +1,156 @@
-<p>grades-page works!</p>
+<section class="grades-page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Noten System</p>
+      <h1>Noten eintragen, Überblick behalten und Szenarien testen</h1>
+      <p>
+        Erfasse deine Leistungen lokal im Browser, sieh gewichtete Durchschnitte und probiere aus,
+        wie sich zusätzliche Noten auf deinen Schnitt auswirken.
+      </p>
+    </div>
+    <div class="hero-card">
+      <span>Aktueller Schnitt</span>
+      <strong>{{ format(weightedAverage()) }}</strong>
+      <small>{{ passedCredits() }} bestandene ECTS · {{ failedCount() }} offene Prüfungen</small>
+    </div>
+  </header>
+
+  <div class="content-grid">
+    <form class="panel grade-form" (ngSubmit)="addGrade()">
+      <h2>Neue Note eintragen</h2>
+      <label>
+        Fach / Prüfung
+        <input name="subject" [(ngModel)]="subject" placeholder="z. B. Mathematik I" required />
+      </label>
+      <label>
+        Modul
+        <input name="module" [(ngModel)]="module" placeholder="z. B. Grundlagen Informatik" />
+      </label>
+      <div class="form-row">
+        <label>
+          Art
+          <select name="type" [(ngModel)]="type">
+            @for (assessmentType of types; track assessmentType) {
+              <option [ngValue]="assessmentType">{{ assessmentType }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Note
+          <input name="grade" type="number" min="1" max="5" step="0.1" [(ngModel)]="grade" />
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          Gewichtung
+          <input name="weight" type="number" min="0.1" step="0.1" [(ngModel)]="weight" />
+        </label>
+        <label>
+          ECTS
+          <input name="credits" type="number" min="0" step="1" [(ngModel)]="credits" />
+        </label>
+      </div>
+      <button type="submit">Note speichern</button>
+    </form>
+
+    <section class="panel simulator">
+      <h2>Was-wäre-wenn-Rechner</h2>
+      <p>Teste eine zusätzliche Leistung, ohne sie in deiner Liste zu speichern.</p>
+      <div class="form-row">
+        <label>
+          Zusatznote
+          <input type="number" min="1" max="5" step="0.1" [(ngModel)]="simulationGrade" />
+        </label>
+        <label>
+          Gewichtung
+          <input type="number" min="0.1" step="0.1" [(ngModel)]="simulationWeight" />
+        </label>
+      </div>
+      <div class="simulation-result">
+        <span>Neuer Schnitt</span>
+        <strong>{{ format(simulatedAverage()) }}</strong>
+      </div>
+      <label>
+        Ziel-Schnitt
+        <input type="number" min="1" max="5" step="0.1" [(ngModel)]="targetAverage" />
+      </label>
+      <p class="target-hint">{{ targetHint() }}</p>
+    </section>
+  </div>
+
+  <section class="stats">
+    <article>
+      <span>Erfasste Noten</span>
+      <strong>{{ grades().length }}</strong>
+    </article>
+    <article>
+      <span>Gewichtung gesamt</span>
+      <strong>{{ format(totalWeight()) }}</strong>
+    </article>
+    <article>
+      <span>Beste Note</span>
+      <strong>{{ format(bestGrade()) }}</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <h2>Notenübersicht</h2>
+      <span>{{ moduleSummaries().length }} Module</span>
+    </div>
+
+    @if (grades().length === 0) {
+      <div class="empty-state">
+        <strong>Noch keine Noten eingetragen.</strong>
+        <span>Füge deine erste Prüfung hinzu, um Übersichten und Simulationen zu sehen.</span>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fach</th>
+              <th>Modul</th>
+              <th>Art</th>
+              <th>Note</th>
+              <th>Gewichtung</th>
+              <th>ECTS</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of grades(); track entry.id) {
+              <tr>
+                <td>{{ entry.subject }}</td>
+                <td>{{ entry.module }}</td>
+                <td>{{ entry.type }}</td>
+                <td>
+                  <span class="grade-badge" [class.failed]="entry.grade > 4">{{ format(entry.grade) }}</span>
+                </td>
+                <td>{{ format(entry.weight) }}</td>
+                <td>{{ entry.credits }}</td>
+                <td><button class="ghost-button" type="button" (click)="removeGrade(entry.id)">Löschen</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <h2>Modulübersicht</h2>
+      <span>Gewichtete Durchschnittsnoten pro Modul</span>
+    </div>
+    <div class="module-grid">
+      @for (summary of moduleSummaries(); track summary.module) {
+        <article class="module-card">
+          <span>{{ summary.module }}</span>
+          <strong>{{ format(summary.average) }}</strong>
+          <small>{{ summary.count }} Leistung(en) · {{ summary.credits }} ECTS bestanden</small>
+        </article>
+      }
+    </div>
+  </section>
+</section>
