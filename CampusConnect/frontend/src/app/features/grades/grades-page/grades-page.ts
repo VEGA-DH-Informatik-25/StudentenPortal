@@ -28,6 +28,7 @@ interface ModuleSummary {
 })
 export class GradesPage {
   private readonly storageKey = 'campusconnect.grades';
+  private nextId = Date.now();
 
   protected readonly types: AssessmentType[] = ['Klausur', 'Projekt', 'Mündlich', 'Hausarbeit'];
   protected readonly grades = signal<GradeEntry[]>(this.readGrades());
@@ -60,13 +61,13 @@ export class GradesPage {
         module: 'Simulation',
         type: 'Klausur',
         grade: this.normalizeGrade(this.simulationGrade),
-        weight: this.normalizePositive(this.simulationWeight, 1),
+        weight: this.normalizeWeight(this.simulationWeight),
         credits: 0,
       },
     ]),
   );
   protected readonly requiredGradeForTarget = computed(() => {
-    const weight = this.normalizePositive(this.simulationWeight, 1);
+    const weight = this.normalizeWeight(this.simulationWeight);
     const currentWeight = this.totalWeight();
 
     if (currentWeight === 0) {
@@ -100,12 +101,12 @@ export class GradesPage {
     }
 
     const entry: GradeEntry = {
-      id: Date.now(),
+      id: this.createId(),
       subject,
       module: this.module.trim() || subject,
       type: this.type,
       grade: this.normalizeGrade(this.grade),
-      weight: this.normalizePositive(this.weight, 1),
+      weight: this.normalizeWeight(this.weight),
       credits: this.normalizePositive(this.credits, 0),
     };
 
@@ -205,8 +206,18 @@ export class GradesPage {
     return values.length === 0 ? Number.NaN : Math.min(...values);
   }
 
+  private createId(): number {
+    this.nextId = Math.max(this.nextId + 1, Date.now());
+
+    return this.nextId;
+  }
+
   private normalizeGrade(value: number): number {
     return Math.min(5, Math.max(1, Number(value) || 1));
+  }
+
+  private normalizeWeight(value: number): number {
+    return Math.max(0.1, Number(value) || 1);
   }
 
   private normalizePositive(value: number, fallback: number): number {
