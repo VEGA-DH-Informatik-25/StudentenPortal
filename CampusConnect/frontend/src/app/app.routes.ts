@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
+import { adminGuard } from './core/guards/admin-guard';
 
 export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login-page/login-page').then(m => m.LoginPage),
+  },
   {
     path: '',
     loadComponent: () => import('./layout/shell/shell').then(m => m.Shell),
@@ -21,6 +26,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/calendar/calendar-page/calendar-page').then(m => m.CalendarPage),
       },
       {
+        path: 'timetable',
+        loadComponent: () => import('./features/timetable/timetable-page/timetable-page').then(m => m.TimetablePage),
+      },
+      {
         path: 'grades',
         loadComponent: () => import('./features/grades/grades-page/grades-page').then(m => m.GradesPage),
       },
@@ -30,8 +39,10 @@ export const routes: Routes = [
       },
       {
         path: 'admin',
+        canActivate: [adminGuard],
         loadComponent: () => import('./features/admin/admin-page/admin-page').then(m => m.AdminPage),
       },
     ],
   },
 ];
+

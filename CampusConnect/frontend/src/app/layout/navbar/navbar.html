@@ -1,1 +1,20 @@
-<p>navbar works!</p>
+<nav class="navbar">
+  <div class="navbar__brand">
+    <span class="navbar__logo">🎓</span>
+    <span class="navbar__title">CampusConnect</span>
+  </div>
+  <ul class="navbar__links">
+    <li><a routerLink="/feed" routerLinkActive="active">Feed</a></li>
+    <li><a routerLink="/mensa" routerLinkActive="active">Mensa</a></li>
+    <li><a routerLink="/timetable" routerLinkActive="active">Stundenplan</a></li>
+    <li><a routerLink="/calendar" routerLinkActive="active">Prüfungen</a></li>
+    <li><a routerLink="/grades" routerLinkActive="active">Noten</a></li>
+    <li><a routerLink="/groups" routerLinkActive="active">Gruppen</a></li>
+    <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
+  </ul>
+  <div class="navbar__user">
+    <span class="navbar__name">{{ _auth.displayName() }}</span>
+    <button class="navbar__logout" (click)="_auth.logout()">Abmelden</button>
+  </div>
+</nav>
+

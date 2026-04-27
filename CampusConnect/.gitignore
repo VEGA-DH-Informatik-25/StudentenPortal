@@ -58,6 +58,11 @@ bld/
 # Dotnet tools
 .config/
 
+# Local runtime databases
+/backend/CampusConnect.API/*.db
+/backend/CampusConnect.API/*.db-shm
+/backend/CampusConnect.API/*.db-wal
+
 # ============================================================
 # Docker
 # ============================================================

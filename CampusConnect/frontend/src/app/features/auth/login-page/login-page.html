@@ -1,0 +1,70 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-card__header">
+      <span class="login-card__logo">🎓</span>
+      <h1>CampusConnect</h1>
+      <p>DHBW Lörrach</p>
+    </div>
+
+    <div class="login-card__tabs">
+      <button [class.active]="_mode() === 'login'" (click)="switchMode('login')">Anmelden</button>
+      <button [class.active]="_mode() === 'register'" (click)="switchMode('register')">Registrieren</button>
+    </div>
+
+    @if (_mode() === 'login') {
+      <form (ngSubmit)="onLogin()" class="login-card__form">
+        <label>
+          E-Mail
+          <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
+        </label>
+        <label>
+          Passwort
+          <input type="password" [(ngModel)]="_loginForm.password" name="password" required />
+        </label>
+        @if (_error()) {
+          <p class="login-card__error">{{ _error() }}</p>
+        }
+        <button type="submit" [disabled]="_isLoading()">
+          {{ _isLoading() ? 'Bitte warten…' : 'Anmelden' }}
+        </button>
+      </form>
+    }
+
+    @if (_mode() === 'register') {
+      <form (ngSubmit)="onRegister()" class="login-card__form">
+        <label>
+          E-Mail (@dhbw-loerrach.de)
+          <input type="email" [(ngModel)]="_registerForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
+        </label>
+        <label>
+          Passwort
+          <input type="password" [(ngModel)]="_registerForm.password" name="password" required />
+        </label>
+        <label>
+          Anzeigename
+          <input type="text" [(ngModel)]="_registerForm.displayName" name="displayName" required />
+        </label>
+        <label>
+          Studiengang
+          <input type="text" [(ngModel)]="_registerForm.studyProgram" name="studyProgram" placeholder="z.B. Informatik" required />
+        </label>
+        <div class="login-card__row">
+          <label>
+            Semester
+            <input type="number" [(ngModel)]="_registerForm.semester" name="semester" min="1" max="6" required />
+          </label>
+          <label>
+            Kurs
+            <input type="text" [(ngModel)]="_registerForm.course" name="course" placeholder="z.B. WWI23A" required />
+          </label>
+        </div>
+        @if (_error()) {
+          <p class="login-card__error">{{ _error() }}</p>
+        }
+        <button type="submit" [disabled]="_isLoading()">
+          {{ _isLoading() ? 'Bitte warten…' : 'Konto erstellen' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

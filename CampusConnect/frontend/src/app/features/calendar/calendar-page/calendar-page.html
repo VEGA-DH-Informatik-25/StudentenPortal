@@ -1,1 +1,35 @@
-<p>calendar-page works!</p>
+<div class="calendar-page">
+  <div class="calendar-page__header">
+    <h2>📅 Prüfungskalender</h2>
+    <button (click)="_showForm.set(!_showForm())">+ Prüfung hinzufügen</button>
+  </div>
+
+  @if (_showForm()) {
+    <form class="calendar-page__form" (ngSubmit)="onAdd()">
+      <label>Modul <input type="text" [(ngModel)]="_form.moduleName" name="moduleName" required /></label>
+      <label>Datum <input type="datetime-local" [(ngModel)]="_form.examDate" name="examDate" required /></label>
+      <label>Ort <input type="text" [(ngModel)]="_form.location" name="location" /></label>
+      <label>Notizen <input type="text" [(ngModel)]="_form.notes" name="notes" /></label>
+      <button type="submit">Speichern</button>
+    </form>
+  }
+
+  @if (_exams().length === 0) {
+    <p class="calendar-page__empty">Keine Prüfungen eingetragen.</p>
+  }
+
+  <div class="calendar-page__list">
+    @for (exam of _exams(); track exam.id) {
+      <div class="exam-card">
+        <div class="exam-card__date">{{ exam.examDate | date:'dd.MM.yyyy HH:mm' }}</div>
+        <div class="exam-card__body">
+          <strong>{{ exam.moduleName }}</strong>
+          @if (exam.location) { <span>📍 {{ exam.location }}</span> }
+          @if (exam.notes) { <span class="exam-card__notes">{{ exam.notes }}</span> }
+        </div>
+        <button class="exam-card__delete" (click)="onDelete(exam.id)">✕</button>
+      </div>
+    }
+  </div>
+</div>
+

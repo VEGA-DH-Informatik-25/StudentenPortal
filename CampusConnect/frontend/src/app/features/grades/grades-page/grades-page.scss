@@ -1,0 +1,104 @@
+.grades-page {
+  h2 { margin-top: 0; color: var(--dhbw-red); }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+
+    button {
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      &:hover { background: var(--dhbw-red-dark); }
+    }
+  }
+
+  &__form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: flex-end;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+
+      input {
+        padding: 0.5rem;
+        border: 1px solid var(--dhbw-border);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        width: 140px;
+      }
+    }
+
+    button {
+      background: var(--dhbw-red);
+      color: var(--dhbw-surface);
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  }
+
+  &__summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.summary-card {
+  background: var(--dhbw-red);
+  color: var(--dhbw-surface);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &__label { font-size: 0.8rem; opacity: 0.75; }
+  &__value { font-size: 2rem; font-weight: 700; }
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--dhbw-surface);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--dhbw-border);
+
+  th {
+    background: var(--dhbw-bg-accent);
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    color: var(--dhbw-text-muted);
+    border-bottom: 1px solid var(--dhbw-border);
+  }
+
+  td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--dhbw-bg-accent);
+    font-size: 0.95rem;
+
+    &.good { color: #16a34a; font-weight: 600; }
+    &.bad { color: #dc2626; font-weight: 600; }
+    &.empty { color: var(--dhbw-text-muted); text-align: center; }
+  }
+}
