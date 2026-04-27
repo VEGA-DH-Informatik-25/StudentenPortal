@@ -1,56 +1,54 @@
 <div class="timetable-page">
-  <header class="timetable-page__header">
-    <div>
-      <p class="timetable-page__eyebrow">DHBW Lörrach</p>
-      <h2>Vorlesungsplan</h2>
-    </div>
+  @if (!_course()) {
+    <section class="course-setup">
+      <div>
+        <p class="timetable-page__eyebrow">DHBW Lörrach</p>
+        <h2>Vorlesungsplan</h2>
+      </div>
 
-    <div class="timetable-page__controls">
-      <label class="course-field">
-        <span>Kurs</span>
-        <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
-          <option value="">Kurs auswählen</option>
-          @for (course of _courseOptions(); track course) {
-            <option [value]="course">{{ course }}</option>
-          }
-          <option value="custom">Anderen Kurs eingeben</option>
-        </select>
-      </label>
+      <div class="course-picker">
+        <label class="course-field">
+          <span>Kurs</span>
+          <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
+            <option value="">Kurs auswählen</option>
+            @for (course of _courseOptions(); track course) {
+              <option [value]="course">{{ course }}</option>
+            }
+            <option value="custom">Anderen Kurs eingeben</option>
+          </select>
+        </label>
 
-      @if (_courseSelection() === 'custom') {
         <label class="course-field course-field--manual">
           <span>Kurscode</span>
-          <input
-            type="text"
-            placeholder="z. B. TIF24A"
-            [ngModel]="_customCourse()"
-            (ngModelChange)="_customCourse.set($event)"
-            (keyup.enter)="loadCustomCourse()"
-          />
+          <input type="text" placeholder="Kursname eingeben" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
         </label>
-      }
 
-      <button class="refresh-button" type="button" (click)="refresh()" [disabled]="_isLoading() || !_courseSelection()">
-        Aktualisieren
-      </button>
-    </div>
-  </header>
+        <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" aria-label="Kurs anzeigen">⌕</button>
+      </div>
 
-  @if (_course()) {
-    <section class="timetable-page__summary" aria-label="Stundenplan-Zusammenfassung">
-      <div>
-        <span>Kurs</span>
-        <strong>{{ _course() }}</strong>
-      </div>
-      <div>
-        <span>Termine</span>
-        <strong>{{ _eventCount() }}</strong>
-      </div>
-      <div>
-        <span>Zeitzone</span>
-        <strong>{{ _timezone() }}</strong>
+      <div class="course-history" aria-label="Kursauswahl">
+        @for (course of _courseOptions(); track course) {
+          <button type="button" (click)="selectCourse(course)">{{ course }}</button>
+        }
       </div>
     </section>
+  } @else {
+    <header class="schedule-header">
+      <div>
+        <p class="timetable-page__eyebrow">Vorlesungsplan</p>
+        <h2>{{ _course() }}</h2>
+      </div>
+      <div class="schedule-actions">
+        <button type="button" (click)="changeCourse()">Kurs wechseln</button>
+        <button type="button" (click)="refresh()" [disabled]="_isLoading()">Aktualisieren</button>
+      </div>
+    </header>
+
+    <nav class="view-tabs" aria-label="Stundenplanansicht">
+      <button type="button" [class.active]="_activeView() === 'list'" (click)="selectView('list')">Liste</button>
+      <button type="button" [class.active]="_activeView() === 'week'" (click)="selectView('week')">Woche</button>
+      <button type="button" [class.active]="_activeView() === 'day'" (click)="selectView('day')">Tag</button>
+    </nav>
   }
 
   @if (_isLoading()) {
@@ -61,7 +59,7 @@
     <p class="timetable-page__state">Wähle einen Kurs aus, um die nächsten Termine zu sehen.</p>
   } @else if (_days().length === 0) {
     <p class="timetable-page__state">Für diesen Kurs sind in den nächsten Tagen keine Termine eingetragen.</p>
-  } @else {
+  } @else if (_activeView() === 'list') {
     <div class="day-list">
       @for (day of _days(); track day.date) {
         <section class="day-section">
@@ -101,5 +99,42 @@
         </section>
       }
     </div>
+  } @else {
+    <section class="calendar-view" [class.calendar-view--day]="_activeView() === 'day'">
+      <header class="calendar-nav">
+        <button type="button" (click)="previousRange()" aria-label="Zurück">‹</button>
+        <strong>{{ _rangeTitle() }}</strong>
+        <button type="button" (click)="nextRange()" aria-label="Weiter">›</button>
+        <button type="button" (click)="jumpToToday()">Heute</button>
+      </header>
+
+      <div class="calendar-grid">
+        @for (day of _calendarDays(); track day.date) {
+          <section class="calendar-day">
+            <header>
+              <span>{{ day.date | date:'EEE':'':'de' }}</span>
+              <strong>{{ day.date | date:'dd.MM.':'':'de' }}</strong>
+            </header>
+
+            @if (day.events.length === 0) {
+              <p class="calendar-empty">Keine Termine</p>
+            } @else {
+              @for (event of day.events; track event.id) {
+                <article class="calendar-event">
+                  <time>{{ eventTime(event) }}</time>
+                  <strong>{{ event.title }}</strong>
+                  @if (compactMeta(event)) {
+                    <span>{{ compactMeta(event) }}</span>
+                  }
+                  @if (event.isOnline) {
+                    <em>Online</em>
+                  }
+                </article>
+              }
+            }
+          </section>
+        }
+      </div>
+    </section>
   }
 </div>

@@ -10,6 +10,7 @@
     <li><a routerLink="/calendar" routerLinkActive="active">Prüfungen</a></li>
     <li><a routerLink="/grades" routerLinkActive="active">Noten</a></li>
     <li><a routerLink="/groups" routerLinkActive="active">Gruppen</a></li>
+    <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
   </ul>
   <div class="navbar__user">
     <span class="navbar__name">{{ _auth.displayName() }}</span>

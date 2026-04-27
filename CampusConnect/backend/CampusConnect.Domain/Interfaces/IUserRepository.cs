@@ -4,7 +4,10 @@ namespace CampusConnect.Domain.Interfaces;
 
 public interface IUserRepository
 {
-    Task<User?> FindByEmailAsync(string email);
-    Task<User?> FindByIdAsync(Guid id);
-    Task AddAsync(User user);
+    Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default);
+    Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task AddAsync(User user, CancellationToken cancellationToken = default);
+    Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

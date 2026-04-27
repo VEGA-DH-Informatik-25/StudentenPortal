@@ -1,9 +1,8 @@
 using CampusConnect.Application.Common;
 using CampusConnect.Application.Common.Interfaces;
+using CampusConnect.Application.Common.Security;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Interfaces;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace CampusConnect.Application.Features.Auth;
 
@@ -13,15 +12,6 @@ public record AuthResult(string Token, string DisplayName, string Email, string 
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService)
 {
-    private static string HashPassword(string password)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-        return Convert.ToHexString(bytes);
-    }
-
-    private static bool VerifyPassword(string password, string hash) =>
-        HashPassword(password) == hash;
-
     public async Task<Result<AuthResult>> RegisterAsync(RegisterCommand cmd)
     {
         if (!cmd.Email.EndsWith("@dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
@@ -33,7 +23,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
         var user = new User
         {
             Email = cmd.Email.ToLowerInvariant(),
-            PasswordHash = HashPassword(cmd.Password),
+            PasswordHash = PasswordHasher.Hash(cmd.Password),
             DisplayName = cmd.DisplayName,
             StudyProgram = cmd.StudyProgram,
             Semester = cmd.Semester,
@@ -48,7 +38,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
     public async Task<Result<AuthResult>> LoginAsync(LoginCommand cmd)
     {
         var user = await userRepo.FindByEmailAsync(cmd.Email.ToLowerInvariant());
-        if (user is null || !VerifyPassword(cmd.Password, user.PasswordHash))
+        if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
             return Result<AuthResult>.Failure("Ungültige E-Mail-Adresse oder Passwort.");
 
         var token = jwtService.GenerateToken(user);

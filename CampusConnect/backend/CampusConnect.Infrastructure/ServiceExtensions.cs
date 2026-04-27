@@ -3,10 +3,13 @@ using CampusConnect.Application.Features.Auth;
 using CampusConnect.Application.Features.Calendar;
 using CampusConnect.Application.Features.Feed;
 using CampusConnect.Application.Features.Grades;
+using CampusConnect.Application.Features.Admin;
 using CampusConnect.Domain.Interfaces;
 using CampusConnect.Infrastructure.ExternalServices;
+using CampusConnect.Infrastructure.Persistence;
 using CampusConnect.Infrastructure.Repositories;
 using CampusConnect.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +19,12 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+        services.AddDbContext<CampusConnectDbContext>(options =>
+            options.UseSqlite(configuration.GetConnectionString("CampusConnect") ?? "Data Source=campusconnect.db"));
+
+        services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
+
+        services.AddScoped<IUserRepository, EntityUserRepository>();
         services.AddSingleton<IFeedRepository, InMemoryFeedRepository>();
         services.AddSingleton<IGradeRepository, InMemoryGradeRepository>();
         services.AddSingleton<IExamRepository, InMemoryExamRepository>();
@@ -30,7 +38,16 @@ public static class ServiceExtensions
         services.AddScoped<FeedService>();
         services.AddScoped<GradesService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<AdminUsersService>();
+        services.AddScoped<DatabaseInitializer>();
 
         return services;
+    }
+
+    public static async Task InitializeInfrastructureAsync(this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+        await initializer.InitializeAsync(cancellationToken);
     }
 }

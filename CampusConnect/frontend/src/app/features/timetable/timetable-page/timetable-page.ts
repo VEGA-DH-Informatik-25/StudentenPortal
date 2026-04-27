@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { TimetableEvent, TimetableDay } from '../../../core/models/timetable.model';
 import { Timetable } from '../../../core/services/timetable';
 
+type TimetableView = 'list' | 'week' | 'day';
+
 @Component({
   selector: 'app-timetable-page',
   standalone: true,
@@ -24,10 +26,37 @@ export class TimetablePage implements OnInit {
   protected readonly _timezone = signal('Europe/Berlin');
   protected readonly _isLoading = signal(false);
   protected readonly _error = signal<string | null>(null);
+  protected readonly _activeView = signal<TimetableView>('list');
+  protected readonly _anchorDate = signal(this._dateKey(new Date()));
 
   protected readonly _eventCount = computed(() =>
     this._days().reduce((count, day) => count + day.events.length, 0)
   );
+
+  protected readonly _calendarDays = computed(() => {
+    const byDate = new Map(this._days().map(day => [day.date, day]));
+    const anchor = this._fromDateKey(this._anchorDate());
+    const start = this._activeView() === 'week' ? this._weekStart(anchor) : anchor;
+    const count = this._activeView() === 'week' ? 6 : 1;
+
+    return Array.from({ length: count }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      const key = this._dateKey(date);
+      return byDate.get(key) ?? { date: key, events: [] };
+    });
+  });
+
+  protected readonly _rangeTitle = computed(() => {
+    const days = this._calendarDays();
+    if (this._activeView() === 'day') {
+      return this._formatDateLong(days[0]?.date ?? this._anchorDate());
+    }
+
+    const first = days[0]?.date ?? this._anchorDate();
+    const last = days.at(-1)?.date ?? first;
+    return `${this._formatDateShort(first)} - ${this._formatDateShort(last)}`;
+  });
 
   ngOnInit(): void {
     this._courseOptions.set(this._timetableService.getCourseOptions());
@@ -50,6 +79,33 @@ export class TimetablePage implements OnInit {
 
   protected loadCustomCourse(): void {
     this._loadCourse(this._customCourse());
+  }
+
+  protected changeCourse(): void {
+    this._course.set('');
+    this._days.set([]);
+    this._error.set(null);
+  }
+
+  protected selectCourse(course: string): void {
+    this._setCourseSelection(course);
+    this._loadCourse(course);
+  }
+
+  protected selectView(view: TimetableView): void {
+    this._activeView.set(view);
+  }
+
+  protected previousRange(): void {
+    this._moveAnchor(this._activeView() === 'week' ? -7 : -1);
+  }
+
+  protected nextRange(): void {
+    this._moveAnchor(this._activeView() === 'week' ? 7 : 1);
+  }
+
+  protected jumpToToday(): void {
+    this._anchorDate.set(this._dateKey(new Date()));
   }
 
   protected refresh(): void {
@@ -92,6 +148,10 @@ export class TimetablePage implements OnInit {
     return trimmed.length > 140 ? `${trimmed.slice(0, 140)}...` : trimmed;
   }
 
+  protected compactMeta(event: TimetableEvent): string | null {
+    return event.location ?? this.visibleDescription(event);
+  }
+
   private _loadCourse(course: string): void {
     const normalizedCourse = this._timetableService.normalizeCourse(course);
     if (!normalizedCourse) {
@@ -107,6 +167,7 @@ export class TimetablePage implements OnInit {
         this._course.set(timetable.course);
         this._timezone.set(timetable.timezone);
         this._days.set(timetable.days);
+        this._anchorDate.set(this._dateKey(new Date()));
         this._timetableService.storeCourse(timetable.course);
         this._courseOptions.set(this._timetableService.getCourseOptions());
         this._setCourseSelection(timetable.course);
@@ -153,5 +214,31 @@ export class TimetablePage implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private _moveAnchor(days: number): void {
+    const date = this._fromDateKey(this._anchorDate());
+    date.setDate(date.getDate() + days);
+    this._anchorDate.set(this._dateKey(date));
+  }
+
+  private _fromDateKey(date: string): Date {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  private _weekStart(date: Date): Date {
+    const weekStart = new Date(date);
+    const distanceFromMonday = (weekStart.getDay() + 6) % 7;
+    weekStart.setDate(weekStart.getDate() - distanceFromMonday);
+    return weekStart;
+  }
+
+  private _formatDateShort(value: string): string {
+    return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' }).format(this._fromDateKey(value));
+  }
+
+  private _formatDateLong(value: string): string {
+    return new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: '2-digit', month: 'long' }).format(this._fromDateKey(value));
   }
 }
