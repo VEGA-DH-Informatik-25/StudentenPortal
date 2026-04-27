@@ -1,5 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 
 type AssessmentType = 'Klausur' | 'Projekt' | 'Mündlich' | 'Hausarbeit';
 
@@ -22,9 +22,11 @@ interface ModuleSummary {
 
 @Component({
   selector: 'app-grades-page',
+  standalone: true,
   imports: [FormsModule],
   templateUrl: './grades-page.html',
   styleUrl: './grades-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GradesPage {
   private readonly storageKey = 'campusconnect:grades';
@@ -80,7 +82,14 @@ export class GradesPage {
     const modules = new Map<string, GradeEntry[]>();
 
     for (const entry of this.grades()) {
-      modules.set(entry.module, [...(modules.get(entry.module) ?? []), entry]);
+      let entries = modules.get(entry.module);
+
+      if (!entries) {
+        entries = [];
+        modules.set(entry.module, entries);
+      }
+
+      entries.push(entry);
     }
 
     return [...modules.entries()]
@@ -93,7 +102,7 @@ export class GradesPage {
       .sort((a, b) => a.module.localeCompare(b.module));
   });
 
-  protected addGrade(): void {
+  protected addGrade(form?: NgForm): void {
     const subject = this.subject.trim();
 
     if (!subject) {
@@ -111,8 +120,17 @@ export class GradesPage {
     };
 
     this.updateGrades([...this.grades(), entry]);
+    form?.resetForm({
+      subject: '',
+      module: '',
+      type: 'Klausur',
+      grade: 2.0,
+      weight: 1,
+      credits: 5,
+    });
     this.subject = '';
     this.module = '';
+    this.type = 'Klausur';
     this.grade = 2.0;
     this.weight = 1;
     this.credits = 5;
@@ -150,7 +168,12 @@ export class GradesPage {
 
   private updateGrades(grades: GradeEntry[]): void {
     this.grades.set(grades);
-    localStorage.setItem(this.storageKey, JSON.stringify(grades));
+
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(grades));
+    } catch {
+      // Keep grade management usable even when persistence is unavailable.
+    }
   }
 
   private readGrades(): GradeEntry[] {
@@ -228,14 +251,20 @@ export class GradesPage {
   }
 
   private normalizeGrade(value: number): number {
-    return Math.min(5, Math.max(1, Number(value) || 1));
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? Math.min(5, Math.max(1, parsed)) : 1;
   }
 
   private normalizeWeight(value: number): number {
-    return Math.max(0.1, Number(value) || 1);
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? Math.max(0.1, parsed) : 1;
   }
 
   private normalizePositive(value: number, fallback: number): number {
-    return Math.max(0, Number(value) || fallback);
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
   }
 }

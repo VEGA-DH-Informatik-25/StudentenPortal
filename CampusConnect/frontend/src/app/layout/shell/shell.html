@@ -1,16 +1,4 @@
-<div class="app-shell">
-  <header class="topbar">
-    <a class="brand" routerLink="/feed">CampusConnect</a>
-    <nav aria-label="Hauptnavigation">
-      <a routerLink="/feed" routerLinkActive="active">Feed</a>
-      <a routerLink="/mensa" routerLinkActive="active">Mensa</a>
-      <a routerLink="/calendar" routerLinkActive="active">Kalender</a>
-      <a routerLink="/grades" routerLinkActive="active">Noten</a>
-      <a routerLink="/groups" routerLinkActive="active">Lerngruppen</a>
-    </nav>
-  </header>
-
-  <main>
-    <router-outlet />
-  </main>
-</div>
+<app-navbar />
+<main class="main-content">
+  <router-outlet />
+</main>

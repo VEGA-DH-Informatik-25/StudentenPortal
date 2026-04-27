@@ -1,0 +1,66 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  background: var(--dhbw-red);
+  color: var(--dhbw-surface);
+  padding: 0 1.5rem;
+  height: 56px;
+  gap: 1.5rem;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  &__links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.25rem;
+    flex: 1;
+
+    a {
+      color: rgba(255,255,255,0.88);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+
+      &:hover, &.active {
+        background: rgba(255,255,255,0.18);
+        color: var(--dhbw-surface);
+      }
+    }
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+
+  &__name {
+    font-size: 0.85rem;
+    opacity: 0.85;
+  }
+
+  &__logout {
+    background: rgba(255,255,255,0.15);
+    color: var(--dhbw-surface);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+
+    &:hover {
+      background: rgba(255,255,255,0.25);
+    }
+  }
+}

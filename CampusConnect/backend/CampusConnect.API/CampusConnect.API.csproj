@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CampusConnect.Application\CampusConnect.Application.csproj" />
+    <ProjectReference Include="..\CampusConnect.Infrastructure\CampusConnect.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

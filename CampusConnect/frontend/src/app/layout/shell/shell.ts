@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { Navbar } from '../navbar/navbar';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, Navbar],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Shell {}

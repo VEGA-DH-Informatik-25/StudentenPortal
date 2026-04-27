@@ -1,1 +1,61 @@
-<p>admin-page works!</p>
+<div class="admin-page">
+  <header class="admin-page__header">
+    <div>
+      <p class="admin-page__eyebrow">Administration</p>
+      <h2>Benutzerverwaltung</h2>
+    </div>
+
+    <button type="button" class="admin-page__refresh" (click)="loadUsers()" [disabled]="_isLoading()">
+      Aktualisieren
+    </button>
+  </header>
+
+  @if (_error()) {
+    <p class="admin-page__message admin-page__message--error">{{ _error() }}</p>
+  }
+
+  @if (_success()) {
+    <p class="admin-page__message admin-page__message--success">{{ _success() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="admin-page__state">Benutzer werden geladen...</p>
+  } @else if (_users().length === 0) {
+    <p class="admin-page__state">Es sind noch keine Benutzer angelegt.</p>
+  } @else {
+    <section class="user-table" aria-label="Benutzerverwaltung">
+      <div class="user-table__row user-table__row--head">
+        <span>Benutzer</span>
+        <span>Studium</span>
+        <span>Rolle</span>
+        <span>Erstellt</span>
+        <span>Aktion</span>
+      </div>
+
+      @for (user of _users(); track user.id) {
+        <div class="user-table__row">
+          <div>
+            <strong>{{ user.displayName }}</strong>
+            <span>{{ user.email }}</span>
+          </div>
+          <div>
+            <strong>{{ user.studyProgram || 'Nicht gesetzt' }}</strong>
+            <span>{{ user.course }} · {{ user.semester }}. Semester</span>
+          </div>
+          <label class="role-select">
+            <span>Rolle</span>
+            <select [ngModel]="user.role" (ngModelChange)="updateRole(user, $event)" [disabled]="_busyUserId() === user.id">
+              @for (role of _roles; track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+          </label>
+          <span>{{ user.createdAt | date:'dd.MM.yyyy':'':'de' }}</span>
+          <button type="button" class="delete-button" (click)="deleteUser(user)" [disabled]="_busyUserId() === user.id">
+            Löschen
+          </button>
+        </div>
+      }
+    </section>
+  }
+</div>

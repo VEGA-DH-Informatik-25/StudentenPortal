@@ -16,7 +16,7 @@
   </header>
 
   <div class="content-grid">
-    <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade()">
+    <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
       <h2>Neue Note eintragen</h2>
       <label>
         Fach / Prüfung
@@ -125,7 +125,7 @@
               <th>Note</th>
               <th>Gewichtung</th>
               <th>ECTS</th>
-              <th></th>
+              <th>Aktion</th>
             </tr>
           </thead>
           <tbody>
