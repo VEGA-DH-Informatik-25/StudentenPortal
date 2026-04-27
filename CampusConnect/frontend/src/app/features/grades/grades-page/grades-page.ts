@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 type AssessmentType = 'Klausur' | 'Projekt' | 'Mündlich' | 'Hausarbeit';
 
 interface GradeEntry {
-  id: number;
+  id: string;
   subject: string;
   module: string;
   type: AssessmentType;
@@ -28,7 +28,7 @@ interface ModuleSummary {
 })
 export class GradesPage {
   private readonly storageKey = 'campusconnect.grades';
-  private nextId = Date.now();
+  private nextId = 0;
 
   protected readonly types: AssessmentType[] = ['Klausur', 'Projekt', 'Mündlich', 'Hausarbeit'];
   protected readonly grades = signal<GradeEntry[]>(this.readGrades());
@@ -56,7 +56,7 @@ export class GradesPage {
     this.average([
       ...this.grades(),
       {
-        id: 0,
+        id: 'simulation',
         subject: 'Simulation',
         module: 'Simulation',
         type: 'Klausur',
@@ -118,7 +118,7 @@ export class GradesPage {
     this.credits = 5;
   }
 
-  protected removeGrade(id: number): void {
+  protected removeGrade(id: string): void {
     this.updateGrades(this.grades().filter(entry => entry.id !== id));
   }
 
@@ -176,7 +176,7 @@ export class GradesPage {
     const candidate = entry as Partial<GradeEntry>;
 
     return (
-      typeof candidate.id === 'number' &&
+      typeof candidate.id === 'string' &&
       typeof candidate.subject === 'string' &&
       typeof candidate.module === 'string' &&
       this.types.includes(candidate.type as AssessmentType) &&
@@ -206,10 +206,22 @@ export class GradesPage {
     return values.length === 0 ? Number.NaN : Math.min(...values);
   }
 
-  private createId(): number {
-    this.nextId = Math.max(this.nextId + 1, Date.now());
+  private createId(): string {
+    const randomId = globalThis.crypto?.randomUUID?.();
 
-    return this.nextId;
+    if (randomId) {
+      return randomId;
+    }
+
+    const usedIds = new Set(this.grades().map(entry => entry.id));
+    let id = '';
+
+    do {
+      this.nextId += 1;
+      id = `grade-${this.nextId}`;
+    } while (usedIds.has(id));
+
+    return id;
   }
 
   private normalizeGrade(value: number): number {
