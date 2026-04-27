@@ -50,7 +50,7 @@ export class GradesPage {
       .reduce((sum, entry) => sum + entry.credits, 0),
   );
   protected readonly failedCount = computed(() => this.grades().filter(entry => entry.grade > 4).length);
-  protected readonly bestGrade = computed(() => this.extremeGrade('best'));
+  protected readonly bestGrade = computed(() => this.bestGradeValue());
   protected readonly simulatedAverage = computed(() =>
     this.average([
       ...this.grades(),
@@ -167,15 +167,21 @@ export class GradesPage {
     }
   }
 
-  private isGradeEntry(entry: GradeEntry): entry is GradeEntry {
+  private isGradeEntry(entry: unknown): entry is GradeEntry {
+    if (!entry || typeof entry !== 'object') {
+      return false;
+    }
+
+    const candidate = entry as Partial<GradeEntry>;
+
     return (
-      typeof entry.id === 'number' &&
-      typeof entry.subject === 'string' &&
-      typeof entry.module === 'string' &&
-      this.types.includes(entry.type) &&
-      typeof entry.grade === 'number' &&
-      typeof entry.weight === 'number' &&
-      typeof entry.credits === 'number'
+      typeof candidate.id === 'number' &&
+      typeof candidate.subject === 'string' &&
+      typeof candidate.module === 'string' &&
+      this.types.includes(candidate.type as AssessmentType) &&
+      typeof candidate.grade === 'number' &&
+      typeof candidate.weight === 'number' &&
+      typeof candidate.credits === 'number'
     );
   }
 
@@ -193,7 +199,7 @@ export class GradesPage {
     return entries.reduce((sum, entry) => sum + entry.weight, 0);
   }
 
-  private extremeGrade(kind: 'best'): number {
+  private bestGradeValue(): number {
     const values = this.grades().map(entry => entry.grade);
 
     return values.length === 0 ? Number.NaN : Math.min(...values);
