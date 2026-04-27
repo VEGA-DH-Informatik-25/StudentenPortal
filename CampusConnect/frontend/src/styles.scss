@@ -34,24 +34,3 @@ button {
   font: inherit;
 }
 
-.timetable-page .calendar-view { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; overflow: hidden; }
-.timetable-page .calendar-nav { align-items: center; background: var(--dhbw-bg-accent); border-bottom: 1px solid var(--dhbw-border); display: flex; gap: 0.5rem; padding: 0.65rem 0.8rem; }
-.timetable-page .calendar-nav strong { color: var(--dhbw-red); flex: 1; text-align: center; }
-.timetable-page .calendar-nav button { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); color: var(--dhbw-red); font-weight: 800; padding: 0 0.7rem; }
-.timetable-page .calendar-grid { display: grid; grid-template-columns: repeat(6, minmax(8rem, 1fr)); min-height: 24rem; overflow-x: auto; }
-.timetable-page .calendar-view--day .calendar-grid { grid-template-columns: 1fr; }
-.timetable-page .calendar-day { border-right: 1px solid var(--dhbw-border); min-width: 8rem; padding: 0.7rem; }
-.timetable-page .calendar-day:last-child { border-right: 0; }
-.timetable-page .calendar-day header { display: flex; justify-content: space-between; margin-bottom: 0.6rem; }
-.timetable-page .calendar-day header span { color: var(--dhbw-text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-.timetable-page .calendar-empty { color: var(--dhbw-text-muted); font-size: 0.82rem; margin: 1rem 0; text-align: center; }
-.timetable-page .calendar-event { background: var(--dhbw-bg-accent); border: 1px solid var(--dhbw-border); border-left: 4px solid var(--dhbw-red); border-radius: 8px; display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.5rem; padding: 0.55rem; }
-.timetable-page .calendar-event time { color: var(--dhbw-red); font-size: 0.76rem; font-weight: 900; }
-.timetable-page .calendar-event strong { font-size: 0.84rem; line-height: 1.25; overflow-wrap: anywhere; }
-.timetable-page .calendar-event span { color: var(--dhbw-text-muted); font-size: 0.76rem; overflow-wrap: anywhere; }
-.timetable-page .calendar-event em { color: #1d4ed8; font-size: 0.72rem; font-style: normal; font-weight: 800; }
-
-@media (max-width: 720px) {
-  .timetable-page .calendar-grid { grid-template-columns: repeat(6, 82vw); }
-}
-

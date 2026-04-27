@@ -7,6 +7,19 @@ import { Timetable } from '../../../core/services/timetable';
 
 type TimetableView = 'list' | 'week' | 'day';
 
+interface CalendarTimeline {
+  startMinutes: number;
+  endMinutes: number;
+  spanMinutes: number;
+  height: number;
+  hours: number[];
+}
+
+const DEFAULT_TIMELINE_START = 8 * 60;
+const DEFAULT_TIMELINE_END = 18 * 60;
+const TIMELINE_PIXELS_PER_MINUTE = 0.85;
+const COMPACT_EVENT_MAX_HEIGHT = 96;
+
 @Component({
   selector: 'app-timetable-page',
   standalone: true,
@@ -56,6 +69,30 @@ export class TimetablePage implements OnInit {
     const first = days[0]?.date ?? this._anchorDate();
     const last = days.at(-1)?.date ?? first;
     return `${this._formatDateShort(first)} - ${this._formatDateShort(last)}`;
+  });
+
+  protected readonly _calendarTimeline = computed<CalendarTimeline>(() => {
+    const events = this._calendarDays()
+      .flatMap(day => day.events)
+      .filter(event => !event.isAllDay);
+
+    const eventStarts = events.map(event => this._eventStartMinutes(event));
+    const eventEnds = events.map(event => this._eventEndMinutes(event));
+
+    const earliestStart = eventStarts.length > 0 ? Math.min(...eventStarts) : DEFAULT_TIMELINE_START;
+    const latestEnd = eventEnds.length > 0 ? Math.max(...eventEnds) : DEFAULT_TIMELINE_END;
+    const startMinutes = Math.max(0, Math.min(DEFAULT_TIMELINE_START, Math.floor(earliestStart / 60) * 60));
+    const endMinutes = Math.min(24 * 60, Math.max(DEFAULT_TIMELINE_END, Math.ceil(latestEnd / 60) * 60));
+    const spanMinutes = Math.max(60, endMinutes - startMinutes);
+    const hourCount = Math.floor(spanMinutes / 60) + 1;
+
+    return {
+      startMinutes,
+      endMinutes: startMinutes + spanMinutes,
+      spanMinutes,
+      height: Math.max(420, Math.round(spanMinutes * TIMELINE_PIXELS_PER_MINUTE)),
+      hours: Array.from({ length: hourCount }, (_, index) => (startMinutes / 60) + index),
+    };
   });
 
   ngOnInit(): void {
@@ -135,6 +172,72 @@ export class TimetablePage implements OnInit {
     return `${this._formatTime(event.start)}-${this._formatTime(event.end)}`;
   }
 
+  protected eventDuration(event: TimetableEvent): string | null {
+    if (event.isAllDay) {
+      return null;
+    }
+
+    const durationMinutes = this._eventDurationMinutes(event);
+    if (durationMinutes < 60) {
+      return `${durationMinutes} min`;
+    }
+
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+
+    return minutes === 0 ? `${hours} Std.` : `${hours} Std. ${minutes} min`;
+  }
+
+  protected timelineHourOffset(hour: number): number {
+    return this._percentage((hour * 60) - this._calendarTimeline().startMinutes);
+  }
+
+  protected timelineHourLabel(hour: number): string {
+    return `${String(hour).padStart(2, '0')}:00`;
+  }
+
+  protected calendarEventOffset(event: TimetableEvent): number {
+    if (event.isAllDay) {
+      return 0;
+    }
+
+    const timeline = this._calendarTimeline();
+    const offset = Math.max(0, this._eventStartMinutes(event) - timeline.startMinutes);
+    return this._percentage(offset);
+  }
+
+  protected calendarEventHeight(event: TimetableEvent): number {
+    if (event.isAllDay) {
+      return 100;
+    }
+
+    const timeline = this._calendarTimeline();
+    const start = Math.max(this._eventStartMinutes(event), timeline.startMinutes);
+    const end = Math.min(this._eventEndMinutes(event), timeline.endMinutes);
+    return this._percentage(Math.max(1, end - start));
+  }
+
+  protected calendarEventIsCompact(event: TimetableEvent): boolean {
+    if (event.isAllDay) {
+      return false;
+    }
+
+    return this._renderedEventHeight(event) < COMPACT_EVENT_MAX_HEIGHT;
+  }
+
+  protected calendarEventLabel(event: TimetableEvent): string {
+    const duration = this.eventDuration(event);
+    const time = duration ? `${this.eventTime(event)} (${duration})` : this.eventTime(event);
+    const details = [
+      time,
+      event.title,
+      this.compactMeta(event),
+      event.isOnline ? 'Online' : null,
+    ].filter((value): value is string => Boolean(value));
+
+    return details.join(' | ');
+  }
+
   protected visibleDescription(event: TimetableEvent): string | null {
     if (!event.description) {
       return null;
@@ -206,7 +309,44 @@ export class TimetablePage implements OnInit {
     return new Intl.DateTimeFormat('de-DE', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: this._timezone(),
     }).format(new Date(value));
+  }
+
+  private _eventStartMinutes(event: TimetableEvent): number {
+    return this._minutesInTimezone(event.start);
+  }
+
+  private _eventEndMinutes(event: TimetableEvent): number {
+    const startMinutes = this._eventStartMinutes(event);
+    const endMinutes = this._minutesInTimezone(event.end);
+    return endMinutes <= startMinutes ? endMinutes + (24 * 60) : endMinutes;
+  }
+
+  private _eventDurationMinutes(event: TimetableEvent): number {
+    const duration = Math.round((new Date(event.end).getTime() - new Date(event.start).getTime()) / 60000);
+    return Math.max(1, duration);
+  }
+
+  private _minutesInTimezone(value: string): number {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      hourCycle: 'h23',
+      minute: '2-digit',
+      timeZone: this._timezone(),
+    }).formatToParts(new Date(value));
+    const hour = Number(parts.find(part => part.type === 'hour')?.value ?? 0) % 24;
+    const minute = Number(parts.find(part => part.type === 'minute')?.value ?? 0);
+
+    return (hour * 60) + minute;
+  }
+
+  private _percentage(minutes: number): number {
+    return (minutes / this._calendarTimeline().spanMinutes) * 100;
+  }
+
+  private _renderedEventHeight(event: TimetableEvent): number {
+    return (this.calendarEventHeight(event) / 100) * this._calendarTimeline().height;
   }
 
   private _dateKey(date: Date): string {

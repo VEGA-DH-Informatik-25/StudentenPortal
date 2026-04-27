@@ -5,6 +5,7 @@ import { TimetableResponse } from '../models/timetable.model';
 
 const SELECTED_COURSE_KEY = 'campusconnect.timetable.selectedCourse';
 const COURSE_HISTORY_KEY = 'campusconnect.timetable.courseHistory';
+const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
 
 @Injectable({ providedIn: 'root' })
 export class Timetable {
@@ -23,7 +24,7 @@ export class Timetable {
     'WDS25A',
   ];
 
-  getTimetable(course: string, days = 30): Observable<TimetableResponse> {
+  getTimetable(course: string, days = DEFAULT_TIMETABLE_LOOKAHEAD_DAYS): Observable<TimetableResponse> {
     const params = new HttpParams()
       .set('course', this.normalizeCourse(course))
       .set('days', days);

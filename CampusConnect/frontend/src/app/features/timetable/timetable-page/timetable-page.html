@@ -76,7 +76,12 @@
           <div class="lecture-list">
             @for (event of day.events; track event.id) {
               <article class="lecture-card">
-                <div class="lecture-card__time">{{ eventTime(event) }}</div>
+                <div class="lecture-card__time">
+                  <span>{{ eventTime(event) }}</span>
+                  @if (eventDuration(event); as duration) {
+                    <small>{{ duration }}</small>
+                  }
+                </div>
                 <div class="lecture-card__body">
                   <div class="lecture-card__title-row">
                     <h4>{{ event.title }}</h4>
@@ -109,6 +114,15 @@
       </header>
 
       <div class="calendar-grid">
+        <aside class="calendar-time-axis" aria-hidden="true">
+          <span class="calendar-time-axis__header"></span>
+          <div class="calendar-time-axis__track" [style.min-height.px]="_calendarTimeline().height">
+            @for (hour of _calendarTimeline().hours; track hour) {
+              <span class="calendar-time-axis__label" [style.top.%]="timelineHourOffset(hour)">{{ timelineHourLabel(hour) }}</span>
+            }
+          </div>
+        </aside>
+
         @for (day of _calendarDays(); track day.date) {
           <section class="calendar-day">
             <header>
@@ -116,22 +130,41 @@
               <strong>{{ day.date | date:'dd.MM.':'':'de' }}</strong>
             </header>
 
-            @if (day.events.length === 0) {
-              <p class="calendar-empty">Keine Termine</p>
-            } @else {
-              @for (event of day.events; track event.id) {
-                <article class="calendar-event">
-                  <time>{{ eventTime(event) }}</time>
-                  <strong>{{ event.title }}</strong>
-                  @if (compactMeta(event)) {
-                    <span>{{ compactMeta(event) }}</span>
-                  }
-                  @if (event.isOnline) {
-                    <em>Online</em>
-                  }
-                </article>
+            <div class="calendar-day__timeline" [style.min-height.px]="_calendarTimeline().height">
+              @for (hour of _calendarTimeline().hours; track hour) {
+                <span class="calendar-day__hour-line" [style.top.%]="timelineHourOffset(hour)"></span>
               }
-            }
+
+              @if (day.events.length === 0) {
+                <p class="calendar-empty">Keine Termine</p>
+              } @else {
+                @for (event of day.events; track event.id) {
+                  <article
+                    class="calendar-event"
+                    [class.calendar-event--all-day]="event.isAllDay"
+                    [class.calendar-event--compact]="calendarEventIsCompact(event)"
+                    [attr.aria-label]="calendarEventLabel(event)"
+                    [attr.title]="calendarEventLabel(event)"
+                    [style.top.%]="calendarEventOffset(event)"
+                    [style.height.%]="calendarEventHeight(event)"
+                    tabindex="0">
+                    <time>
+                      <span>{{ eventTime(event) }}</span>
+                      @if (eventDuration(event); as duration) {
+                        <small>{{ duration }}</small>
+                      }
+                    </time>
+                    <strong>{{ event.title }}</strong>
+                    @if (compactMeta(event)) {
+                      <span class="calendar-event__meta">{{ compactMeta(event) }}</span>
+                    }
+                    @if (event.isOnline) {
+                      <em class="calendar-event__chip">Online</em>
+                    }
+                  </article>
+                }
+              }
+            </div>
           </section>
         }
       </div>
