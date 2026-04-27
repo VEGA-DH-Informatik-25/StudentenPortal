@@ -8,9 +8,16 @@ namespace CampusConnect.API.Controllers;
 public class MensaController(IMensaService mensaService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetMenu()
+    public async Task<IActionResult> GetMenu(CancellationToken cancellationToken)
     {
-        var menu = await mensaService.GetWeekMenuAsync();
-        return Ok(menu);
+        try
+        {
+            var menu = await mensaService.GetWeekMenuAsync(cancellationToken);
+            return Ok(menu);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = ex.Message });
+        }
     }
 }

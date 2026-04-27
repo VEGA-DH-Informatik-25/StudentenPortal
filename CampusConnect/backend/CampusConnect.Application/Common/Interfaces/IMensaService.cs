@@ -5,5 +5,5 @@ public record MensaDay(DateOnly Date, IReadOnlyList<MensaDish> Dishes);
 
 public interface IMensaService
 {
-    Task<IReadOnlyList<MensaDay>> GetWeekMenuAsync();
+    Task<IReadOnlyList<MensaDay>> GetWeekMenuAsync(CancellationToken cancellationToken = default);
 }

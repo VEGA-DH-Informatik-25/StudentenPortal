@@ -5,6 +5,10 @@
     <p>Lade Speiseplan…</p>
   }
 
+  @if (!_isLoading() && _error()) {
+    <p>{{ _error() }}</p>
+  }
+
   @if (_menu().length > 0) {
     <div class="mensa-page__tabs">
       @for (day of _menu(); track day.date; let i = $index) {
@@ -34,6 +38,8 @@
         }
       </div>
     }
+  } @else if (!_isLoading() && !_error()) {
+    <p>Für die Mensa liegen aktuell keine Einträge vor.</p>
   }
 </div>
 

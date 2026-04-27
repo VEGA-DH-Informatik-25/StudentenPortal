@@ -25,6 +25,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/calendar/calendar-page/calendar-page').then(m => m.CalendarPage),
       },
       {
+        path: 'timetable',
+        loadComponent: () => import('./features/timetable/timetable-page/timetable-page').then(m => m.TimetablePage),
+      },
+      {
         path: 'grades',
         loadComponent: () => import('./features/grades/grades-page/grades-page').then(m => m.GradesPage),
       },

@@ -1,0 +1,105 @@
+<div class="timetable-page">
+  <header class="timetable-page__header">
+    <div>
+      <p class="timetable-page__eyebrow">DHBW Lörrach</p>
+      <h2>Vorlesungsplan</h2>
+    </div>
+
+    <div class="timetable-page__controls">
+      <label class="course-field">
+        <span>Kurs</span>
+        <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
+          <option value="">Kurs auswählen</option>
+          @for (course of _courseOptions(); track course) {
+            <option [value]="course">{{ course }}</option>
+          }
+          <option value="custom">Anderen Kurs eingeben</option>
+        </select>
+      </label>
+
+      @if (_courseSelection() === 'custom') {
+        <label class="course-field course-field--manual">
+          <span>Kurscode</span>
+          <input
+            type="text"
+            placeholder="z. B. TIF24A"
+            [ngModel]="_customCourse()"
+            (ngModelChange)="_customCourse.set($event)"
+            (keyup.enter)="loadCustomCourse()"
+          />
+        </label>
+      }
+
+      <button class="refresh-button" type="button" (click)="refresh()" [disabled]="_isLoading() || !_courseSelection()">
+        Aktualisieren
+      </button>
+    </div>
+  </header>
+
+  @if (_course()) {
+    <section class="timetable-page__summary" aria-label="Stundenplan-Zusammenfassung">
+      <div>
+        <span>Kurs</span>
+        <strong>{{ _course() }}</strong>
+      </div>
+      <div>
+        <span>Termine</span>
+        <strong>{{ _eventCount() }}</strong>
+      </div>
+      <div>
+        <span>Zeitzone</span>
+        <strong>{{ _timezone() }}</strong>
+      </div>
+    </section>
+  }
+
+  @if (_isLoading()) {
+    <p class="timetable-page__state">Vorlesungsplan wird geladen...</p>
+  } @else if (_error()) {
+    <p class="timetable-page__state timetable-page__state--error">{{ _error() }}</p>
+  } @else if (!_course()) {
+    <p class="timetable-page__state">Wähle einen Kurs aus, um die nächsten Termine zu sehen.</p>
+  } @else if (_days().length === 0) {
+    <p class="timetable-page__state">Für diesen Kurs sind in den nächsten Tagen keine Termine eingetragen.</p>
+  } @else {
+    <div class="day-list">
+      @for (day of _days(); track day.date) {
+        <section class="day-section">
+          <header class="day-section__header">
+            <div>
+              <span class="day-section__weekday">{{ day.date | date:'EEEE':'':'de' }}</span>
+              <h3>{{ day.date | date:'dd.MM.yyyy':'':'de' }}</h3>
+            </div>
+            @if (dayBadge(day.date)) {
+              <span class="day-section__badge">{{ dayBadge(day.date) }}</span>
+            }
+          </header>
+
+          <div class="lecture-list">
+            @for (event of day.events; track event.id) {
+              <article class="lecture-card">
+                <div class="lecture-card__time">{{ eventTime(event) }}</div>
+                <div class="lecture-card__body">
+                  <div class="lecture-card__title-row">
+                    <h4>{{ event.title }}</h4>
+                    @if (event.isOnline) {
+                      <span class="lecture-card__chip">Online</span>
+                    }
+                  </div>
+                  <div class="lecture-card__meta">
+                    @if (event.location) {
+                      <span>{{ event.location }}</span>
+                    }
+                    @if (visibleDescription(event)) {
+                      <span>{{ visibleDescription(event) }}</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>
