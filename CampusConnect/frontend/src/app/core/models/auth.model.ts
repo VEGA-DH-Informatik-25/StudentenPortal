@@ -3,6 +3,7 @@ export interface AuthResponse {
   displayName: string;
   email: string;
   role: string;
+  profile?: UserProfile;
 }
 
 export interface RegisterRequest {
@@ -20,10 +21,19 @@ export interface LoginRequest {
 }
 
 export interface UserProfile {
+  id: string;
   email: string;
   displayName: string;
   studyProgram: string;
   semester: number;
   course: string;
   role: string;
+  createdAt: string;
+}
+
+export interface UpdateProfileRequest {
+  displayName: string;
+  studyProgram: string;
+  semester: number;
+  course: string;
 }

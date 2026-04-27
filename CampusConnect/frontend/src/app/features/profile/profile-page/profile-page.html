@@ -1,0 +1,78 @@
+<div class="profile-page">
+  <header class="profile-page__header">
+    <div>
+      <h2>Mein Profil</h2>
+      @if (_profile(); as profile) {
+        <p>{{ profile.email }}</p>
+      }
+    </div>
+  </header>
+
+  @if (_error()) {
+    <p class="profile-page__message profile-page__message--error">{{ _error() }}</p>
+  }
+
+  @if (_success()) {
+    <p class="profile-page__message profile-page__message--success">{{ _success() }}</p>
+  }
+
+  @if (_isLoading() && !_profile()) {
+    <p class="profile-page__loading">Lade Profil…</p>
+  }
+
+  @if (_profile(); as profile) {
+    <section class="profile-summary" aria-label="Profilübersicht">
+      <div>
+        <span>Rolle</span>
+        <strong>{{ profile.role }}</strong>
+      </div>
+      <div>
+        <span>Studiengang</span>
+        <strong>{{ profile.studyProgram }}</strong>
+      </div>
+      <div>
+        <span>Semester</span>
+        <strong>{{ profile.semester }}</strong>
+      </div>
+      <div>
+        <span>Kurs</span>
+        <strong>{{ profile.course }}</strong>
+      </div>
+    </section>
+
+    <form class="profile-form" (ngSubmit)="onSave()">
+      <div class="profile-form__grid">
+        <label>
+          Anzeigename
+          <input type="text" name="displayName" [(ngModel)]="_form.displayName" maxlength="120" required />
+        </label>
+
+        <label>
+          E-Mail
+          <input type="email" [value]="profile.email" readonly />
+        </label>
+
+        <label>
+          Studiengang
+          <input type="text" name="studyProgram" [(ngModel)]="_form.studyProgram" maxlength="120" required />
+        </label>
+
+        <label>
+          Kurs
+          <input type="text" name="course" [(ngModel)]="_form.course" maxlength="40" required />
+        </label>
+
+        <label>
+          Semester
+          <input type="number" name="semester" [(ngModel)]="_form.semester" min="1" max="6" required />
+        </label>
+      </div>
+
+      <div class="profile-form__actions">
+        <button type="submit" [disabled]="_isSaving()">
+          {{ _isSaving() ? 'Speichere…' : 'Änderungen speichern' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

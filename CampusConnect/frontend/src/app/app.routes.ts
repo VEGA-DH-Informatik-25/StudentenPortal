@@ -38,6 +38,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/groups/groups-page/groups-page').then(m => m.GroupsPage),
       },
       {
+        path: 'profile',
+        loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/admin/admin-page/admin-page').then(m => m.AdminPage),

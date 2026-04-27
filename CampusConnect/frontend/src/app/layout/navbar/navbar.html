@@ -13,8 +13,46 @@
     <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
   </ul>
   <div class="navbar__user">
-    <span class="navbar__name">{{ _auth.displayName() }}</span>
-    <button class="navbar__logout" (click)="_auth.logout()">Abmelden</button>
+    <details class="navbar__profile-menu">
+      <summary class="navbar__profile-trigger" aria-label="Benutzermenü öffnen">
+        <span class="navbar__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
+        <span class="navbar__identity">
+          <span class="navbar__name">{{ _auth.displayName() }}</span>
+          @if (_auth.userProfile(); as profile) {
+            <span class="navbar__context">{{ profile.course }} · {{ profile.semester }}. Semester</span>
+          }
+        </span>
+      </summary>
+
+      <div class="navbar__profile-panel">
+        @if (_auth.userProfile(); as profile) {
+          <div class="navbar__profile-header">
+            <span class="navbar__avatar navbar__avatar--large" aria-hidden="true">{{ _profileInitials() }}</span>
+            <div>
+              <strong>{{ profile.displayName }}</strong>
+              <span>{{ profile.email }}</span>
+            </div>
+          </div>
+          <dl class="navbar__profile-details">
+            <div>
+              <dt>Studiengang</dt>
+              <dd>{{ profile.studyProgram }}</dd>
+            </div>
+            <div>
+              <dt>Kurs</dt>
+              <dd>{{ profile.course }}</dd>
+            </div>
+            <div>
+              <dt>Rolle</dt>
+              <dd>{{ profile.role }}</dd>
+            </div>
+          </dl>
+        }
+
+        <a class="navbar__profile-action" routerLink="/profile">Profil bearbeiten</a>
+        <button class="navbar__logout" type="button" (click)="_auth.logout()">Abmelden</button>
+      </div>
+    </details>
   </div>
 </nav>
 
