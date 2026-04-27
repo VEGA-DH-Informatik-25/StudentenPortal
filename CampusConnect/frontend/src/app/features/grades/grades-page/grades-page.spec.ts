@@ -40,6 +40,7 @@ describe('GradesPage', () => {
     expect(component['grades']().length).toBe(2);
     expect(component['weightedAverage']()).toBeCloseTo(1.67, 1);
     expect(component['passedCredits']()).toBe(10);
+    expect(component['moduleSummaries']().length).toBeGreaterThan(0);
     expect(component['moduleSummaries']()[0].average).toBeCloseTo(1.67, 1);
   });
 

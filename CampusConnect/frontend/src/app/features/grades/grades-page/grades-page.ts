@@ -27,7 +27,7 @@ interface ModuleSummary {
   styleUrl: './grades-page.scss',
 })
 export class GradesPage {
-  private readonly storageKey = 'campusconnect.grades';
+  private readonly storageKey = 'campusconnect:grades';
   private nextId = 0;
 
   protected readonly types: AssessmentType[] = ['Klausur', 'Projekt', 'Mündlich', 'Hausarbeit'];
@@ -161,8 +161,13 @@ export class GradesPage {
     }
 
     try {
-      const parsed = JSON.parse(raw) as GradeEntry[];
-      return Array.isArray(parsed) ? parsed.filter(entry => this.isGradeEntry(entry)) : [];
+      const parsed: unknown = JSON.parse(raw);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter(entry => this.isGradeEntry(entry));
     } catch {
       return [];
     }
@@ -207,10 +212,8 @@ export class GradesPage {
   }
 
   private createId(): string {
-    const randomId = globalThis.crypto?.randomUUID?.();
-
-    if (randomId) {
-      return randomId;
+    if (typeof globalThis.crypto?.randomUUID === 'function') {
+      return globalThis.crypto.randomUUID();
     }
 
     const usedIds = new Set(this.grades().map(entry => entry.id));

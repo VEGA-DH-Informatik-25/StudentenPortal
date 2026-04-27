@@ -16,12 +16,22 @@
   </header>
 
   <div class="content-grid">
-    <form class="panel grade-form" (ngSubmit)="addGrade()">
+    <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade()">
       <h2>Neue Note eintragen</h2>
       <label>
         Fach / Prüfung
-        <input name="subject" [(ngModel)]="subject" placeholder="z. B. Mathematik I" required />
+        <input
+          name="subject"
+          [(ngModel)]="subject"
+          #subjectInput="ngModel"
+          placeholder="z. B. Mathematik I"
+          aria-describedby="subject-error"
+          required
+        />
       </label>
+      @if (subjectInput.invalid && (subjectInput.touched || gradeForm.submitted)) {
+        <span id="subject-error" class="field-error">Bitte gib ein Fach oder eine Prüfung ein.</span>
+      }
       <label>
         Modul
         <input name="module" [(ngModel)]="module" placeholder="z. B. Grundlagen Informatik" />
