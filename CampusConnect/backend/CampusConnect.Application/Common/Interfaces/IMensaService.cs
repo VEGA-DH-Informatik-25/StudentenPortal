@@ -1,6 +1,6 @@
 namespace CampusConnect.Application.Common.Interfaces;
 
-public record MensaDish(string Name, string Category, decimal PriceStudent, string? Allergens, bool IsVegetarian, bool IsVegan);
+public record MensaDish(string Name, IReadOnlyList<string> NameLines, string Category, decimal PriceStudent, string? Allergens, bool IsVegetarian, bool IsVegan);
 public record MensaDay(DateOnly Date, IReadOnlyList<MensaDish> Dishes);
 
 public interface IMensaService

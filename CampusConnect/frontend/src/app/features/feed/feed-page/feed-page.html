@@ -1,39 +1,166 @@
-<div class="feed-page">
-  <h2>News-Feed</h2>
+<section class="feed-page">
+  <header class="feed-hero">
+    <div>
+      <p class="feed-hero__eyebrow">DHBW Lörrach</p>
+      <h1>Aktuelles und Termine</h1>
+      <p>Neuigkeiten, Tagesplan und wichtige Campusbereiche kompakt an einem Ort.</p>
+    </div>
+    <div class="feed-hero__summary" aria-label="Feed Überblick">
+      <span>Beiträge</span>
+      <strong>{{ _posts().length }}</strong>
+      <small>aktuell im Stream</small>
+    </div>
+  </header>
 
-  <div class="feed-page__compose">
-    <textarea
-      [value]="_newContent()"
-      (input)="updateContent($any($event.target).value)"
-      placeholder="Was möchtest du teilen?"
-      rows="3">
-    </textarea>
-    <button (click)="onPost()" [disabled]="!_newContent().trim()">Posten</button>
-  </div>
-
-  @if (_error()) {
-    <p class="feed-page__error">{{ _error() }}</p>
-  }
-
-  @if (_isLoading()) {
-    <p class="feed-page__loading">Lade Feed…</p>
-  }
-
-  @if (!_isLoading() && _posts().length === 0) {
-    <p class="feed-page__empty">Noch keine Beiträge. Sei der Erste!</p>
-  }
-
-  <div class="feed-page__posts">
-    @for (post of _posts(); track post.id) {
-      <div class="post-card">
-        <div class="post-card__meta">
-          <strong>{{ post.authorName }}</strong>
-          <span>{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
-        </div>
-        <p class="post-card__content">{{ post.content }}</p>
-        <button class="post-card__delete" (click)="onDelete(post.id)">✕</button>
+  <div class="feed-layout">
+    <aside class="quick-access" aria-label="Schnellzugriffe">
+      <div class="section-heading">
+        <span>Schnellzugriffe</span>
+        <strong>Campus</strong>
       </div>
-    }
+
+      <nav class="quick-access__list" aria-label="Campusbereiche">
+        <button class="quick-access__item" type="button" (click)="navigateTo('/mensa')">
+          <span class="quick-access__marker" aria-hidden="true">ME</span>
+          <span>
+            <strong>Mensa</strong>
+            <small>Speiseplan und Preise</small>
+          </span>
+        </button>
+        <button class="quick-access__item" type="button" (click)="navigateTo('/timetable')">
+          <span class="quick-access__marker" aria-hidden="true">ST</span>
+          <span>
+            <strong>Stundenplan</strong>
+            <small>Vorlesungen und Räume</small>
+          </span>
+        </button>
+        <button class="quick-access__item" type="button" (click)="navigateTo('/calendar')">
+          <span class="quick-access__marker" aria-hidden="true">PR</span>
+          <span>
+            <strong>Prüfungen</strong>
+            <small>Termine und Notizen</small>
+          </span>
+        </button>
+        <button class="quick-access__item" type="button" (click)="navigateTo('/grades')">
+          <span class="quick-access__marker" aria-hidden="true">NO</span>
+          <span>
+            <strong>Noten</strong>
+            <small>Leistungen im Blick</small>
+          </span>
+        </button>
+        <button class="quick-access__item" type="button" (click)="navigateTo('/groups')">
+          <span class="quick-access__marker" aria-hidden="true">GR</span>
+          <span>
+            <strong>Gruppen</strong>
+            <small>Lerngruppen finden</small>
+          </span>
+        </button>
+      </nav>
+    </aside>
+
+    <section class="feed-stream" aria-label="Campus Feed">
+      <form class="composer" (ngSubmit)="onPost()">
+        <span class="composer__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
+        <div class="composer__body">
+          <label class="visually-hidden" for="feed-content">Neuen Beitrag verfassen</label>
+          <textarea
+            id="feed-content"
+            [value]="_newContent()"
+            (input)="updateContent($any($event.target).value)"
+            placeholder="Was gibt es Neues auf dem Campus?"
+            maxlength="600"
+            rows="4">
+          </textarea>
+          <div class="composer__footer">
+            <span>{{ _newContent().trim().length }}/600 Zeichen</span>
+            <button type="submit" [disabled]="!_newContent().trim() || _isLoading()">Posten</button>
+          </div>
+        </div>
+      </form>
+
+      @if (_error()) {
+        <p class="feed-page__state feed-page__state--error">{{ _error() }}</p>
+      }
+
+      @if (_isLoading()) {
+        <p class="feed-page__state">Feed wird geladen...</p>
+      }
+
+      @if (!_isLoading() && _posts().length === 0) {
+        <div class="feed-page__empty">
+          <strong>Noch keine Beiträge.</strong>
+          <span>Starte den Austausch mit deinem ersten Update.</span>
+        </div>
+      }
+
+      <div class="feed-page__posts">
+        @for (post of _posts(); track post.id) {
+          <article class="post-card">
+            <span class="post-card__avatar" aria-hidden="true">{{ initialsFor(post.authorName) }}</span>
+            <div class="post-card__body">
+              <header class="post-card__header">
+                <div>
+                  <strong>{{ post.authorName }}</strong>
+                  <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+                </div>
+                <button class="post-card__delete" type="button" (click)="onDelete(post.id)" aria-label="Beitrag löschen">×</button>
+              </header>
+              <p class="post-card__content">{{ post.content }}</p>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <aside class="daily-schedule" aria-label="Tagesplan">
+      <div class="section-heading">
+        <span>Heute</span>
+        <strong>Tagesplan</strong>
+      </div>
+
+      <div class="daily-schedule__meta">
+        <span>{{ _scheduleTitle() }}</span>
+        @if (_scheduleCourse()) {
+          <strong>{{ _scheduleCourse() }}</strong>
+        }
+      </div>
+
+      @if (_scheduleIsLoading()) {
+        <p class="daily-schedule__state">Tagesplan wird geladen...</p>
+      } @else if (_scheduleError()) {
+        <div class="daily-schedule__state daily-schedule__state--action">
+          <span>{{ _scheduleError() }}</span>
+          <button type="button" (click)="navigateTo('/timetable')">Kurs wählen</button>
+        </div>
+      } @else if (_scheduleEvents().length === 0) {
+        <div class="daily-schedule__state">
+          <strong>Heute keine Termine.</strong>
+          <span>Dein Stundenplan bleibt hier, sobald Veranstaltungen anstehen.</span>
+        </div>
+      } @else {
+        <div class="daily-schedule__list" role="list">
+          @for (event of _scheduleEvents(); track event.id) {
+            <article class="daily-schedule__event" role="listitem">
+              <time [attr.datetime]="event.start">
+                <span>{{ scheduleTime(event) }}</span>
+                @if (scheduleDuration(event); as duration) {
+                  <small>{{ duration }}</small>
+                }
+              </time>
+              <div>
+                <strong>{{ event.title }}</strong>
+                @if (scheduleMeta(event); as meta) {
+                  <small>{{ meta }}</small>
+                }
+                @if (event.isOnline) {
+                  <em>Online</em>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </aside>
   </div>
-</div>
+</section>
 

@@ -1,19 +1,110 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
 .navbar {
-  display: flex;
   align-items: center;
-  background: var(--dhbw-red);
+  background: var(--dhbw-red-deep);
+  border-bottom: 1px solid rgba(116, 0, 14, 0.35);
+  box-shadow: 0 10px 28px rgba(31, 35, 40, 0.18);
   color: var(--dhbw-surface);
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  min-height: 56px;
-  padding: 0.5rem 1.5rem;
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  min-height: 76px;
+  padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  position: relative;
+
+  &::before {
+    background: var(--dhbw-red);
+    content: '';
+    height: 5px;
+    inset: 0 0 auto;
+    position: absolute;
+  }
 
   &__brand {
-    display: flex;
     align-items: center;
-    gap: 0.5rem;
+    border-radius: 8px;
+    color: var(--dhbw-surface);
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.75rem;
     font-weight: 700;
-    font-size: 1.1rem;
+    min-width: 0;
+    padding: 0.3rem 0.55rem 0.3rem 0.15rem;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover,
+    &:focus-visible,
+    &--active {
+      background: var(--dhbw-surface);
+      color: var(--dhbw-red-dark);
+      outline: none;
+    }
+
+    &:hover .navbar__overline,
+    &:focus-visible .navbar__overline,
+    &--active .navbar__overline {
+      color: var(--dhbw-red);
+    }
+  }
+
+  &__mark {
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    box-shadow: 0 10px 22px rgba(226, 0, 26, 0.13);
+    display: inline-flex;
+    height: 2.75rem;
+    position: relative;
+    width: 2.75rem;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      transform: skewY(-22deg);
+    }
+
+    &::before {
+      background: var(--dhbw-red);
+      height: 1.55rem;
+      left: 0.7rem;
+      top: 0.5rem;
+      width: 0.78rem;
+    }
+
+    &::after {
+      background: var(--dhbw-ink);
+      height: 1.55rem;
+      right: 0.68rem;
+      top: 0.7rem;
+      width: 0.78rem;
+    }
+  }
+
+  &__brand-copy {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
+  &__overline {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    font-size: 1.05rem;
+    line-height: 1.15;
+    white-space: nowrap;
   }
 
   &__links {
@@ -26,16 +117,24 @@
     flex: 1;
 
     a {
-      color: rgba(255,255,255,0.88);
-      text-decoration: none;
-      padding: 0.4rem 0.75rem;
-      border-radius: 4px;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.82);
       font-size: 0.9rem;
-      transition: background 0.15s;
+      font-weight: 700;
+      padding: 0.55rem 0.75rem;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
 
-      &:hover, &.active {
-        background: rgba(255,255,255,0.18);
+      &:hover,
+      &:focus-visible {
+        background: rgba(255, 255, 255, 0.14);
         color: var(--dhbw-surface);
+        outline: none;
+      }
+
+      &.active {
+        background: var(--dhbw-surface);
+        color: var(--dhbw-red-dark);
       }
     }
   }
@@ -51,7 +150,8 @@
     position: relative;
 
     &[open] .navbar__profile-trigger {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--dhbw-surface);
     }
   }
 
@@ -72,7 +172,8 @@
 
     &:hover,
     &:focus-visible {
-      background: rgba(255,255,255,0.18);
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--dhbw-surface);
       outline: none;
     }
   }
@@ -80,8 +181,9 @@
   &__avatar {
     align-items: center;
     background: var(--dhbw-surface);
+    border: 1px solid rgba(255, 255, 255, 0.42);
     border-radius: 50%;
-    color: var(--dhbw-red);
+    color: var(--dhbw-red-dark);
     display: inline-flex;
     flex: 0 0 auto;
     font-size: 0.78rem;
@@ -116,15 +218,16 @@
   }
 
   &__context {
-    color: rgba(255,255,255,0.75);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.72rem;
   }
 
   &__profile-panel {
     background: var(--dhbw-surface);
     border: 1px solid var(--dhbw-border);
+    border-top: 4px solid var(--dhbw-red);
     border-radius: 8px;
-    box-shadow: 0 14px 34px rgba(31, 35, 40, 0.18);
+    box-shadow: var(--dhbw-shadow);
     color: var(--dhbw-ink);
     min-width: 18rem;
     padding: 0.9rem;
@@ -244,6 +347,11 @@
       left: 0;
       right: auto;
       width: min(100%, 22rem);
+    }
+
+    &__links {
+      overflow-x: auto;
+      padding-bottom: 0.15rem;
     }
   }
 }
