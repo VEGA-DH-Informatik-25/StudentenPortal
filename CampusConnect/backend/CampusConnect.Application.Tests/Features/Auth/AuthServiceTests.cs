@@ -211,6 +211,8 @@ public class AuthServiceTests
 
         public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds) => Task.CompletedTask;
 
+        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions) => Task.CompletedTask;
+
         public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds)
         {
             AssignedUserIdsByCourse[courseCode.Trim().ToUpperInvariant()] = assignedUserIds.ToHashSet();

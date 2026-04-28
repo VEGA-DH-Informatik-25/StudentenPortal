@@ -216,6 +216,13 @@
 		justify-content: space-between;
 	}
 
+	&__actions {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		justify-content: flex-end;
+	}
+
 	strong {
 		display: block;
 		font-size: 0.98rem;
@@ -232,7 +239,9 @@
 		overflow-wrap: anywhere;
 	}
 
-	&__settings {
+	&__settings,
+	&__open,
+	&__join {
 		background: var(--dhbw-red);
 		border: 0;
 		border-radius: 8px;
@@ -247,6 +256,34 @@
 		&:focus-visible {
 			background: var(--dhbw-red-dark);
 			outline: none;
+		}
+
+		&:disabled {
+			background: var(--dhbw-border);
+			color: var(--dhbw-text-muted);
+			cursor: not-allowed;
+		}
+	}
+
+	&__open {
+		background: var(--dhbw-surface-muted);
+		border: 1px solid var(--dhbw-border);
+		color: var(--dhbw-ink-soft);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--dhbw-red-soft);
+			border-color: var(--dhbw-red-soft);
+			color: var(--dhbw-red-dark);
+		}
+	}
+
+	&__join {
+		background: var(--dhbw-ink);
+
+		&:hover,
+		&:focus-visible {
+			background: var(--dhbw-ink-soft);
 		}
 	}
 

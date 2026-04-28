@@ -16,4 +16,5 @@ public class CampusGroup
     public string AccentColor { get; set; } = "#e2001a";
     public GroupSettings Settings { get; set; } = new();
     public HashSet<Guid> AssignedUserIds { get; set; } = [];
+    public Dictionary<Guid, GroupMemberPermission> MemberPermissions { get; set; } = [];
 }

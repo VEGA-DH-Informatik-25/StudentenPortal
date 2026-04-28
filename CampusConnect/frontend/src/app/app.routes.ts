@@ -42,6 +42,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/groups/group-settings-page/group-settings-page').then(m => m.GroupSettingsPage),
       },
       {
+        path: 'groups/:id',
+        loadComponent: () => import('./features/groups/group-detail-page/group-detail-page').then(m => m.GroupDetailPage),
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage),
       },

@@ -29,6 +29,8 @@ All seeded accounts use the password from `DemoData:Password`; the default local
 
 The development seeder fills the existing in-memory repositories for groups, feed posts with comments and reactions, personal grades, and personal exam entries each time the API starts. Users and courses are stored in SQLite so they are available to the admin screens and auth flow.
 
+Course groups are private and follow the course on each account. The demo social groups include both membership-only groups and public groups for the Entdecken tab; for example `Wohnungssuche Loerrach` starts with only its owner assigned so other demo students can join it through the normal group UI.
+
 Disable local demo data with:
 
 ```powershell

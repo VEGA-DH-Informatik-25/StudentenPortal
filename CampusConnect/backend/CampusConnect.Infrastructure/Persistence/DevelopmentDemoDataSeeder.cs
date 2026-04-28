@@ -187,8 +187,8 @@ public sealed class DevelopmentDemoDataSeeder(
             OwnerLabel = users["student-wwi"].DisplayName,
             IconLabel = "WG",
             AccentColor = "#7c3aed",
-            AssignedUserIds = studentUserIds,
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = true, IsDiscoverable = true }
+            AssignedUserIds = [users["student-wwi"].Id],
+            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
         });
 
         await AddGroupAsync(groups, "tech-projects", new CampusGroup
@@ -203,7 +203,7 @@ public sealed class DevelopmentDemoDataSeeder(
             IconLabel = "TP",
             AccentColor = "#0f766e",
             AssignedUserIds = users.Values.Where(user => user.Course.StartsWith('T') || user.Course.StartsWith("WWI", StringComparison.OrdinalIgnoreCase)).Select(user => user.Id).ToHashSet(),
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
+            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
         });
 
         await AddGroupAsync(groups, "moodle-help", new CampusGroup
@@ -315,8 +315,8 @@ public sealed class DevelopmentDemoDataSeeder(
             new FeedPost
             {
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000006"),
-                AuthorId = users["student-wdb"].Id,
-                AuthorName = users["student-wdb"].DisplayName,
+                AuthorId = users["student-wwi"].Id,
+                AuthorName = users["student-wwi"].DisplayName,
                 GroupId = groups["housing"].Id,
                 Content = "Falls jemand ab Juni ein WG-Zimmer in Campusnähe sucht: In unserer WG wird ein Platz frei.",
                 CreatedAt = SeedNow.AddHours(-1)

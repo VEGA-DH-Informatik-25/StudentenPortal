@@ -67,6 +67,21 @@ public class InMemoryGroupRepository : IGroupRepository
         if (_store.TryGetValue(id, out var group))
         {
             group.AssignedUserIds = assignedUserIds.ToHashSet();
+            SyncMemberPermissions(group);
+            _store[id] = group;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+    {
+        if (_store.TryGetValue(id, out var group))
+        {
+            group.MemberPermissions = group.AssignedUserIds
+                .ToDictionary(
+                    userId => userId,
+                    userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
             _store[id] = group;
         }
 
@@ -83,6 +98,7 @@ public class InMemoryGroupRepository : IGroupRepository
         if (group is not null)
         {
             group.AssignedUserIds = assignedUserIds.ToHashSet();
+            SyncMemberPermissions(group);
             _store[group.Id] = group;
         }
 
@@ -99,7 +115,7 @@ public class InMemoryGroupRepository : IGroupRepository
         OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Kursgruppe" : studyProgram.Trim(),
         IconLabel = Initials(courseCode),
         AccentColor = "#e2001a",
-        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
+        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
     };
 
     private static CampusGroup Clone(CampusGroup group) => new()
@@ -115,8 +131,17 @@ public class InMemoryGroupRepository : IGroupRepository
         IconLabel = group.IconLabel,
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
-        AssignedUserIds = group.AssignedUserIds.ToHashSet()
+        AssignedUserIds = group.AssignedUserIds.ToHashSet(),
+        MemberPermissions = group.MemberPermissions.ToDictionary(item => item.Key, item => item.Value)
     };
+
+    private static void SyncMemberPermissions(CampusGroup group)
+    {
+        group.MemberPermissions = group.AssignedUserIds
+            .ToDictionary(
+                userId => userId,
+                userId => group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+    }
 
     private static GroupSettings Clone(GroupSettings settings) => new()
     {

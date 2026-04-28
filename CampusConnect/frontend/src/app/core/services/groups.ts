@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CampusGroup, CreateGroupRequest, GroupSettingsDetails, UpdateGroupAssignmentsRequest, UpdateGroupSettingsRequest } from '../models/group.model';
+import { CampusGroup, CreateGroupRequest, GroupSettingsDetails, UpdateGroupAssignmentsRequest, UpdateGroupMemberPermissionsRequest, UpdateGroupSettingsRequest } from '../models/group.model';
 
 @Injectable({ providedIn: 'root' })
 export class Groups {
@@ -25,5 +25,13 @@ export class Groups {
 
   updateAssignments(id: string, req: UpdateGroupAssignmentsRequest): Observable<GroupSettingsDetails> {
     return this._http.put<GroupSettingsDetails>(`/api/groups/${id}/assignments`, req);
+  }
+
+  updateMemberPermissions(id: string, req: UpdateGroupMemberPermissionsRequest): Observable<GroupSettingsDetails> {
+    return this._http.put<GroupSettingsDetails>(`/api/groups/${id}/member-permissions`, req);
+  }
+
+  joinGroup(id: string): Observable<CampusGroup> {
+    return this._http.post<CampusGroup>(`/api/groups/${id}/join`, {});
   }
 }

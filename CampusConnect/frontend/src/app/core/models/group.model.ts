@@ -1,4 +1,5 @@
 export type GroupType = 'Course' | 'Official' | 'Social';
+export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite';
 
 export interface GroupSettings {
   allowStudentPosts: boolean;
@@ -20,6 +21,10 @@ export interface CampusGroup {
   accentColor: string;
   assignedUserCount: number;
   canManage: boolean;
+  isAssigned: boolean;
+  canPost: boolean;
+  canJoin: boolean;
+  memberPermission: GroupMemberPermission;
   settings: GroupSettings;
 }
 
@@ -38,6 +43,7 @@ export interface GroupAccount {
   role: string;
   course: string;
   isAssigned: boolean;
+  permission: GroupMemberPermission;
 }
 
 export interface GroupSettingsDetails {
@@ -47,4 +53,13 @@ export interface GroupSettingsDetails {
 
 export interface UpdateGroupAssignmentsRequest {
   userIds: string[];
+}
+
+export interface UpdateGroupMemberPermissionItem {
+  userId: string;
+  permission: GroupMemberPermission;
+}
+
+export interface UpdateGroupMemberPermissionsRequest {
+  permissions: UpdateGroupMemberPermissionItem[];
 }

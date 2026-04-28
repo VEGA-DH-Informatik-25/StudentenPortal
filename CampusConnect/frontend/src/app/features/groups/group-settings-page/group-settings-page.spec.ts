@@ -24,11 +24,15 @@ describe('GroupSettingsPage', () => {
       accentColor: '#2563eb',
       assignedUserCount: 1,
       canManage: true,
+      isAssigned: true,
+      canPost: true,
+      canJoin: false,
+      memberPermission: 'ReadWrite',
       settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
     },
     accounts: [
-      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true },
-      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false },
+      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true, permission: 'ReadWrite' },
+      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false, permission: 'ReadWrite' },
     ],
   };
 
@@ -47,6 +51,7 @@ describe('GroupSettingsPage', () => {
             getSettings: () => of(details),
             updateSettings: () => of(details.group),
             updateAssignments: () => of(details),
+            updateMemberPermissions: () => of(details),
           },
         },
       ],

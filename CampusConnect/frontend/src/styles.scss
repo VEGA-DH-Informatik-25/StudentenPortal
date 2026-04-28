@@ -75,6 +75,34 @@ button {
   font-weight: 800;
 }
 
+.post-card__comment-actions {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.post-card__comment-toggle {
+  background: var(--dhbw-surface-muted);
+  border: 1px solid var(--dhbw-border);
+  border-radius: 999px;
+  color: var(--dhbw-ink-soft);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  min-height: 2rem;
+  padding: 0.25rem 0.6rem;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--dhbw-red-soft);
+    border-color: var(--dhbw-red-soft);
+    color: var(--dhbw-red-dark);
+    outline: none;
+  }
+}
+
 .reaction-button {
   align-items: center;
   background: var(--dhbw-surface-muted);
@@ -105,6 +133,76 @@ button {
 
   strong {
     font-size: 0.75rem;
+  }
+}
+
+.reaction-picker {
+  display: inline-flex;
+  position: relative;
+
+  &__trigger {
+    background: var(--dhbw-ink);
+    border: 1px solid var(--dhbw-ink);
+    border-radius: 999px;
+    color: var(--dhbw-surface);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 900;
+    min-height: 2rem;
+    padding: 0.25rem 0.65rem;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--dhbw-red-dark);
+      border-color: var(--dhbw-red-dark);
+      outline: none;
+    }
+  }
+
+  &__menu {
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    box-shadow: var(--dhbw-shadow);
+    display: grid;
+    gap: 0.55rem;
+    left: 0;
+    padding: 0.65rem;
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    width: min(18rem, 78vw);
+    z-index: 20;
+  }
+
+  &__grid {
+    display: grid;
+    gap: 0.35rem;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+
+    button {
+      align-items: center;
+      background: var(--dhbw-surface-muted);
+      border: 1px solid var(--dhbw-border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 1.15rem;
+      height: 2.2rem;
+      justify-content: center;
+
+      &:hover:not(:disabled),
+      &:focus-visible:not(:disabled),
+      &.reaction-picker__emoji--active {
+        background: var(--dhbw-red-soft);
+        border-color: var(--dhbw-red-soft);
+        outline: none;
+      }
+
+      &:disabled {
+        cursor: wait;
+        opacity: 0.55;
+      }
+    }
   }
 }
 
@@ -249,6 +347,10 @@ button {
   .comment,
   .comment-composer {
     grid-template-columns: 1fr;
+  }
+
+  .post-card__comment-actions {
+    justify-content: flex-start;
   }
 
   .comment__avatar {

@@ -41,12 +41,18 @@ public sealed class DevelopmentDemoDataSeederTests
                 var users = await dbContext.Users.AsNoTracking().ToListAsync();
                 Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin);
                 var tifStudent = Assert.Single(users, user => user.Email == "lena.tif25a@dhbw-loerrach.de");
+                var housingOwner = Assert.Single(users, user => user.Email == "noah.wwi25a@dhbw-loerrach.de");
                 Assert.Equal("TIF25A", tifStudent.Course);
 
                 var seededGroups = await groups.GetAllAsync();
                 Assert.Contains(seededGroups, group => group.Name == "Prüfungsamt und Fristen" && group.Type == GroupType.Official);
                 Assert.Contains(seededGroups, group => group.CourseCode == "TIF25A" && group.AssignedUserIds.Contains(tifStudent.Id));
-                Assert.Contains(seededGroups, group => group.Name == "Wohnungssuche Lörrach" && group.Settings.RequiresApproval);
+                Assert.Contains(seededGroups, group =>
+                    group.Name == "Wohnungssuche Lörrach" &&
+                    group.Settings.IsDiscoverable &&
+                    !group.Settings.RequiresApproval &&
+                    group.AssignedUserIds.Contains(housingOwner.Id) &&
+                    !group.AssignedUserIds.Contains(tifStudent.Id));
 
                 var posts = await feed.GetAllAsync(1, 20);
                 Assert.Contains(posts, post => post.Content.Contains("CampusConnect-Demobereich", StringComparison.Ordinal));

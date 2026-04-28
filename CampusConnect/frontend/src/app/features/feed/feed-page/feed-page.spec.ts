@@ -13,6 +13,14 @@ import { CampusGroup } from '../../../core/models/group.model';
 describe('FeedPage', () => {
   let component: FeedPage;
   let fixture: ComponentFixture<FeedPage>;
+  let feedApi: {
+    getFeed: ReturnType<typeof vi.fn>;
+    createPost: ReturnType<typeof vi.fn>;
+    deletePost: ReturnType<typeof vi.fn>;
+    createComment: ReturnType<typeof vi.fn>;
+    deleteComment: ReturnType<typeof vi.fn>;
+    toggleReaction: ReturnType<typeof vi.fn>;
+  };
 
   const group: CampusGroup = {
     id: 'group-1',
@@ -27,10 +35,24 @@ describe('FeedPage', () => {
     accentColor: '#e2001a',
     assignedUserCount: 0,
     canManage: false,
+    isAssigned: true,
+    canPost: true,
+    canJoin: false,
+    memberPermission: 'ReadWrite',
     settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
   };
 
   beforeEach(async () => {
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    feedApi = {
+      getFeed: vi.fn(() => of([])),
+      createPost: vi.fn(() => of(post)),
+      deletePost: vi.fn(() => of(undefined)),
+      createComment: vi.fn(() => of(post)),
+      deleteComment: vi.fn(() => of(post)),
+      toggleReaction: vi.fn(() => of(post)),
+    };
+
     await TestBed.configureTestingModule({
       imports: [FeedPage],
       providers: [
@@ -45,14 +67,7 @@ describe('FeedPage', () => {
         },
         {
           provide: Feed,
-          useValue: {
-            getFeed: () => of([]),
-            createPost: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
-            deletePost: () => of(undefined),
-            createComment: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
-            deleteComment: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
-            toggleReaction: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
-          },
+          useValue: feedApi,
         },
         {
           provide: Groups,
@@ -76,5 +91,28 @@ describe('FeedPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('opens the comment composer from the compact comment button', () => {
+    fixture.detectChanges();
+    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.comment-composer')).toBeNull();
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    buttons.find(button => button.textContent?.includes('Kommentieren'))?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.comment-composer')).not.toBeNull();
+  });
+
+  it('submits a picked emoji reaction', () => {
+    fixture.detectChanges();
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    (component as any)._posts.set([post]);
+
+    (component as any).onPickReaction(post, '🚀');
+
+    expect(feedApi.toggleReaction).toHaveBeenCalledWith('post-1', { emoji: '🚀' });
   });
 });

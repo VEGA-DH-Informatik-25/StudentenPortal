@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
-type GroupTab = 'All' | GroupType;
+type GroupTab = 'All' | 'Explore' | GroupType;
 type GroupPolicyFilter = 'All' | 'StudentPosts' | 'UniversityPosts' | 'Approval' | 'CommentsOpen' | 'CommentsClosed';
 
 interface GroupTabItem {
@@ -33,21 +33,30 @@ export class GroupsPage implements OnInit {
   protected readonly _activeTab = signal<GroupTab>('All');
   protected readonly _searchQuery = signal('');
   protected readonly _policyFilter = signal<GroupPolicyFilter>('All');
+  protected readonly _joiningGroupIds = signal<string[]>([]);
   protected readonly _createName = signal('');
   protected readonly _createDescription = signal('');
   protected readonly _createAudience = signal('');
   protected readonly _officialGroups = computed(() => this._groups().filter(group => group.type === 'Official'));
   protected readonly _courseGroups = computed(() => this._groups().filter(group => group.type === 'Course'));
   protected readonly _socialGroups = computed(() => this._groups().filter(group => group.type === 'Social'));
-  protected readonly _directoryFilteredGroups = computed(() => this._groups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
+  protected readonly _directoryGroups = computed(() => this._groups().filter(group => !group.canJoin));
+  protected readonly _exploreGroups = computed(() => this._groups().filter(group => group.canJoin));
+  protected readonly _directoryFilteredGroups = computed(() => this._directoryGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
+  protected readonly _exploreFilteredGroups = computed(() => this._exploreGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
   protected readonly _tabs = computed<GroupTabItem[]>(() => [
     { id: 'All', label: 'Alle', count: this._directoryFilteredGroups().length },
     { id: 'Official', label: 'Offiziell', count: this._directoryFilteredGroups().filter(group => group.type === 'Official').length },
     { id: 'Course', label: 'Kurse', count: this._directoryFilteredGroups().filter(group => group.type === 'Course').length },
     { id: 'Social', label: 'Campus', count: this._directoryFilteredGroups().filter(group => group.type === 'Social').length },
+    { id: 'Explore', label: 'Entdecken', count: this._exploreFilteredGroups().length },
   ]);
   protected readonly _filteredGroups = computed(() => {
     const activeTab = this._activeTab();
+    if (activeTab === 'Explore') {
+      return this._exploreFilteredGroups();
+    }
+
     return activeTab === 'All'
       ? this._directoryFilteredGroups()
       : this._directoryFilteredGroups().filter(group => group.type === activeTab);
@@ -92,6 +101,35 @@ export class GroupsPage implements OnInit {
     }
 
     void this._router.navigate(['/groups', group.id, 'settings']);
+  }
+
+  protected openGroup(group: CampusGroup): void {
+    void this._router.navigate(['/groups', group.id]);
+  }
+
+  protected joinGroup(group: CampusGroup): void {
+    if (!group.canJoin || this.isJoining(group.id)) {
+      return;
+    }
+
+    this._joiningGroupIds.update(ids => [...ids, group.id]);
+    this._error.set('');
+    this._success.set('');
+    this._groupsService.joinGroup(group.id).subscribe({
+      next: updatedGroup => {
+        this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+        this._success.set('Du bist der Gruppe beigetreten.');
+      },
+      error: () => {
+        this._error.set('Beitritt konnte nicht gespeichert werden.');
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+      },
+    });
+  }
+
+  protected isJoining(groupId: string): boolean {
+    return this._joiningGroupIds().includes(groupId);
   }
 
   protected createGroup(): void {

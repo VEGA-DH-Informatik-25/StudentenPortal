@@ -62,6 +62,29 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpPut("{id:guid}/member-permissions")]
+    public async Task<IActionResult> UpdateMemberPermissions(Guid id, [FromBody] UpdateGroupMemberPermissionsRequest request)
+    {
+        var permissions = request.Permissions
+            .Select(item => new UpdateGroupMemberPermissionCommand(item.UserId, item.Permission))
+            .ToList();
+        var result = await groupsService.UpdateMemberPermissionsAsync(id, GetUserId(), new UpdateGroupMemberPermissionsCommand(permissions));
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/join")]
+    public async Task<IActionResult> JoinGroup(Guid id)
+    {
+        var result = await groupsService.JoinGroupAsync(id, GetUserId());
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
     private IActionResult ToFailureResult(string? error) =>
         error == GroupsService.PermissionError
             ? Forbid()

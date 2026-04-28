@@ -51,6 +51,7 @@ public class FeedServiceTests
             Audience = "Alle Studierenden",
             OwnerLabel = "Hochschule",
             IconLabel = "OF",
+            AssignedUserIds = [user.Id],
             Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = true, IsDiscoverable = true }
         };
         var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(user));
@@ -59,6 +60,128 @@ public class FeedServiceTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("In dieser Gruppe dürfen Studierende keine Beiträge veröffentlichen.", result.Error);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_RejectsPostsInUnassignedPublicGroup()
+    {
+        var user = new User
+        {
+            DisplayName = "Clara",
+            Email = "clara@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "David",
+            Email = "david@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(user, owner));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(user.Id, group.Id, "Bin ich dabei?"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Du kannst nur in Gruppen posten, denen du zugewiesen bist.", result.Error);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_RejectsReadOnlyGroupMembers()
+    {
+        var owner = new User
+        {
+            DisplayName = "David",
+            Email = "david@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var member = new User
+        {
+            DisplayName = "Clara",
+            Email = "clara@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
+        var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(member.Id, group.Id, "Nur lesen?"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Du hast in dieser Gruppe nur Leserechte.", result.Error);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_HidesPrivateUnassignedGroupPosts()
+    {
+        var user = new User
+        {
+            DisplayName = "Elif",
+            Email = "elif@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Farid",
+            Email = "farid@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: false);
+        var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Privater Treffpunkt" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user, owner));
+
+        var result = await service.GetFeedAsync(user.Id);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_HidesPublicUnassignedGroupPosts()
+    {
+        var user = new User
+        {
+            DisplayName = "Elif",
+            Email = "elif@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Farid",
+            Email = "farid@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Öffentlich entdeckbar, intern lesbar" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user, owner));
+
+        var result = await service.GetFeedAsync(user.Id);
+
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -82,6 +205,39 @@ public class FeedServiceTests
         var comment = Assert.Single(result.Value!.Comments);
         Assert.Equal("Ich bin dabei.", comment.Content);
         Assert.True(comment.CanDelete);
+    }
+
+    [Fact]
+    public async Task AddCommentAsync_RejectsReadOnlyGroupMembers()
+    {
+        var owner = new User
+        {
+            DisplayName = "David",
+            Email = "david@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var member = new User
+        {
+            DisplayName = "Clara",
+            Email = "clara@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
+        var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Wohnung frei" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.AddCommentAsync(new CreateCommentCommand(post.Id, member.Id, "Danke!"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Keine Berechtigung.", result.Error);
     }
 
     [Fact]
@@ -110,6 +266,81 @@ public class FeedServiceTests
         Assert.Empty(removed.Value!.Reactions);
     }
 
+    [Fact]
+    public async Task ToggleReactionAsync_RejectsReadOnlyGroupMembers()
+    {
+        var owner = new User
+        {
+            DisplayName = "David",
+            Email = "david@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var member = new User
+        {
+            DisplayName = "Clara",
+            Email = "clara@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
+        var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Wohnung frei" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.ToggleReactionAsync(new ToggleReactionCommand(post.Id, member.Id, "👍"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Keine Berechtigung.", result.Error);
+    }
+
+    [Fact]
+    public async Task ToggleReactionAsync_AcceptsCustomEmoji()
+    {
+        var user = new User
+        {
+            DisplayName = "Alice",
+            Email = "alice@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 3,
+            Course = "TIF25A"
+        };
+        var group = CourseGroup("TIF25A");
+        var post = new FeedPost { AuthorId = user.Id, AuthorName = user.DisplayName, GroupId = group.Id, Content = "Projektidee" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.ToggleReactionAsync(new ToggleReactionCommand(post.Id, user.Id, "🚀"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value!.Reactions, reaction => reaction.Emoji == "🚀" && reaction.ReactedByCurrentUser);
+    }
+
+    [Fact]
+    public async Task ToggleReactionAsync_RejectsPlainTextReaction()
+    {
+        var user = new User
+        {
+            DisplayName = "Alice",
+            Email = "alice@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 3,
+            Course = "TIF25A"
+        };
+        var group = CourseGroup("TIF25A");
+        var post = new FeedPost { AuthorId = user.Id, AuthorName = user.DisplayName, GroupId = group.Id, Content = "Projektidee" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.ToggleReactionAsync(new ToggleReactionCommand(post.Id, user.Id, "nice"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Bitte wähle ein gültiges Emoji aus.", result.Error);
+    }
+
     private static CampusGroup CourseGroup(string courseCode) => new()
     {
         Name = $"Kurs {courseCode}",
@@ -118,7 +349,20 @@ public class FeedServiceTests
         CourseCode = courseCode,
         OwnerLabel = "Informatik",
         IconLabel = "TI",
-        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
+        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
+    };
+
+    private static CampusGroup SocialGroup(Guid ownerId, bool isDiscoverable) => new()
+    {
+        Name = "Wohnungssuche Lörrach",
+        Description = "Austausch zu Zimmern und Pendeln",
+        Type = GroupType.Social,
+        Audience = "Studierende",
+        OwnerUserId = ownerId,
+        OwnerLabel = "Community",
+        IconLabel = "WG",
+        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = isDiscoverable },
+        AssignedUserIds = [ownerId]
     };
 
     private sealed class FakeFeedRepository(params FeedPost[] posts) : IFeedRepository
@@ -215,6 +459,13 @@ public class FeedServiceTests
         {
             var group = _groups.First(group => group.Id == id);
             group.AssignedUserIds = assignedUserIds.ToHashSet();
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+        {
+            var group = _groups.First(group => group.Id == id);
+            group.MemberPermissions = permissions.ToDictionary(item => item.Key, item => item.Value);
             return Task.CompletedTask;
         }
 

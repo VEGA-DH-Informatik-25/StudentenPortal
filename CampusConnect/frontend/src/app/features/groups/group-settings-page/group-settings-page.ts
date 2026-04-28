@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupAccount, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
+import { GroupAccount, GroupMemberPermission, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
 type AccountFilter = 'All' | 'Assigned' | 'Unassigned' | 'Student' | 'Lecturer' | 'Admin';
@@ -20,10 +20,12 @@ export class GroupSettingsPage implements OnInit {
 
   protected readonly _details = signal<GroupSettingsDetails | null>(null);
   protected readonly _selectedAccountIds = signal<string[]>([]);
+  protected readonly _selectedPermissions = signal<Record<string, GroupMemberPermission>>({});
   protected readonly _isLoading = signal(false);
   protected readonly _error = signal('');
   protected readonly _savingSetting = signal<keyof GroupSettings | ''>('');
   protected readonly _savingAssignments = signal(false);
+  protected readonly _savingPermissions = signal(false);
   protected readonly _accountSearch = signal('');
   protected readonly _accountFilter = signal<AccountFilter>('All');
   protected readonly _group = computed(() => this._details()?.group ?? null);
@@ -40,6 +42,9 @@ export class GroupSettingsPage implements OnInit {
     const selectedIds = [...this._selectedAccountIds()].sort().join('|');
     return originalIds !== selectedIds;
   });
+  protected readonly _hasPermissionChanges = computed(() => this._accounts()
+    .filter(account => this.isAccountSelected(account))
+    .some(account => this.permissionFor(account) !== account.permission));
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
@@ -87,6 +92,10 @@ export class GroupSettingsPage implements OnInit {
     return this._group()?.ownerUserId === account.id;
   }
 
+  protected permissionFor(account: GroupAccount): GroupMemberPermission {
+    return this._selectedPermissions()[account.id] ?? account.permission;
+  }
+
   protected updateAccountSearch(value: string): void {
     this._accountSearch.set(value);
   }
@@ -104,12 +113,21 @@ export class GroupSettingsPage implements OnInit {
       const selected = new Set(ids);
       if (checked) {
         selected.add(account.id);
+        this._selectedPermissions.update(permissions => ({ ...permissions, [account.id]: permissions[account.id] ?? account.permission ?? 'ReadWrite' }));
       } else {
         selected.delete(account.id);
       }
 
       return [...selected];
     });
+  }
+
+  protected updateMemberPermission(account: GroupAccount, permission: GroupMemberPermission): void {
+    if (!this.isAccountSelected(account) || this.isOwner(account)) {
+      return;
+    }
+
+    this._selectedPermissions.update(permissions => ({ ...permissions, [account.id]: permission }));
   }
 
   protected saveAssignments(): void {
@@ -128,6 +146,31 @@ export class GroupSettingsPage implements OnInit {
       error: () => {
         this._error.set('Konten konnten nicht zugewiesen werden.');
         this._savingAssignments.set(false);
+      },
+    });
+  }
+
+  protected savePermissions(): void {
+    const group = this._group();
+    if (!group || !this._hasPermissionChanges() || this._hasAssignmentChanges() || this._savingPermissions()) {
+      return;
+    }
+
+    this._savingPermissions.set(true);
+    this._error.set('');
+    this._groupsService.updateMemberPermissions(group.id, {
+      permissions: this._selectedAccountIds().map(userId => ({
+        userId,
+        permission: this._selectedPermissions()[userId] ?? 'ReadWrite',
+      })),
+    }).subscribe({
+      next: details => {
+        this._setDetails(details);
+        this._savingPermissions.set(false);
+      },
+      error: () => {
+        this._error.set('Berechtigungen konnten nicht gespeichert werden.');
+        this._savingPermissions.set(false);
       },
     });
   }
@@ -152,6 +195,7 @@ export class GroupSettingsPage implements OnInit {
   private _setDetails(details: GroupSettingsDetails): void {
     this._details.set(details);
     this._selectedAccountIds.set(details.accounts.filter(account => account.isAssigned).map(account => account.id));
+    this._selectedPermissions.set(Object.fromEntries(details.accounts.map(account => [account.id, account.permission])));
   }
 
   private _matchesAccountSearch(account: GroupAccount): boolean {

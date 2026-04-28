@@ -29,6 +29,8 @@
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |
 | PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe und Schreibrechte ändern | Ja |
 | PUT | `/api/groups/{id}/assignments` | Konten einer bearbeitbaren Gruppe zuweisen | Ja |
+| PUT | `/api/groups/{id}/member-permissions` | Schreibrechte zugewiesener Gruppenmitglieder setzen | Ja |
+| POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
 | GET | `/api/contacts` | Alle Adressbuch-Einträge abrufen | Ja |
 | GET | `/api/contacts/{id}` | Einzelnen Kontakt abrufen | Ja |
 | POST | `/api/contacts` | Neuen Kontakt anlegen (Admin) | Ja |
@@ -49,9 +51,11 @@ Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs exist
 
 ## Gruppen und Feed
 
-Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, Bearbeitungsflag und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
+Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, den Berechtigungsflags `canManage`, `isAssigned`, `canPost`, `canJoin`, der aktuellen Mitgliedsberechtigung `memberPermission` (`ReadOnly` oder `ReadWrite`) und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
 
-Kommentare respektieren die Gruppeneinstellung `allowComments`. Emoji-Reaktionen sind als Toggle modelliert: sendet derselbe Nutzer dasselbe Emoji erneut, wird die Reaktion entfernt. Unterstützte Reaktionen sind `👍`, `❤️`, `🎉`, `💡` und `👀`.
+Feed-Antworten enthalten nur Beiträge aus Gruppen, für deren Beiträge der Nutzer leseberechtigt ist: Admins sehen alle Beiträge, zugewiesene Mitglieder sehen die Beiträge ihrer Gruppen. Private Gruppen erscheinen nur für Admins und zugewiesene Mitglieder; öffentliche Gruppen erscheinen zusätzlich als Entdecken-Kandidaten, geben ihre Beiträge aber erst nach Beitritt oder Zuweisung frei. Beiträge, Kommentare und Reaktionen können nur von Admins oder Gruppenmitgliedern mit `ReadWrite` erstellt werden. Mitglieder mit `ReadOnly` dürfen Gruppen und Beiträge lesen, aber nicht posten, kommentieren oder reagieren. Für Studierende muss bei Beiträgen zusätzlich `allowStudentPosts` aktiv sein, Kommentare respektieren zusätzlich `allowComments`.
+
+Emoji-Reaktionen sind als Toggle modelliert: sendet derselbe Nutzer dasselbe Emoji erneut, wird die Reaktion entfernt. Es gibt keine feste Emoji-Liste; akzeptiert werden gültige Emoji-Zeichen oder Emoji-Sequenzen, nicht freier Text.
 
 Gruppeneinstellungen enthalten aktuell:
 
@@ -60,6 +64,6 @@ Gruppeneinstellungen enthalten aktuell:
 | `allowStudentPosts` | Studierende dürfen in der Gruppe Beiträge veröffentlichen |
 | `allowComments` | Beiträge der Gruppe sind kommentierbar |
 | `requiresApproval` | Neue Beiträge benötigen Moderation/Freigabe |
-| `isDiscoverable` | Gruppe ist im Gruppenverzeichnis sichtbar |
+| `isDiscoverable` | Gruppe ist öffentlich und kann unter Entdecken gefunden werden; `false` macht sie privat |
 
-Studierende können Gruppen lesen, in freigegebenen Gruppen posten und eigene Campusgruppen erstellen. Die Erstellerin oder der Ersteller einer Campusgruppe kann deren Einstellungen öffnen und Konten zuweisen. Admins können alle Gruppeneinstellungen ändern; Lehrende können Kursgruppen verwalten. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings` und `PUT /api/groups/{id}/assignments` liefern für nicht berechtigte Nutzer `403 Forbidden`; bei Kursgruppen lehnt `PUT /api/groups/{id}/assignments` manuelle Zuweisungen ab, damit die Kursmitgliedschaft konsistent bleibt.
+Studierende können öffentliche Gruppen entdecken, Beiträge zugewiesener Gruppen lesen, in zugewiesenen und freigegebenen Gruppen mit `ReadWrite` posten, öffentlichen Campusgruppen über `POST /api/groups/{id}/join` beitreten und eigene Campusgruppen erstellen. Die Erstellerin oder der Ersteller einer Campusgruppe kann deren Einstellungen öffnen, Konten zuweisen und über `PUT /api/groups/{id}/member-permissions` zugewiesene Konten auf `ReadOnly` oder `ReadWrite` setzen. Admins können alle Gruppeneinstellungen ändern; Lehrende können Kursgruppen verwalten, wenn sie der Kursgruppe zugewiesen sind. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings`, `PUT /api/groups/{id}/assignments` und `PUT /api/groups/{id}/member-permissions` liefern für nicht berechtigte Nutzer `403 Forbidden`; bei Kursgruppen lehnt `PUT /api/groups/{id}/assignments` manuelle Zuweisungen ab, damit die Kursmitgliedschaft konsistent bleibt.

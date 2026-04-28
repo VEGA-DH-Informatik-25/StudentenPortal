@@ -30,9 +30,10 @@ export class FeedPage implements OnInit {
   protected readonly _error = signal('');
   protected readonly _newContent = signal('');
   protected readonly _commentDrafts = signal<Record<string, string>>({});
+  protected readonly _openCommentPostIds = signal<string[]>([]);
   protected readonly _commentingPostIds = signal<string[]>([]);
+  protected readonly _openReactionPostId = signal<string | null>(null);
   protected readonly _reactingKeys = signal<string[]>([]);
-  protected readonly _reactionOptions = ['👍', '❤️', '🎉', '💡', '👀'];
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _groupsLoading = signal(false);
   protected readonly _groupsError = signal('');
@@ -51,6 +52,7 @@ export class FeedPage implements OnInit {
   protected readonly _scheduleIsLoading = signal(false);
   protected readonly _scheduleError = signal('');
   protected readonly _scheduleTitle = computed(() => this._formatDateLong(this._scheduleDate()));
+  protected readonly _emojiOptions = ['👍', '❤️', '🙌', '👏', '🎉', '🔥', '💡', '✅', '🚀', '👀', '🙂', '😂', '😮', '🤔', '🙏', '💪', '📌', '⭐', '☕', '🍀'];
 
   ngOnInit(): void {
     this._loadGroups();
@@ -100,6 +102,7 @@ export class FeedPage implements OnInit {
       next: updatedPost => {
         this._replacePost(updatedPost);
         this.updateCommentDraft(post.id, '');
+        this._openCommentPostIds.update(ids => ids.filter(id => id !== post.id));
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
       error: () => {
@@ -117,6 +120,11 @@ export class FeedPage implements OnInit {
   }
 
   protected onToggleReaction(post: FeedPost, emoji: string): void {
+    emoji = emoji.trim();
+    if (!emoji || !this.canReactToPost(post)) {
+      return;
+    }
+
     const key = this.reactionKey(post.id, emoji);
     if (this._reactingKeys().includes(key)) {
       return;
@@ -127,6 +135,9 @@ export class FeedPage implements OnInit {
     this._feedService.toggleReaction(post.id, { emoji }).subscribe({
       next: updatedPost => {
         this._replacePost(updatedPost);
+        if (this._openReactionPostId() === post.id) {
+          this._openReactionPostId.set(null);
+        }
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
       error: () => {
@@ -146,6 +157,36 @@ export class FeedPage implements OnInit {
 
   protected updateCommentDraft(postId: string, value: string): void {
     this._commentDrafts.update(drafts => ({ ...drafts, [postId]: value }));
+  }
+
+  protected toggleCommentComposer(post: FeedPost): void {
+    if (!post.canComment) {
+      return;
+    }
+
+    this._openCommentPostIds.update(ids => ids.includes(post.id)
+      ? ids.filter(id => id !== post.id)
+      : [...ids, post.id]);
+  }
+
+  protected isCommentComposerOpen(postId: string): boolean {
+    return this._openCommentPostIds().includes(postId);
+  }
+
+  protected toggleReactionMenu(post: FeedPost): void {
+    if (!this.canReactToPost(post)) {
+      return;
+    }
+
+    this._openReactionPostId.update(openId => openId === post.id ? null : post.id);
+  }
+
+  protected isReactionMenuOpen(postId: string): boolean {
+    return this._openReactionPostId() === postId;
+  }
+
+  protected onPickReaction(post: FeedPost, emoji: string): void {
+    this.onToggleReaction(post, emoji);
   }
 
   protected commentDraft(postId: string): string {
@@ -172,6 +213,10 @@ export class FeedPage implements OnInit {
     return this._commentingPostIds().includes(postId);
   }
 
+  protected canReactToPost(post: FeedPost): boolean {
+    return post.group.canManage || (post.group.isAssigned && post.group.memberPermission === 'ReadWrite');
+  }
+
   protected groupTypeLabel(type: GroupType): string {
     switch (type) {
       case 'Course':
@@ -188,8 +233,7 @@ export class FeedPage implements OnInit {
   }
 
   protected canPostToGroup(group: CampusGroup): boolean {
-    const role = this._auth.userRole();
-    return group.settings.allowStudentPosts || role === 'Admin' || role === 'Lecturer';
+    return group.canPost;
   }
 
   protected navigateTo(route: string): void {

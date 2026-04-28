@@ -72,6 +72,99 @@ public class GroupsServiceTests
     }
 
     [Fact]
+    public async Task GetGroupsForUserAsync_HidesPrivateUnassignedGroups()
+    {
+        var user = new User
+        {
+            DisplayName = "Jana",
+            Email = "jana@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Kai",
+            Email = "kai@dhbw-loerrach.de",
+            StudyProgram = "Wirtschaftsinformatik",
+            Semester = 2,
+            Course = "WWI25A",
+            Role = UserRole.Student
+        };
+        var privateGroup = SocialGroup(owner.Id, isDiscoverable: false);
+        var service = new GroupsService(new FakeGroupRepository(privateGroup), new FakeUserRepository(user, owner));
+
+        var result = await service.GetGroupsForUserAsync(user.Id);
+
+        Assert.DoesNotContain(result, group => group.Id == privateGroup.Id);
+    }
+
+    [Fact]
+    public async Task GetGroupsForUserAsync_ShowsPublicUnassignedGroupsAsJoinable()
+    {
+        var user = new User
+        {
+            DisplayName = "Lea",
+            Email = "lea@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Miro",
+            Email = "miro@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var publicGroup = SocialGroup(owner.Id);
+        var service = new GroupsService(new FakeGroupRepository(publicGroup), new FakeUserRepository(user, owner));
+
+        var result = await service.GetGroupsForUserAsync(user.Id);
+        var group = Assert.Single(result, item => item.Id == publicGroup.Id);
+
+        Assert.False(group.IsAssigned);
+        Assert.False(group.CanPost);
+        Assert.True(group.CanJoin);
+    }
+
+    [Fact]
+    public async Task JoinGroupAsync_AssignsCurrentUserToPublicGroup()
+    {
+        var user = new User
+        {
+            DisplayName = "Nora",
+            Email = "nora@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Oskar",
+            Email = "oskar@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var publicGroup = SocialGroup(owner.Id);
+        var service = new GroupsService(new FakeGroupRepository(publicGroup), new FakeUserRepository(user, owner));
+
+        var result = await service.JoinGroupAsync(publicGroup.Id, user.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value!.IsAssigned);
+        Assert.True(result.Value.CanPost);
+        Assert.False(result.Value.CanJoin);
+    }
+
+    [Fact]
     public async Task GetSettingsDetailsAsync_RejectsUnownedSocialGroup()
     {
         var user = new User
@@ -125,6 +218,47 @@ public class GroupsServiceTests
         Assert.Equal(2, result.Value.Group.AssignedUserCount);
     }
 
+    [Fact]
+    public async Task UpdateMemberPermissionsAsync_CanSetMemberReadOnly()
+    {
+        var owner = new User
+        {
+            DisplayName = "Gina",
+            Email = "gina@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var member = new User
+        {
+            DisplayName = "Hannes",
+            Email = "hannes@dhbw-loerrach.de",
+            StudyProgram = "Wirtschaftsinformatik",
+            Semester = 2,
+            Course = "WWI25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        var groups = new FakeGroupRepository(group);
+        var service = new GroupsService(groups, new FakeUserRepository(owner, member));
+
+        var result = await service.UpdateMemberPermissionsAsync(
+            group.Id,
+            owner.Id,
+            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "ReadOnly")]));
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.Permission == "ReadOnly");
+
+        var memberGroups = await service.GetGroupsForUserAsync(member.Id);
+        var memberGroup = Assert.Single(memberGroups, item => item.Id == group.Id);
+        Assert.True(memberGroup.IsAssigned);
+        Assert.False(memberGroup.CanPost);
+        Assert.Equal("ReadOnly", memberGroup.MemberPermission);
+    }
+
     private static CampusGroup CourseGroup(string courseCode) => new()
     {
         Name = $"Kurs {courseCode}",
@@ -133,10 +267,10 @@ public class GroupsServiceTests
         CourseCode = courseCode,
         OwnerLabel = "Informatik",
         IconLabel = "TI",
-        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
+        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
     };
 
-    private static CampusGroup SocialGroup(Guid ownerId) => new()
+    private static CampusGroup SocialGroup(Guid ownerId, bool isDiscoverable = true) => new()
     {
         Name = "Lerngruppe Web",
         Description = "Gemeinsame Vorbereitung",
@@ -145,7 +279,7 @@ public class GroupsServiceTests
         OwnerUserId = ownerId,
         OwnerLabel = "Community",
         IconLabel = "LW",
-        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true },
+        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = isDiscoverable },
         AssignedUserIds = [ownerId]
     };
 
@@ -185,6 +319,13 @@ public class GroupsServiceTests
         {
             var group = _groups.First(group => group.Id == id);
             group.AssignedUserIds = assignedUserIds.ToHashSet();
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+        {
+            var group = _groups.First(group => group.Id == id);
+            group.MemberPermissions = permissions.ToDictionary(item => item.Key, item => item.Value);
             return Task.CompletedTask;
         }
 

@@ -143,25 +143,61 @@
 
               <div class="post-card__actions" aria-label="Beitragsaktionen">
                 <div class="reaction-bar" aria-label="Reaktionen">
-                  @for (emoji of _reactionOptions; track emoji) {
+                  @for (reaction of post.reactions; track reaction.emoji) {
                     <button
                       type="button"
                       class="reaction-button"
-                      [class.reaction-button--active]="hasReacted(post, emoji)"
-                      [disabled]="isReacting(post.id, emoji)"
-                      (click)="onToggleReaction(post, emoji)"
-                      [attr.aria-label]="emoji + ' Reaktion umschalten'">
-                      <span aria-hidden="true">{{ emoji }}</span>
-                      @if (reactionCount(post, emoji) > 0) {
-                        <strong>{{ reactionCount(post, emoji) }}</strong>
-                      }
+                      [class.reaction-button--active]="reaction.reactedByCurrentUser"
+                      [disabled]="!canReactToPost(post) || isReacting(post.id, reaction.emoji)"
+                      (click)="onToggleReaction(post, reaction.emoji)"
+                      [attr.aria-label]="reaction.emoji + ' Reaktion umschalten'">
+                      <span aria-hidden="true">{{ reaction.emoji }}</span>
+                      <strong>{{ reaction.count }}</strong>
                     </button>
+                  }
+
+                  @if (canReactToPost(post)) {
+                    <div class="reaction-picker">
+                      <button
+                        type="button"
+                        class="reaction-picker__trigger"
+                        [attr.aria-expanded]="isReactionMenuOpen(post.id)"
+                        [attr.aria-controls]="'reaction-menu-' + post.id"
+                        (click)="toggleReactionMenu(post)">
+                        Emoji
+                      </button>
+
+                      @if (isReactionMenuOpen(post.id)) {
+                        <div class="reaction-picker__menu" [id]="'reaction-menu-' + post.id" aria-label="Emoji auswählen">
+                          <div class="reaction-picker__grid">
+                            @for (emoji of _emojiOptions; track emoji) {
+                              <button
+                                type="button"
+                                [class.reaction-picker__emoji--active]="hasReacted(post, emoji)"
+                                [disabled]="isReacting(post.id, emoji)"
+                                (click)="onPickReaction(post, emoji)"
+                                [attr.aria-label]="emoji + ' Reaktion umschalten'">
+                                {{ emoji }}
+                              </button>
+                            }
+                          </div>
+
+                        </div>
+                      }
+                    </div>
                   }
                 </div>
 
-                <span class="post-card__comment-count">
-                  {{ post.comments.length }} {{ post.comments.length === 1 ? 'Kommentar' : 'Kommentare' }}
-                </span>
+                <div class="post-card__comment-actions">
+                  <span class="post-card__comment-count">
+                    {{ post.comments.length }} {{ post.comments.length === 1 ? 'Kommentar' : 'Kommentare' }}
+                  </span>
+                  @if (post.canComment) {
+                    <button type="button" class="post-card__comment-toggle" (click)="toggleCommentComposer(post)">
+                      {{ isCommentComposerOpen(post.id) ? 'Schließen' : 'Kommentieren' }}
+                    </button>
+                  }
+                </div>
               </div>
 
               <section class="comments" aria-label="Kommentare">
@@ -185,7 +221,7 @@
                   </div>
                 }
 
-                @if (post.canComment) {
+                @if (post.canComment && isCommentComposerOpen(post.id)) {
                   <form class="comment-composer" (ngSubmit)="onComment(post)">
                     <label class="visually-hidden" [attr.for]="'comment-' + post.id">Kommentar verfassen</label>
                     <textarea
@@ -203,8 +239,12 @@
                       }
                     </button>
                   </form>
-                } @else {
-                  <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                } @else if (!post.canComment) {
+                  @if (post.group.settings.allowComments) {
+                    <p class="comments__closed">Kommentare sind nur für Gruppenmitglieder verfügbar.</p>
+                  } @else {
+                    <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                  }
                 }
               </section>
             </div>

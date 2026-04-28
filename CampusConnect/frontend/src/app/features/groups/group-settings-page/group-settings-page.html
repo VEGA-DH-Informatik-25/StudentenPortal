@@ -53,7 +53,7 @@
           </label>
 
           <label>
-            <span>In Suche sichtbar</span>
+            <span>Öffentlich unter Entdecken</span>
             <input
               type="checkbox"
               [checked]="group.settings.isDiscoverable"
@@ -74,7 +74,7 @@
         </header>
 
         @if (_assignmentsLocked()) {
-          <p class="settings-block__hint">Kursgruppen folgen der Kurszuordnung in der Benutzerverwaltung.</p>
+          <p class="settings-block__hint">Kursgruppen folgen der Kurszuordnung in der Benutzerverwaltung. Schreibrechte kannst du hier steuern.</p>
         }
 
         <div class="account-toolbar" aria-label="Konten suchen und filtern">
@@ -106,14 +106,17 @@
             <span>Name</span>
             <span>Rolle</span>
             <span>Kurs</span>
+            <span>Rechte</span>
           </div>
 
           @for (account of _filteredAccounts(); track account.id) {
-            <label class="account-row" [class.account-row--owner]="isOwner(account)">
+            <div class="account-row" [class.account-row--owner]="isOwner(account)">
               <input
                 type="checkbox"
                 [checked]="isAccountSelected(account)"
                 [disabled]="isOwner(account) || _savingAssignments() || _assignmentsLocked()"
+                title="Konto zuweisen"
+                [attr.aria-label]="account.displayName + ' zuweisen'"
                 (change)="toggleAccount(account, $any($event.target).checked)">
               <span>
                 <strong>{{ account.displayName }}</strong>
@@ -121,7 +124,17 @@
               </span>
               <em>{{ account.role }}</em>
               <em>{{ account.course || 'Kein Kurs' }}</em>
-            </label>
+              <label class="account-row__permission">
+                <span class="visually-hidden">Rechte für {{ account.displayName }}</span>
+                <select
+                  [value]="permissionFor(account)"
+                  [disabled]="!isAccountSelected(account) || isOwner(account) || _savingPermissions()"
+                  (change)="updateMemberPermission(account, $any($event.target).value)">
+                  <option value="ReadOnly">Nur lesen</option>
+                  <option value="ReadWrite">Lesen & Schreiben</option>
+                </select>
+              </label>
+            </div>
           } @empty {
             <p class="account-table__empty">Keine Konten passen zu Suche und Filter.</p>
           }
@@ -132,6 +145,13 @@
             Speichert...
           } @else {
             Zuweisungen speichern
+          }
+        </button>
+        <button class="settings-block__save" type="button" [disabled]="!_hasPermissionChanges() || _hasAssignmentChanges() || _savingPermissions()" (click)="savePermissions()">
+          @if (_savingPermissions()) {
+            Rechte werden gespeichert...
+          } @else {
+            Rechte speichern
           }
         </button>
       </section>
