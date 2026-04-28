@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { Auth } from '../../../core/services/auth';
 import { Feed } from '../../../core/services/feed';
 import { FeedPost } from '../../../core/models/feed.model';
+import { CampusGroup, GroupType } from '../../../core/models/group.model';
+import { Groups } from '../../../core/services/groups';
 import { TimetableEvent } from '../../../core/models/timetable.model';
 import { Timetable } from '../../../core/services/timetable';
 
@@ -19,6 +21,7 @@ import { Timetable } from '../../../core/services/timetable';
 export class FeedPage implements OnInit {
   private readonly _auth = inject(Auth);
   private readonly _feedService = inject(Feed);
+  private readonly _groupsService = inject(Groups);
   private readonly _router = inject(Router);
   private readonly _timetableService = inject(Timetable);
 
@@ -26,6 +29,15 @@ export class FeedPage implements OnInit {
   protected readonly _isLoading = signal(false);
   protected readonly _error = signal('');
   protected readonly _newContent = signal('');
+  protected readonly _groups = signal<CampusGroup[]>([]);
+  protected readonly _groupsLoading = signal(false);
+  protected readonly _groupsError = signal('');
+  protected readonly _selectedGroupId = signal('');
+  protected readonly _postableGroups = computed(() => this._groups().filter(group => this.canPostToGroup(group)));
+  protected readonly _selectedGroup = computed<CampusGroup | null>(() => {
+    const selectedId = this._selectedGroupId();
+    return this._postableGroups().find(group => group.id === selectedId) ?? this._postableGroups()[0] ?? null;
+  });
   protected readonly _displayName = computed(() => this._auth.displayName() || 'Studierende');
   protected readonly _profileInitials = computed(() => this._initialsFor(this._displayName()));
   protected readonly _scheduleEvents = signal<TimetableEvent[]>([]);
@@ -37,6 +49,7 @@ export class FeedPage implements OnInit {
   protected readonly _scheduleTitle = computed(() => this._formatDateLong(this._scheduleDate()));
 
   ngOnInit(): void {
+    this._loadGroups();
     this._loadFeed();
     this._loadTodaySchedule();
   }
@@ -52,8 +65,14 @@ export class FeedPage implements OnInit {
   protected onPost(): void {
     const content = this._newContent().trim();
     if (!content) return;
+    const group = this._selectedGroup();
+    if (!group) {
+      this._error.set('Bitte wähle zuerst eine Gruppe aus.');
+      return;
+    }
+
     this._error.set('');
-    this._feedService.createPost({ content }).subscribe({
+    this._feedService.createPost({ content, groupId: group.id }).subscribe({
       next: post => { this._posts.update(posts => [post, ...posts]); this._newContent.set(''); },
       error: () => this._error.set('Beitrag konnte nicht erstellt werden.'),
     });
@@ -67,6 +86,30 @@ export class FeedPage implements OnInit {
 
   protected updateContent(value: string): void {
     this._newContent.set(value);
+  }
+
+  protected updateSelectedGroup(value: string): void {
+    this._selectedGroupId.set(value);
+  }
+
+  protected groupTypeLabel(type: GroupType): string {
+    switch (type) {
+      case 'Course':
+        return 'Kurs';
+      case 'Official':
+        return 'Offiziell';
+      case 'Social':
+        return 'Campus';
+    }
+  }
+
+  protected commentPolicyLabel(group: CampusGroup): string {
+    return group.settings.allowComments ? 'Kommentare offen' : 'Kommentare geschlossen';
+  }
+
+  protected canPostToGroup(group: CampusGroup): boolean {
+    const role = this._auth.userRole();
+    return group.settings.allowStudentPosts || role === 'Admin' || role === 'Lecturer';
   }
 
   protected navigateTo(route: string): void {
@@ -146,6 +189,45 @@ export class FeedPage implements OnInit {
         this._scheduleIsLoading.set(false);
       },
     });
+  }
+
+  private _loadGroups(): void {
+    this._groupsLoading.set(true);
+    this._groupsError.set('');
+
+    this._groupsService.getGroups().subscribe({
+      next: groups => {
+        this._groups.set(groups);
+        this._selectDefaultGroup(groups);
+        this._groupsLoading.set(false);
+      },
+      error: () => {
+        this._groups.set([]);
+        this._groupsError.set('Gruppen konnten nicht geladen werden.');
+        this._groupsLoading.set(false);
+      },
+    });
+  }
+
+  private _selectDefaultGroup(groups: CampusGroup[]): void {
+    const current = groups.find(group => group.id === this._selectedGroupId() && this.canPostToGroup(group));
+    if (current) {
+      return;
+    }
+
+    const role = this._auth.userRole();
+    const profileCourse = this._auth.userProfile()?.course.trim().toUpperCase();
+    const courseGroup = groups.find(group =>
+      group.type === 'Course' &&
+      group.courseCode?.toUpperCase() === profileCourse &&
+      this.canPostToGroup(group));
+    const officialGroup = groups.find(group => group.type === 'Official' && this.canPostToGroup(group));
+    const fallback = (role === 'Admin' ? officialGroup : courseGroup)
+      ?? courseGroup
+      ?? groups.find(group => group.type === 'Social' && this.canPostToGroup(group))
+      ?? groups.find(group => this.canPostToGroup(group));
+
+    this._selectedGroupId.set(fallback?.id ?? '');
   }
 
   private _resolveScheduleCourse(): string {

@@ -257,6 +257,7 @@ Known build note:
 - For backend logic changes, add or update xUnit tests in the nearest test project.
 - For frontend component/service behavior changes, add or update the nearest `.spec.ts` file.
 - Run the smallest relevant test/build command that validates the change.
+- Before browser-based validation, restart the existing local backend and frontend dev servers instead of starting duplicate servers on alternate ports. Use the normal API proxy target on `http://localhost:5135` and the normal Angular dev server on `http://localhost:4200`, stopping any stale listener first when needed.
 - If tests cannot be run, explain why in the final response.
 - Do not fix unrelated failing tests unless the user asks.
 

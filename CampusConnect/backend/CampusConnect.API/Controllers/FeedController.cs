@@ -1,9 +1,12 @@
 using CampusConnect.API.DTOs.Feed;
 using CampusConnect.Application.Features.Feed;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/feed")]
 public class FeedController(FeedService feedService) : ControllerBase
@@ -18,11 +21,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
-        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? User.FindFirst("sub")!.Value);
-        var authorName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Unbekannt";
-
-        var result = await feedService.CreatePostAsync(new CreatePostCommand(userId, authorName, request.Content));
+        var result = await feedService.CreatePostAsync(new CreatePostCommand(GetUserId(), request.GroupId, request.Content));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -32,12 +31,14 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePost(Guid id)
     {
-        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                     ?? User.FindFirst("sub")!.Value);
-        var result = await feedService.DeletePostAsync(id, userId);
+        var result = await feedService.DeletePostAsync(id, GetUserId());
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
         return NoContent();
     }
+
+    private Guid GetUserId() => Guid.Parse(
+        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+        User.FindFirst("sub")!.Value);
 }

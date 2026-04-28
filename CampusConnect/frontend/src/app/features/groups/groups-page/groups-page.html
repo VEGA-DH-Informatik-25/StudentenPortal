@@ -1,13 +1,138 @@
 <div class="groups-page">
   <header class="groups-page__header">
     <div>
-      <p class="groups-page__eyebrow">Studium</p>
-      <h2>Lerngruppen</h2>
+      <p class="groups-page__eyebrow">Campuskommunikation</p>
+      <h2>Gruppen</h2>
+      <p>Kurse, offizielle Mitteilungen und soziale Campusbereiche an einem Ort.</p>
     </div>
   </header>
 
-  <section class="groups-page__empty" aria-label="Lerngruppen">
-    <strong>Noch keine Lerngruppen</strong>
-    <p>Hier erscheinen deine Gruppen, sobald sie angelegt sind.</p>
-  </section>
+  @if (_error()) {
+    <p class="groups-page__state groups-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_success()) {
+    <p class="groups-page__state groups-page__state--success">{{ _success() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="groups-page__state">Gruppen werden geladen...</p>
+  } @else {
+    <section class="groups-overview" aria-label="Gruppenübersicht">
+      <div>
+        <span>Offiziell</span>
+        <strong>{{ _officialGroups().length }}</strong>
+      </div>
+      <div>
+        <span>Kurse</span>
+        <strong>{{ _courseGroups().length }}</strong>
+      </div>
+      <div>
+        <span>Campus</span>
+        <strong>{{ _socialGroups().length }}</strong>
+      </div>
+    </section>
+
+    <div class="groups-layout">
+      <section class="group-directory" aria-label="Gruppenverzeichnis">
+        <div class="group-tabs" role="tablist" aria-label="Gruppen filtern">
+          @for (tab of _tabs(); track tab.id) {
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="_activeTab() === tab.id"
+              [class.group-tabs__tab--active]="_activeTab() === tab.id"
+              class="group-tabs__tab"
+              (click)="setActiveTab(tab.id)">
+              <span>{{ tab.label }}</span>
+              <strong>{{ tab.count }}</strong>
+            </button>
+          }
+        </div>
+
+        @if (_filteredGroups().length > 0) {
+          <div class="group-section__grid">
+            @for (group of _filteredGroups(); track group.id) {
+              <article class="group-card" [style.border-left-color]="group.accentColor">
+                <span class="group-card__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
+                <div class="group-card__body">
+                  <div class="group-card__title-row">
+                    <div>
+                      <strong>{{ group.name }}</strong>
+                      <small>{{ groupTypeLabel(group.type) }}</small>
+                    </div>
+
+                    @if (group.canManage) {
+                      <button type="button" class="group-card__settings" (click)="openSettings(group)">
+                        Einstellungen
+                      </button>
+                    }
+                  </div>
+
+                  <p>{{ group.description }}</p>
+                  <span class="group-card__meta">
+                    <em>{{ group.audience }}</em>
+                    <em>{{ settingLabel(group) }}</em>
+                    <em>{{ group.assignedUserCount }} Konten</em>
+                    @if (!group.settings.allowComments) {
+                      <em>Kommentare aus</em>
+                    }
+                  </span>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="groups-page__state">Für diesen Filter gibt es noch keine Gruppen.</p>
+        }
+      </section>
+
+      <aside class="create-group" aria-label="Gruppe erstellen">
+        <header>
+          <p>Eigene Gruppe</p>
+          <h3>Gruppe erstellen</h3>
+        </header>
+
+        <form (ngSubmit)="createGroup()">
+          <label>
+            <span>Name</span>
+            <input
+              type="text"
+              maxlength="80"
+              name="group-name"
+              [ngModel]="_createName()"
+              (ngModelChange)="_createName.set($event)">
+          </label>
+
+          <label>
+            <span>Zielgruppe</span>
+            <input
+              type="text"
+              maxlength="80"
+              name="group-audience"
+              [ngModel]="_createAudience()"
+              (ngModelChange)="_createAudience.set($event)">
+          </label>
+
+          <label>
+            <span>Beschreibung</span>
+            <textarea
+              rows="4"
+              maxlength="240"
+              name="group-description"
+              [ngModel]="_createDescription()"
+              (ngModelChange)="_createDescription.set($event)"></textarea>
+          </label>
+
+          <button type="submit" [disabled]="!_canCreate()">
+            @if (_isCreating()) {
+              Wird erstellt...
+            } @else {
+              Erstellen
+            }
+          </button>
+        </form>
+      </aside>
+    </div>
+  }
 </div>

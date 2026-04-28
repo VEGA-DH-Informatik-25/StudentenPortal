@@ -2,6 +2,7 @@ using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Features.Auth;
 using CampusConnect.Application.Features.Calendar;
 using CampusConnect.Application.Features.Feed;
+using CampusConnect.Application.Features.Groups;
 using CampusConnect.Application.Features.Grades;
 using CampusConnect.Application.Features.Admin;
 using CampusConnect.Domain.Interfaces;
@@ -26,6 +27,7 @@ public static class ServiceExtensions
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
         services.AddSingleton<IFeedRepository, InMemoryFeedRepository>();
+        services.AddSingleton<IGroupRepository, InMemoryGroupRepository>();
         services.AddSingleton<IGradeRepository, InMemoryGradeRepository>();
         services.AddSingleton<IExamRepository, InMemoryExamRepository>();
 
@@ -36,6 +38,7 @@ public static class ServiceExtensions
 
         services.AddScoped<AuthService>();
         services.AddScoped<FeedService>();
+        services.AddScoped<GroupsService>();
         services.AddScoped<GradesService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<AdminUsersService>();

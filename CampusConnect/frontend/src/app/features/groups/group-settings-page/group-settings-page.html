@@ -1,0 +1,102 @@
+<div class="group-settings-page">
+  <button type="button" class="group-settings-page__back" (click)="backToGroups()">Zurück zu Gruppen</button>
+
+  @if (_error()) {
+    <p class="group-settings-page__state group-settings-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="group-settings-page__state">Gruppeneinstellungen werden geladen...</p>
+  } @else if (_group(); as group) {
+    <header class="group-settings-page__header" [style.border-left-color]="group.accentColor">
+      <span class="group-settings-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
+      <div>
+        <p>Gruppeneinstellungen</p>
+        <h2>{{ group.name }}</h2>
+        <span>{{ group.description }}</span>
+      </div>
+    </header>
+
+    <div class="group-settings-layout">
+      <section class="settings-block" aria-label="Verhalten der Gruppe">
+        <header>
+          <h3>Regeln</h3>
+          <p>{{ group.ownerLabel }} · {{ group.audience }}</p>
+        </header>
+
+        <div class="settings-block__controls">
+          <label>
+            <span>Studierende dürfen posten</span>
+            <input
+              type="checkbox"
+              [checked]="group.settings.allowStudentPosts"
+              [disabled]="!!_savingSetting()"
+              (change)="updateSetting('allowStudentPosts', $any($event.target).checked)">
+          </label>
+
+          <label>
+            <span>Kommentare erlaubt</span>
+            <input
+              type="checkbox"
+              [checked]="group.settings.allowComments"
+              [disabled]="!!_savingSetting()"
+              (change)="updateSetting('allowComments', $any($event.target).checked)">
+          </label>
+
+          <label>
+            <span>Freigabe erforderlich</span>
+            <input
+              type="checkbox"
+              [checked]="group.settings.requiresApproval"
+              [disabled]="!!_savingSetting()"
+              (change)="updateSetting('requiresApproval', $any($event.target).checked)">
+          </label>
+
+          <label>
+            <span>In Suche sichtbar</span>
+            <input
+              type="checkbox"
+              [checked]="group.settings.isDiscoverable"
+              [disabled]="!!_savingSetting()"
+              (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
+          </label>
+        </div>
+
+        @if (_savingSetting()) {
+          <p class="settings-block__hint">Einstellung wird gespeichert...</p>
+        }
+      </section>
+
+      <section class="settings-block" aria-label="Konten zuweisen">
+        <header>
+          <h3>Konten</h3>
+          <p>{{ group.assignedUserCount }} zugewiesen</p>
+        </header>
+
+        <div class="account-list">
+          @for (account of _accounts(); track account.id) {
+            <label class="account-row" [class.account-row--owner]="isOwner(account)">
+              <input
+                type="checkbox"
+                [checked]="isAccountSelected(account)"
+                [disabled]="isOwner(account) || _savingAssignments()"
+                (change)="toggleAccount(account, $any($event.target).checked)">
+              <span>
+                <strong>{{ account.displayName }}</strong>
+                <small>{{ account.email }} · {{ account.role }} · {{ account.course || 'Kein Kurs' }}</small>
+              </span>
+            </label>
+          }
+        </div>
+
+        <button type="button" class="settings-block__save" [disabled]="!_hasAssignmentChanges() || _savingAssignments()" (click)="saveAssignments()">
+          @if (_savingAssignments()) {
+            Speichert...
+          } @else {
+            Zuweisungen speichern
+          }
+        </button>
+      </section>
+    </div>
+  }
+</div>
