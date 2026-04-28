@@ -129,7 +129,9 @@
                   <strong>{{ post.authorName }}</strong>
                   <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
                 </div>
-                <button class="post-card__delete" type="button" (click)="onDelete(post.id)" aria-label="Beitrag löschen">×</button>
+                @if (post.canDelete) {
+                  <button class="post-card__delete" type="button" (click)="onDelete(post.id)" aria-label="Beitrag löschen">×</button>
+                }
               </header>
               <div class="post-card__meta" aria-label="Veröffentlichungsgruppe">
                 <span class="post-card__group" [style.border-color]="post.group.accentColor">

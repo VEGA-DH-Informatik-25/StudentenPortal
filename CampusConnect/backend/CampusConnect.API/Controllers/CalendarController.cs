@@ -1,9 +1,11 @@
 using CampusConnect.API.DTOs.Calendar;
 using CampusConnect.Application.Features.Calendar;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CampusConnect.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/calendar")]
 public class CalendarController(CalendarService calendarService) : ControllerBase

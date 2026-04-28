@@ -73,13 +73,17 @@
           <p>{{ group.assignedUserCount }} zugewiesen</p>
         </header>
 
+        @if (_assignmentsLocked()) {
+          <p class="settings-block__hint">Kursgruppen folgen der Kurszuordnung in der Benutzerverwaltung.</p>
+        }
+
         <div class="account-list">
           @for (account of _accounts(); track account.id) {
             <label class="account-row" [class.account-row--owner]="isOwner(account)">
               <input
                 type="checkbox"
                 [checked]="isAccountSelected(account)"
-                [disabled]="isOwner(account) || _savingAssignments()"
+                [disabled]="isOwner(account) || _savingAssignments() || _assignmentsLocked()"
                 (change)="toggleAccount(account, $any($event.target).checked)">
               <span>
                 <strong>{{ account.displayName }}</strong>
@@ -89,7 +93,7 @@
           }
         </div>
 
-        <button type="button" class="settings-block__save" [disabled]="!_hasAssignmentChanges() || _savingAssignments()" (click)="saveAssignments()">
+        <button type="button" class="settings-block__save" [disabled]="_assignmentsLocked() || !_hasAssignmentChanges() || _savingAssignments()" (click)="saveAssignments()">
           @if (_savingAssignments()) {
             Speichert...
           } @else {

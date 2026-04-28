@@ -7,6 +7,7 @@ namespace CampusConnect.Infrastructure.Persistence;
 public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<Course> Courses => Set<Course>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,5 +25,14 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
             .HasMaxLength(32)
             .IsRequired();
         user.Property(entity => entity.CreatedAt).IsRequired();
+
+        var course = modelBuilder.Entity<Course>();
+        course.ToTable("Courses");
+        course.HasKey(entity => entity.Code);
+        course.Property(entity => entity.Code).HasMaxLength(40).IsRequired();
+        course.Property(entity => entity.StudyProgram).HasMaxLength(120).IsRequired();
+        course.Property(entity => entity.Semester).IsRequired();
+        course.Property(entity => entity.IsActive).IsRequired();
+        course.Property(entity => entity.CreatedAt).IsRequired();
     }
 }

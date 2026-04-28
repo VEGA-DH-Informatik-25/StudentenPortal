@@ -231,17 +231,12 @@ export class FeedPage implements OnInit {
   }
 
   private _resolveScheduleCourse(): string {
-    const storedCourse = this._timetableService.getStoredCourse();
-    if (storedCourse) {
-      return storedCourse;
-    }
-
     const profile = this._auth.userProfile();
-    if (!profile || profile.role === 'Admin') {
-      return '';
+    if (profile && profile.role !== 'Admin') {
+      return this._timetableService.normalizeCourse(profile.course);
     }
 
-    return this._timetableService.normalizeCourse(profile.course);
+    return this._timetableService.getStoredCourse();
   }
 
   private _initialsFor(value: string): string {

@@ -24,6 +24,7 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _savingAssignments = signal(false);
   protected readonly _group = computed(() => this._details()?.group ?? null);
   protected readonly _accounts = computed(() => this._details()?.accounts ?? []);
+  protected readonly _assignmentsLocked = computed(() => this._group()?.type === 'Course');
   protected readonly _hasAssignmentChanges = computed(() => {
     const originalIds = this._accounts()
       .filter(account => account.isAssigned)
@@ -81,7 +82,7 @@ export class GroupSettingsPage implements OnInit {
   }
 
   protected toggleAccount(account: GroupAccount, checked: boolean): void {
-    if (this.isOwner(account)) {
+    if (this.isOwner(account) || this._assignmentsLocked()) {
       return;
     }
 
@@ -99,7 +100,7 @@ export class GroupSettingsPage implements OnInit {
 
   protected saveAssignments(): void {
     const group = this._group();
-    if (!group || !this._hasAssignmentChanges() || this._savingAssignments()) {
+    if (!group || this._assignmentsLocked() || !this._hasAssignmentChanges() || this._savingAssignments()) {
       return;
     }
 

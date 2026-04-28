@@ -11,6 +11,7 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        await EnsureCourseTableAsync(cancellationToken);
 
         var options = adminOptions.Value;
         var email = options.Email.Trim().ToLowerInvariant();
@@ -41,5 +42,18 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         });
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureCourseTableAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "Courses" (
+                "Code" TEXT NOT NULL CONSTRAINT "PK_Courses" PRIMARY KEY,
+                "StudyProgram" TEXT NOT NULL,
+                "Semester" INTEGER NOT NULL,
+                "IsActive" INTEGER NOT NULL,
+                "CreatedAt" TEXT NOT NULL
+            );
+            """, cancellationToken);
     }
 }

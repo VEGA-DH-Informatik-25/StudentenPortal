@@ -10,8 +10,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   displayName: string;
-  studyProgram: string;
-  semester: number;
   course: string;
 }
 
@@ -33,7 +31,5 @@ export interface UserProfile {
 
 export interface UpdateProfileRequest {
   displayName: string;
-  studyProgram: string;
-  semester: number;
   course: string;
 }

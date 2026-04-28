@@ -6,6 +6,7 @@ export interface FeedPost {
   group: CampusGroup;
   content: string;
   createdAt: string;
+  canDelete: boolean;
 }
 
 export interface CreatePostRequest {

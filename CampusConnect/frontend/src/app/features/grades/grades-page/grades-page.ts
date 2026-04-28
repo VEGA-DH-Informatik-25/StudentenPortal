@@ -1,17 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-
-type AssessmentType = 'Klausur' | 'Projekt' | 'Mündlich' | 'Hausarbeit';
-
-interface GradeEntry {
-  id: string;
-  subject: string;
-  module: string;
-  type: AssessmentType;
-  grade: number;
-  weight: number;
-  credits: number;
-}
+import { Grade, GradeSummary } from '../../../core/models/grade.model';
+import { Grades } from '../../../core/services/grades';
 
 interface ModuleSummary {
   module: string;
@@ -23,70 +15,67 @@ interface ModuleSummary {
 @Component({
   selector: 'app-grades-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [DatePipe, FormsModule],
   templateUrl: './grades-page.html',
   styleUrl: './grades-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GradesPage {
-  private readonly storageKey = 'campusconnect:grades';
-  private nextId = 0;
+export class GradesPage implements OnInit {
+  private readonly _gradesService = inject(Grades);
 
-  protected readonly types: AssessmentType[] = ['Klausur', 'Projekt', 'Mündlich', 'Hausarbeit'];
-  protected readonly grades = signal<GradeEntry[]>(this.readGrades());
+  protected readonly _summary = signal<GradeSummary>({ grades: [], weightedAverage: 0, totalEcts: 0 });
+  protected readonly _isLoading = signal(false);
+  protected readonly _isSubmitting = signal(false);
+  protected readonly _error = signal<string | null>(null);
 
-  protected subject = '';
-  protected module = '';
-  protected type: AssessmentType = 'Klausur';
+  protected moduleName = '';
   protected grade = 2.0;
-  protected weight = 1;
-  protected credits = 5;
+  protected ects = 5;
   protected simulationGrade = 2.0;
-  protected simulationWeight = 1;
+  protected simulationEcts = 5;
   protected targetAverage = 2.5;
 
-  protected readonly totalWeight = computed(() => this.sumWeight(this.grades()));
-  protected readonly weightedAverage = computed(() => this.average(this.grades()));
+  protected readonly grades = computed(() => this._summary().grades);
+  protected readonly totalEcts = computed(() => this._summary().totalEcts);
+  protected readonly weightedAverage = computed(() => this.grades().length === 0 ? Number.NaN : this._summary().weightedAverage);
   protected readonly passedCredits = computed(() =>
     this.grades()
-      .filter(entry => entry.grade <= 4)
-      .reduce((sum, entry) => sum + entry.credits, 0),
+      .filter(entry => entry.value <= 4)
+      .reduce((sum, entry) => sum + entry.ects, 0),
   );
-  protected readonly failedCount = computed(() => this.grades().filter(entry => entry.grade > 4).length);
+  protected readonly failedCount = computed(() => this.grades().filter(entry => entry.value > 4).length);
   protected readonly bestGrade = computed(() => this.bestGradeValue());
   protected readonly simulatedAverage = computed(() =>
     this.average([
       ...this.grades(),
       {
         id: 'simulation',
-        subject: 'Simulation',
-        module: 'Simulation',
-        type: 'Klausur',
-        grade: this.normalizeGrade(this.simulationGrade),
-        weight: this.normalizeWeight(this.simulationWeight),
-        credits: 0,
+        moduleName: 'Simulation',
+        value: this.normalizeGrade(this.simulationGrade),
+        ects: this.normalizeEcts(this.simulationEcts),
+        createdAt: '',
       },
     ]),
   );
   protected readonly requiredGradeForTarget = computed(() => {
-    const weight = this.normalizeWeight(this.simulationWeight);
-    const currentWeight = this.totalWeight();
+    const ects = this.normalizeEcts(this.simulationEcts);
+    const currentEcts = this.totalEcts();
 
-    if (currentWeight === 0) {
+    if (currentEcts === 0) {
       return this.targetAverage;
     }
 
-    return (this.targetAverage * (currentWeight + weight) - this.weightedSum(this.grades())) / weight;
+    return (this.targetAverage * (currentEcts + ects) - this.weightedSum(this.grades())) / ects;
   });
   protected readonly moduleSummaries = computed<ModuleSummary[]>(() => {
-    const modules = new Map<string, GradeEntry[]>();
+    const modules = new Map<string, Grade[]>();
 
     for (const entry of this.grades()) {
-      let entries = modules.get(entry.module);
+      let entries = modules.get(entry.moduleName);
 
       if (!entries) {
         entries = [];
-        modules.set(entry.module, entries);
+        modules.set(entry.moduleName, entries);
       }
 
       entries.push(entry);
@@ -96,48 +85,56 @@ export class GradesPage {
       .map(([module, entries]) => ({
         module,
         average: this.average(entries),
-        credits: entries.filter(entry => entry.grade <= 4).reduce((sum, entry) => sum + entry.credits, 0),
+        credits: entries.filter(entry => entry.value <= 4).reduce((sum, entry) => sum + entry.ects, 0),
         count: entries.length,
       }))
       .sort((a, b) => a.module.localeCompare(b.module));
   });
 
-  protected addGrade(form?: NgForm): void {
-    const subject = this.subject.trim();
+  ngOnInit(): void {
+    this._loadGrades();
+  }
 
-    if (!subject) {
+  protected addGrade(form?: NgForm): void {
+    const moduleName = this.moduleName.trim();
+
+    if (!moduleName) {
+      this._error.set('Bitte gib ein Modul oder eine Prüfung ein.');
       return;
     }
 
-    const entry: GradeEntry = {
-      id: this.createId(),
-      subject,
-      module: this.module.trim() || subject,
-      type: this.type,
-      grade: this.normalizeGrade(this.grade),
-      weight: this.normalizeWeight(this.weight),
-      credits: this.normalizePositive(this.credits, 0),
-    };
+    this._isSubmitting.set(true);
+    this._error.set(null);
 
-    this.updateGrades([...this.grades(), entry]);
-    form?.resetForm({
-      subject: '',
-      module: '',
-      type: 'Klausur',
-      grade: 2.0,
-      weight: 1,
-      credits: 5,
+    this._gradesService.addGrade({
+      moduleName,
+      value: this.normalizeGrade(this.grade),
+      ects: this.normalizeEcts(this.ects),
+    }).subscribe({
+      next: () => {
+        this._isSubmitting.set(false);
+        form?.resetForm({
+          moduleName: '',
+          grade: 2.0,
+          ects: 5,
+        });
+        this.moduleName = '';
+        this.grade = 2.0;
+        this.ects = 5;
+        this._loadGrades();
+      },
+      error: error => {
+        this._error.set(this._readError(error, 'Note konnte nicht gespeichert werden.'));
+        this._isSubmitting.set(false);
+      },
     });
-    this.subject = '';
-    this.module = '';
-    this.type = 'Klausur';
-    this.grade = 2.0;
-    this.weight = 1;
-    this.credits = 5;
   }
 
   protected removeGrade(id: string): void {
-    this.updateGrades(this.grades().filter(entry => entry.id !== id));
+    this._gradesService.deleteGrade(id).subscribe({
+      next: () => this._summary.set(this.createSummary(this.grades().filter(entry => entry.id !== id))),
+      error: error => this._error.set(this._readError(error, 'Note konnte nicht gelöscht werden.')),
+    });
   }
 
   protected format(value: number): string {
@@ -166,88 +163,40 @@ export class GradesPage {
     return `Benötigte Zusatznote: ${this.format(required)}`;
   }
 
-  private updateGrades(grades: GradeEntry[]): void {
-    this.grades.set(grades);
+  private _loadGrades(): void {
+    this._isLoading.set(true);
+    this._error.set(null);
 
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(grades));
-    } catch {
-      // Keep grade management usable even when persistence is unavailable.
-    }
+    this._gradesService.getGrades().subscribe({
+      next: summary => {
+        this._summary.set(summary);
+        this._isLoading.set(false);
+      },
+      error: error => {
+        this._error.set(this._readError(error, 'Noten konnten nicht geladen werden.'));
+        this._isLoading.set(false);
+      },
+    });
   }
 
-  private readGrades(): GradeEntry[] {
-    const raw = localStorage.getItem(this.storageKey);
+  private average(entries: Grade[]): number {
+    const ects = this.sumEcts(entries);
 
-    if (!raw) {
-      return [];
-    }
-
-    try {
-      const parsed: unknown = JSON.parse(raw);
-
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-
-      return parsed.filter(entry => this.isGradeEntry(entry));
-    } catch {
-      return [];
-    }
+    return ects === 0 ? Number.NaN : this.weightedSum(entries) / ects;
   }
 
-  private isGradeEntry(entry: unknown): entry is GradeEntry {
-    if (!entry || typeof entry !== 'object') {
-      return false;
-    }
-
-    const candidate = entry as Partial<GradeEntry>;
-
-    return (
-      typeof candidate.id === 'string' &&
-      typeof candidate.subject === 'string' &&
-      typeof candidate.module === 'string' &&
-      this.types.includes(candidate.type as AssessmentType) &&
-      typeof candidate.grade === 'number' &&
-      typeof candidate.weight === 'number' &&
-      typeof candidate.credits === 'number'
-    );
+  private weightedSum(entries: Grade[]): number {
+    return entries.reduce((sum, entry) => sum + entry.value * entry.ects, 0);
   }
 
-  private average(entries: GradeEntry[]): number {
-    const weight = this.sumWeight(entries);
-
-    return weight === 0 ? Number.NaN : this.weightedSum(entries) / weight;
-  }
-
-  private weightedSum(entries: GradeEntry[]): number {
-    return entries.reduce((sum, entry) => sum + entry.grade * entry.weight, 0);
-  }
-
-  private sumWeight(entries: GradeEntry[]): number {
-    return entries.reduce((sum, entry) => sum + entry.weight, 0);
+  private sumEcts(entries: Grade[]): number {
+    return entries.reduce((sum, entry) => sum + entry.ects, 0);
   }
 
   private bestGradeValue(): number {
-    const values = this.grades().map(entry => entry.grade);
+    const values = this.grades().map(entry => entry.value);
 
     return values.length === 0 ? Number.NaN : Math.min(...values);
-  }
-
-  private createId(): string {
-    if (typeof globalThis.crypto?.randomUUID === 'function') {
-      return globalThis.crypto.randomUUID();
-    }
-
-    const usedIds = new Set(this.grades().map(entry => entry.id));
-    let id = '';
-
-    do {
-      this.nextId += 1;
-      id = `grade-${this.nextId}`;
-    } while (usedIds.has(id));
-
-    return id;
   }
 
   private normalizeGrade(value: number): number {
@@ -256,15 +205,24 @@ export class GradesPage {
     return Number.isFinite(parsed) ? Math.min(5, Math.max(1, parsed)) : 1;
   }
 
-  private normalizeWeight(value: number): number {
+  private normalizeEcts(value: number): number {
     const parsed = Number(value);
 
-    return Number.isFinite(parsed) ? Math.max(0.1, parsed) : 1;
+    return Number.isFinite(parsed) ? Math.max(1, Math.round(parsed)) : 1;
   }
 
-  private normalizePositive(value: number, fallback: number): number {
-    const parsed = Number(value);
+  private createSummary(grades: Grade[]): GradeSummary {
+    const totalEcts = this.sumEcts(grades);
+    const weightedAverage = totalEcts === 0 ? 0 : Math.round((this.weightedSum(grades) / totalEcts) * 100) / 100;
+    return { grades, weightedAverage, totalEcts };
+  }
 
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+  private _readError(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      const body = error.error as { error?: string } | null;
+      return body?.error ?? fallback;
+    }
+
+    return fallback;
   }
 }

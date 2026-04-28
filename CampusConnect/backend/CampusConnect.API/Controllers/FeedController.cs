@@ -14,7 +14,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetFeed([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var posts = await feedService.GetFeedAsync(page, pageSize);
+        var posts = await feedService.GetFeedAsync(GetUserId(), page, pageSize);
         return Ok(posts);
     }
 

@@ -17,8 +17,7 @@ public class AuthController(AuthService authService) : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var result = await authService.RegisterAsync(new RegisterCommand(
-            request.Email, request.Password, request.DisplayName,
-            request.StudyProgram, request.Semester, request.Course));
+            request.Email, request.Password, request.DisplayName, request.Course));
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
@@ -59,8 +58,7 @@ public class AuthController(AuthService authService) : ControllerBase
         if (userId is null)
             return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
 
-        var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(
-            request.DisplayName, request.StudyProgram, request.Semester, request.Course));
+        var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(request.DisplayName, request.Course));
 
         if (!result.IsSuccess)
             return ToProfileError(result);

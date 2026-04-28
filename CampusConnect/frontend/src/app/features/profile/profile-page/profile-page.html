@@ -53,23 +53,30 @@
         </label>
 
         <label>
-          Studiengang
-          <input type="text" name="studyProgram" [(ngModel)]="_form.studyProgram" maxlength="120" required />
+          Kurs
+          <select name="course" [(ngModel)]="_form.course" [disabled]="_coursesLoading()" required>
+            @if (_form.course && !selectedCourse()) {
+              <option [value]="_form.course">{{ _form.course }} · nicht im Kurskatalog</option>
+            }
+            @for (course of _courses(); track course.code) {
+              <option [value]="course.code">{{ courseLabel(course) }}</option>
+            }
+          </select>
         </label>
 
         <label>
-          Kurs
-          <input type="text" name="course" [(ngModel)]="_form.course" maxlength="40" required />
+          Studiengang
+          <input type="text" [value]="selectedCourse()?.studyProgram ?? profile.studyProgram" readonly />
         </label>
 
         <label>
           Semester
-          <input type="number" name="semester" [(ngModel)]="_form.semester" min="1" max="6" required />
+          <input type="text" [value]="(selectedCourse()?.semester ?? profile.semester) + '. Semester'" readonly />
         </label>
       </div>
 
       <div class="profile-form__actions">
-        <button type="submit" [disabled]="_isSaving()">
+        <button type="submit" [disabled]="_isSaving() || _coursesLoading() || !_form.course">
           {{ _isSaving() ? 'Speichere…' : 'Änderungen speichern' }}
         </button>
       </div>

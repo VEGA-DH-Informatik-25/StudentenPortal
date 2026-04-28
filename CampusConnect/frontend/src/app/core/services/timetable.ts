@@ -11,19 +11,6 @@ const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
 export class Timetable {
   private readonly _http = inject(HttpClient);
 
-  private readonly _defaultCourses = [
-    'TIF24A',
-    'TIF24B',
-    'TIF25A',
-    'TIF25B',
-    'WWI24A',
-    'WWI24B',
-    'WWI25A',
-    'WWI25B',
-    'WDS24A',
-    'WDS25A',
-  ];
-
   getTimetable(course: string, days = DEFAULT_TIMETABLE_LOOKAHEAD_DAYS): Observable<TimetableResponse> {
     const params = new HttpParams()
       .set('course', this.normalizeCourse(course))
@@ -32,8 +19,9 @@ export class Timetable {
     return this._http.get<TimetableResponse>('/api/timetable', { params });
   }
 
-  getCourseOptions(): string[] {
-    return [...new Set([...this.getCourseHistory(), ...this._defaultCourses])].sort((a, b) =>
+  getCourseOptions(courseCodes: string[] = []): string[] {
+    const normalizedCourseCodes = courseCodes.map(course => this.normalizeCourse(course)).filter(Boolean);
+    return [...new Set([...this.getCourseHistory(), ...normalizedCourseCodes])].sort((a, b) =>
       a.localeCompare(b, 'de', { numeric: true, sensitivity: 'base' })
     );
   }

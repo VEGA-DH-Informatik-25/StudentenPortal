@@ -7,16 +7,16 @@ using CampusConnect.Domain.Interfaces;
 namespace CampusConnect.Application.Features.Feed;
 
 public record CreatePostCommand(Guid AuthorId, Guid? GroupId, string Content);
-public record FeedPostDto(Guid Id, string AuthorName, CampusGroupDto Group, string Content, DateTime CreatedAt);
+public record FeedPostDto(Guid Id, string AuthorName, CampusGroupDto Group, string Content, DateTime CreatedAt, bool CanDelete);
 
 public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, IUserRepository userRepo)
 {
-    public async Task<IReadOnlyList<FeedPostDto>> GetFeedAsync(int page = 1, int pageSize = 20)
+    public async Task<IReadOnlyList<FeedPostDto>> GetFeedAsync(Guid currentUserId, int page = 1, int pageSize = 20)
     {
         var posts = await feedRepo.GetAllAsync(page, pageSize);
         var result = new List<FeedPostDto>();
         foreach (var post in posts)
-            result.Add(await ToDtoAsync(post));
+            result.Add(await ToDtoAsync(post, currentUserId));
 
         return result;
     }
@@ -45,7 +45,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             Content = cmd.Content.Trim()
         };
         await feedRepo.AddAsync(post);
-        return Result<FeedPostDto>.Success(new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt));
+        return Result<FeedPostDto>.Success(new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt, true));
     }
 
     public async Task<Result<bool>> DeletePostAsync(Guid postId, Guid userId)
@@ -79,7 +79,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             : await groupRepo.EnsureCourseGroupAsync(user.Course, user.StudyProgram);
     }
 
-    private async Task<FeedPostDto> ToDtoAsync(FeedPost post)
+    private async Task<FeedPostDto> ToDtoAsync(FeedPost post, Guid currentUserId)
     {
         var group = await groupRepo.FindByIdAsync(post.GroupId) ?? new CampusGroup
         {
@@ -94,6 +94,6 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = false, IsDiscoverable = false }
         };
 
-        return new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt);
+        return new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt, post.AuthorId == currentUserId);
     }
 }

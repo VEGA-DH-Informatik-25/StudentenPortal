@@ -96,6 +96,10 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Eigenes Benutzerprofil aktualisieren | Ja |
+| GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
+| GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
+| POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
 | DELETE | `/api/feed/{id}` | Eigenen Beitrag löschen | Ja |

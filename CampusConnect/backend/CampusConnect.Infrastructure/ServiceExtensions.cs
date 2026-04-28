@@ -1,6 +1,7 @@
 using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Features.Auth;
 using CampusConnect.Application.Features.Calendar;
+using CampusConnect.Application.Features.Courses;
 using CampusConnect.Application.Features.Feed;
 using CampusConnect.Application.Features.Groups;
 using CampusConnect.Application.Features.Grades;
@@ -26,6 +27,7 @@ public static class ServiceExtensions
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
+        services.AddScoped<ICourseRepository, EntityCourseRepository>();
         services.AddSingleton<IFeedRepository, InMemoryFeedRepository>();
         services.AddSingleton<IGroupRepository, InMemoryGroupRepository>();
         services.AddSingleton<IGradeRepository, InMemoryGradeRepository>();
@@ -37,6 +39,7 @@ public static class ServiceExtensions
         services.AddHttpClient<ITimetableService, DhbwTimetableService>();
 
         services.AddScoped<AuthService>();
+        services.AddScoped<CoursesService>();
         services.AddScoped<FeedService>();
         services.AddScoped<GroupsService>();
         services.AddScoped<GradesService>();

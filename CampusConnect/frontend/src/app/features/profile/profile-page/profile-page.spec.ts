@@ -37,6 +37,12 @@ describe('ProfilePage', () => {
   it('should load the current user profile', () => {
     fixture.detectChanges();
 
+    const coursesRequest = http.expectOne('/api/courses');
+    expect(coursesRequest.request.method).toBe('GET');
+    coursesRequest.flush([
+      { code: 'TIF25A', studyProgram: 'Informatik', semester: 3, isActive: true, createdAt: '2026-04-27T10:00:00Z' },
+    ]);
+
     const request = http.expectOne('/api/auth/me');
     expect(request.request.method).toBe('GET');
     request.flush(profile);

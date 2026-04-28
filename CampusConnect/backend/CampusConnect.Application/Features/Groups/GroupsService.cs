@@ -23,6 +23,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (user is not null && user.Role != UserRole.Admin && !string.IsNullOrWhiteSpace(user.Course))
             await groupRepo.EnsureCourseGroupAsync(user.Course, user.StudyProgram);
 
+        await SyncCourseGroupAssignmentsAsync();
         var groups = await groupRepo.GetAllAsync();
         return groups.Select(group => GroupDtoMapper.ToDto(group, user)).ToList();
     }
@@ -57,6 +58,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
 
     public async Task<Result<GroupSettingsDetailsDto>> GetSettingsDetailsAsync(Guid groupId, Guid userId)
     {
+        await SyncCourseGroupAssignmentsAsync();
         var context = await GetEditableGroupContextAsync(groupId, userId);
         if (!context.IsSuccess)
             return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
@@ -89,6 +91,9 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (!context.IsSuccess)
             return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
 
+        if (context.Value!.Group.Type == GroupType.Course)
+            return Result<GroupSettingsDetailsDto>.Failure("Kursgruppen werden über die Kurszuordnung der Benutzer verwaltet.");
+
         var users = await userRepo.ListAsync();
         var existingUserIds = users.Select(user => user.Id).ToHashSet();
         var assignedUserIds = command.UserIds
@@ -96,7 +101,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
             .Distinct()
             .ToHashSet();
 
-        if (context.Value!.Group.OwnerUserId is Guid ownerId)
+        if (context.Value.Group.OwnerUserId is Guid ownerId)
             assignedUserIds.Add(ownerId);
 
         await groupRepo.UpdateAssignmentsAsync(groupId, assignedUserIds);
@@ -118,6 +123,21 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
             return Result<GroupEditContext>.Failure(PermissionError);
 
         return Result<GroupEditContext>.Success(new GroupEditContext(group, user));
+    }
+
+    private async Task SyncCourseGroupAssignmentsAsync()
+    {
+        var users = await userRepo.ListAsync();
+        var groups = await groupRepo.GetAllAsync();
+        foreach (var group in groups.Where(group => group.Type == GroupType.Course && !string.IsNullOrWhiteSpace(group.CourseCode)))
+        {
+            var assignedUserIds = users
+                .Where(user => string.Equals(user.Course, group.CourseCode, StringComparison.OrdinalIgnoreCase))
+                .Select(user => user.Id)
+                .ToList();
+
+            await groupRepo.SyncCourseAssignmentsAsync(group.CourseCode!, assignedUserIds);
+        }
     }
 
     private async Task<GroupSettingsDetailsDto> ToSettingsDetailsAsync(CampusGroup group, User user)

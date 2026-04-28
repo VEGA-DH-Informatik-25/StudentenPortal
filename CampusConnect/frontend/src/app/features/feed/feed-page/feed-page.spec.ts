@@ -47,7 +47,7 @@ describe('FeedPage', () => {
           provide: Feed,
           useValue: {
             getFeed: () => of([]),
-            createPost: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString() }),
+            createPost: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true }),
             deletePost: () => of(undefined),
           },
         },

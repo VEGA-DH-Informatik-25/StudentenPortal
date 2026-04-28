@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { WritableSignal } from '@angular/core';
+import { WritableSignal, signal } from '@angular/core';
 
 import { TimetableDay, TimetableEvent } from '../../../core/models/timetable.model';
+import { Auth } from '../../../core/services/auth';
 import { TimetablePage } from './timetable-page';
 
 interface TimetablePageHarness {
@@ -24,7 +25,15 @@ describe('TimetablePage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TimetablePage],
-      providers: [provideHttpClient()],
+      providers: [
+        provideHttpClient(),
+        {
+          provide: Auth,
+          useValue: {
+            userProfile: signal(null),
+          },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TimetablePage);

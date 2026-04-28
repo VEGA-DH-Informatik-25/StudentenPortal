@@ -62,8 +62,6 @@ describe('Auth', () => {
 
     service.updateProfile({
       displayName: updatedProfile.displayName,
-      studyProgram: updatedProfile.studyProgram,
-      semester: updatedProfile.semester,
       course: updatedProfile.course,
     }).subscribe();
 

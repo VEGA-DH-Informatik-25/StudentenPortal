@@ -1,3 +1,5 @@
+import { Course, CreateCourseRequest } from './course.model';
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -12,3 +14,10 @@ export interface AdminUser {
 export interface UpdateUserRoleRequest {
   role: string;
 }
+
+export interface UpdateUserCourseRequest {
+  courseCode: string;
+}
+
+export type AdminCourse = Course;
+export type AdminCreateCourseRequest = CreateCourseRequest;

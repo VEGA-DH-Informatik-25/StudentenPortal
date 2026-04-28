@@ -10,12 +10,6 @@ public class InMemoryGroupRepository : IGroupRepository
     private readonly ConcurrentDictionary<Guid, CampusGroup> _store = new();
     private readonly object _courseLock = new();
 
-    public InMemoryGroupRepository()
-    {
-        foreach (var group in SeedGroups())
-            _store[group.Id] = group;
-    }
-
     public Task<IReadOnlyList<CampusGroup>> GetAllAsync()
     {
         var groups = _store.Values
@@ -79,92 +73,21 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
-    private static IEnumerable<CampusGroup> SeedGroups()
+    public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds)
     {
-        yield return new CampusGroup
-        {
-            Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
-            Name = "Offizielle Mitteilungen",
-            Description = "Verbindliche Informationen von Verwaltung, Studiengangsleitung und Hochschulleitung.",
-            Type = GroupType.Official,
-            Audience = "Alle Studierenden",
-            OwnerLabel = "Hochschule",
-            IconLabel = "OF",
-            AccentColor = "#a00014",
-            Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = true, IsDiscoverable = true }
-        };
+        var normalizedCourse = NormalizeCourse(courseCode);
+        var group = _store.Values.FirstOrDefault(group =>
+            group.Type == GroupType.Course &&
+            string.Equals(group.CourseCode, normalizedCourse, StringComparison.OrdinalIgnoreCase));
 
-        yield return new CampusGroup
+        if (group is not null)
         {
-            Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
-            Name = "Prüfungsamt und Fristen",
-            Description = "Termine, Abgaben und Hinweise rund um Prüfungen und organisatorische Deadlines.",
-            Type = GroupType.Official,
-            Audience = "Campusweit",
-            OwnerLabel = "Studienorganisation",
-            IconLabel = "PF",
-            AccentColor = "#6b1f2a",
-            Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = true, IsDiscoverable = true }
-        };
+            group.AssignedUserIds = assignedUserIds.ToHashSet();
+            _store[group.Id] = group;
+        }
 
-        yield return CreateSeedCourseGroup("TIF25A", "Informatik", "20000000-0000-0000-0000-000000000001");
-        yield return CreateSeedCourseGroup("TIF25B", "Informatik", "20000000-0000-0000-0000-000000000002");
-        yield return CreateSeedCourseGroup("WWI25A", "Wirtschaftsinformatik", "20000000-0000-0000-0000-000000000003");
-        yield return CreateSeedCourseGroup("TMB25A", "Maschinenbau", "20000000-0000-0000-0000-000000000004");
-
-        yield return new CampusGroup
-        {
-            Id = Guid.Parse("30000000-0000-0000-0000-000000000001"),
-            Name = "Campusleben",
-            Description = "Austausch zu Alltag, Fragen, Tipps und gemeinsamen Themen auf dem Campus.",
-            Type = GroupType.Social,
-            Audience = "Alle Studierenden",
-            OwnerLabel = "Community",
-            IconLabel = "CL",
-            AccentColor = "#2563eb",
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
-        };
-
-        yield return new CampusGroup
-        {
-            Id = Guid.Parse("30000000-0000-0000-0000-000000000002"),
-            Name = "Sport und Events",
-            Description = "Verabredungen, Hochschulsport, Campusaktionen und Freizeitveranstaltungen.",
-            Type = GroupType.Social,
-            Audience = "Interessierte auf dem Campus",
-            OwnerLabel = "Community",
-            IconLabel = "SE",
-            AccentColor = "#047857",
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
-        };
-
-        yield return new CampusGroup
-        {
-            Id = Guid.Parse("30000000-0000-0000-0000-000000000003"),
-            Name = "Schwarzes Brett",
-            Description = "Gesuche, Angebote, Mitfahrgelegenheiten und Hinweise mit campusweiter Reichweite.",
-            Type = GroupType.Social,
-            Audience = "Campusweit",
-            OwnerLabel = "Community mit Moderation",
-            IconLabel = "SB",
-            AccentColor = "#7c3aed",
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = true, IsDiscoverable = true }
-        };
+        return Task.CompletedTask;
     }
-
-    private static CampusGroup CreateSeedCourseGroup(string courseCode, string studyProgram, string id) => new()
-    {
-        Id = Guid.Parse(id),
-        Name = $"Kurs {courseCode}",
-        Description = $"Kursinterne Absprachen, Lernorganisation und Hinweise für {studyProgram}.",
-        Type = GroupType.Course,
-        Audience = courseCode,
-        CourseCode = courseCode,
-        OwnerLabel = studyProgram,
-        IconLabel = Initials(courseCode),
-        AccentColor = "#e2001a",
-        Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
-    };
 
     private static CampusGroup CreateCourseGroup(string courseCode, string? studyProgram) => new()
     {

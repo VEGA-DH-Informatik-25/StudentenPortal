@@ -29,6 +29,7 @@ public class FeedServiceTests
         Assert.True(result.IsSuccess);
         Assert.Equal(group.Id, result.Value!.Group.Id);
         Assert.Equal("Kurs TIF25A", result.Value.Group.Name);
+        Assert.True(result.Value.CanDelete);
         Assert.Equal(group.Id, feed.Posts.Single().GroupId);
     }
 
@@ -130,6 +131,15 @@ public class FeedServiceTests
         {
             var group = _groups.First(group => group.Id == id);
             group.AssignedUserIds = assignedUserIds.ToHashSet();
+            return Task.CompletedTask;
+        }
+
+        public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds)
+        {
+            var group = _groups.FirstOrDefault(group => string.Equals(group.CourseCode, courseCode, StringComparison.OrdinalIgnoreCase));
+            if (group is not null)
+                group.AssignedUserIds = assignedUserIds.ToHashSet();
+
             return Task.CompletedTask;
         }
     }

@@ -10,4 +10,5 @@ public interface IGroupRepository
     Task AddAsync(CampusGroup group);
     Task UpdateSettingsAsync(Guid id, GroupSettings settings);
     Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds);
+    Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds);
 }

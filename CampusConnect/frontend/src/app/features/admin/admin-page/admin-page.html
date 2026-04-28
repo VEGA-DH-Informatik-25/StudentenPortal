@@ -2,10 +2,10 @@
   <header class="admin-page__header">
     <div>
       <p class="admin-page__eyebrow">Administration</p>
-      <h2>Benutzerverwaltung</h2>
+      <h2>Benutzer und Kurse</h2>
     </div>
 
-    <button type="button" class="admin-page__refresh" (click)="loadUsers()" [disabled]="_isLoading()">
+    <button type="button" class="admin-page__refresh" (click)="loadData()" [disabled]="_isLoading() || _coursesLoading()">
       Aktualisieren
     </button>
   </header>
@@ -18,6 +18,41 @@
     <p class="admin-page__message admin-page__message--success">{{ _success() }}</p>
   }
 
+  <section class="course-admin" aria-label="Kursverwaltung">
+    <header>
+      <div>
+        <h3>Kurse</h3>
+        <p>{{ _courses().length }} aktive Kurse</p>
+      </div>
+    </header>
+
+    <form class="course-admin__form" (ngSubmit)="createCourse()">
+      <label>
+        Kurscode
+        <input type="text" name="courseCode" [(ngModel)]="_courseForm.code" maxlength="40" placeholder="TIF25C" required />
+      </label>
+      <label>
+        Studiengang
+        <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Informatik" required />
+      </label>
+      <label>
+        Semester
+        <input type="number" name="semester" [(ngModel)]="_courseForm.semester" min="1" max="6" required />
+      </label>
+      <button type="submit" [disabled]="_isCreatingCourse()">{{ _isCreatingCourse() ? 'Speichert...' : 'Kurs anlegen' }}</button>
+    </form>
+
+    @if (_coursesLoading()) {
+      <p class="course-admin__state">Kurse werden geladen...</p>
+    } @else {
+      <div class="course-list" aria-label="Aktive Kurse">
+        @for (course of _courses(); track course.code) {
+          <span>{{ courseLabel(course) }}</span>
+        }
+      </div>
+    }
+  </section>
+
   @if (_isLoading()) {
     <p class="admin-page__state">Benutzer werden geladen...</p>
   } @else if (_users().length === 0) {
@@ -27,6 +62,7 @@
       <div class="user-table__row user-table__row--head">
         <span>Benutzer</span>
         <span>Studium</span>
+        <span>Kurs</span>
         <span>Rolle</span>
         <span>Erstellt</span>
         <span>Aktion</span>
@@ -42,7 +78,18 @@
             <strong>{{ user.studyProgram || 'Nicht gesetzt' }}</strong>
             <span>{{ user.course }} · {{ user.semester }}. Semester</span>
           </div>
-          <label class="role-select">
+          <label class="admin-select">
+            <span>Kurs</span>
+            <select [ngModel]="user.course" (ngModelChange)="updateCourse(user, $event)" [disabled]="_busyUserId() === user.id || _coursesLoading()">
+              @if (user.course && !courseExists(user.course)) {
+                <option [value]="user.course">{{ user.course }} · nicht im Katalog</option>
+              }
+              @for (course of _courses(); track course.code) {
+                <option [value]="course.code">{{ course.code }}</option>
+              }
+            </select>
+          </label>
+          <label class="admin-select">
             <span>Rolle</span>
             <select [ngModel]="user.role" (ngModelChange)="updateRole(user, $event)" [disabled]="_busyUserId() === user.id">
               @for (role of _roles; track role) {

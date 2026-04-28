@@ -187,6 +187,15 @@ public class GroupsServiceTests
             group.AssignedUserIds = assignedUserIds.ToHashSet();
             return Task.CompletedTask;
         }
+
+        public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds)
+        {
+            var group = _groups.FirstOrDefault(group => string.Equals(group.CourseCode, courseCode, StringComparison.OrdinalIgnoreCase));
+            if (group is not null)
+                group.AssignedUserIds = assignedUserIds.ToHashSet();
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeUserRepository(params User[] users) : IUserRepository
