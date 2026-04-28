@@ -1,45 +1,106 @@
-<div class="mensa-page">
-  <h2>🍽️ Mensa Speiseplan</h2>
+<section class="mensa-page">
+  <header class="mensa-hero">
+    <div>
+      <p class="mensa-hero__eyebrow">DHBW Lörrach</p>
+      <h1>Mensa</h1>
+      <p>Aktuelle Gerichte, Preise und Kennzeichnungen der Mensa Lörrach.</p>
+    </div>
+  </header>
 
   @if (_isLoading()) {
-    <p>Lade Speiseplan…</p>
-  }
+    <p class="mensa-page__state">Speiseplan wird geladen...</p>
+  } @else if (_error()) {
+    <p class="mensa-page__state mensa-page__state--error">{{ _error() }}</p>
+  } @else if (_menu().length > 0) {
+    <div class="mensa-layout">
+      <aside class="mensa-days" aria-label="Speiseplantage">
+        <div class="section-heading">
+          <span>Woche</span>
+          <strong>Tage</strong>
+        </div>
 
-  @if (!_isLoading() && _error()) {
-    <p>{{ _error() }}</p>
-  }
+        <div class="mensa-days__list" role="tablist" aria-label="Speiseplantage">
+          @for (day of _menu(); track day.date; let index = $index) {
+            <button
+              class="mensa-days__item"
+              type="button"
+              role="tab"
+              [class.active]="_selectedDay() === index"
+              [attr.aria-selected]="_selectedDay() === index"
+              (click)="selectDay(index)">
+              <span class="mensa-days__weekday">{{ day.date | date:'EEE':'':'de' }}</span>
+              <span>
+                <strong>{{ day.date | date:'dd.MM.':'':'de' }}</strong>
+              </span>
+            </button>
+          }
+        </div>
+      </aside>
 
-  @if (_menu().length > 0) {
-    <div class="mensa-page__tabs">
-      @for (day of _menu(); track day.date; let i = $index) {
-        <button [class.active]="_selectedDay() === i" (click)="selectDay(i)">
-          {{ day.date | date:'EEE dd.MM':'':'de' }}
-        </button>
-      }
-    </div>
-
-    @if (currentDay) {
-      <div class="mensa-page__dishes">
-        @for (dish of currentDay.dishes; track dish.name) {
-          <div class="dish-card">
-            <div class="dish-card__header">
-              <span class="dish-card__name">{{ dish.name }}</span>
-              <div class="dish-card__badges">
-                @if (dish.isVegan) { <span class="badge badge--vegan">vegan</span> }
-                @if (dish.isVegetarian && !dish.isVegan) { <span class="badge badge--veg">vegetarisch</span> }
-              </div>
-              <span class="dish-card__price">{{ dish.priceStudent | number:'1.2-2' }} €</span>
-            </div>
-            <div class="dish-card__meta">
-              <span class="dish-card__category">{{ dish.category }}</span>
-              @if (dish.allergens) { <span class="dish-card__allergens">Allergene: {{ dish.allergens }}</span> }
+      @if (_currentDay(); as currentDay) {
+        <section class="mensa-menu" aria-label="Speiseplan für den ausgewählten Tag">
+          <div class="mensa-menu__toolbar">
+            <div class="section-heading">
+              <span>{{ currentDay.date | date:'EEEE':'':'de' }}</span>
+              <strong>{{ currentDay.date | date:'dd. MMMM yyyy':'':'de' }}</strong>
             </div>
           </div>
-        }
-      </div>
-    }
-  } @else if (!_isLoading() && !_error()) {
-    <p>Für die Mensa liegen aktuell keine Einträge vor.</p>
-  }
-</div>
 
+          @if (currentDay.dishes.length === 0) {
+            <div class="mensa-page__empty">
+              <strong>Keine Gerichte eingetragen.</strong>
+              <span>Für diesen Tag liegen aktuell keine Mensa-Daten vor.</span>
+            </div>
+          } @else {
+            <div class="mensa-page__dishes">
+              @for (dish of currentDay.dishes; track dish.name) {
+                <article
+                  class="dish-card"
+                  [class.dish-card--vegan]="dish.isVegan"
+                  [class.dish-card--vegetarian]="dish.isVegetarian && !dish.isVegan">
+                  <span class="dish-card__marker" aria-hidden="true">{{ categoryMarker(dish.category) }}</span>
+                  <div class="dish-card__body">
+                    <header class="dish-card__header">
+                      <div class="dish-card__title">
+                        <span class="dish-card__category">{{ dish.category }}</span>
+                        <h2>
+                          @for (line of dishNameLines(dish); track line) {
+                            <span>{{ line }}</span>
+                          }
+                        </h2>
+                      </div>
+                      <strong class="dish-card__price">{{ dish.priceStudent | number:'1.2-2' }} €</strong>
+                    </header>
+
+                    @if (dish.isVegan || dish.isVegetarian || dish.allergens) {
+                      <div class="dish-card__footer">
+                        @if (dish.isVegan || dish.isVegetarian) {
+                          <div class="dish-card__badges" aria-label="Kennzeichnungen">
+                            @if (dish.isVegan) {
+                              <span class="badge badge--vegan">vegan</span>
+                            }
+                            @if (dish.isVegetarian && !dish.isVegan) {
+                              <span class="badge badge--veg">vegetarisch</span>
+                            }
+                          </div>
+                        }
+                        @if (dish.allergens) {
+                          <span class="dish-card__allergens">{{ dish.allergens }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  } @else {
+    <div class="mensa-page__empty">
+      <strong>Kein Speiseplan verfügbar.</strong>
+      <span>Für die Mensa liegen aktuell keine Einträge vor.</span>
+    </div>
+  }
+</section>

@@ -40,7 +40,7 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
         {
             ["type"] = "98",
             ["tx_speiseplan_pi1[apiKey]"] = options.ApiKey.Trim(),
-            ["tx_speiseplan_pi1[ort]"] = string.IsNullOrWhiteSpace(options.OrtId) ? "671" : options.OrtId.Trim(),
+            ["tx_speiseplan_pi1[ort]"] = string.IsNullOrWhiteSpace(options.OrtId) ? "677" : options.OrtId.Trim(),
             ["tx_speiseplan_pi1[tage]"] = Math.Clamp(options.Days, 1, 14).ToString(CultureInfo.InvariantCulture)
         };
 
@@ -77,14 +77,14 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
     private static bool IsDishElement(XElement element)
     {
         var name = NormalizeName(element.Name.LocalName);
-        if (name is "speiseplan" or "menuplan" or "tag" or "day" or "date" or "datum")
+        if (name is "speiseplan" or "menuplan" or "plan" or "ort" or "tagesplan" or "tag" or "day" or "date" or "datum")
             return false;
 
-        if (name.Contains("gericht", StringComparison.Ordinal) || name.Contains("speise", StringComparison.Ordinal) || name == "meal")
+        if (name is "menue" or "menu" or "meal" || name.Contains("gericht", StringComparison.Ordinal) || name.Contains("speise", StringComparison.Ordinal))
             return true;
 
-        return FindText(element, "name", "gericht", "speise", "essen", "bezeichnung", "titel") is not null
-            && FindText(element, "preis", "price", "kategorie", "category", "art", "menulinie") is not null;
+        return FindDirectText(element, "name", "gericht", "speise", "essen", "bezeichnung", "titel") is not null
+            && FindDirectText(element, "preis", "price", "kategorie", "category", "art", "menulinie") is not null;
     }
 
     private static bool TryReadDish(XElement element, out MensaDish dish)
@@ -94,14 +94,16 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
         if (string.IsNullOrWhiteSpace(name))
             return false;
 
+        var nameLines = ReadNameLines(element, name);
         var category = FindText(element, "kategorie", "category", "art", "menulinie", "linie", "typ", "type") ?? "Speise";
-        var allergens = FindText(element, "allergene", "allergen", "kennzeichnung", "zusatzstoffe", "zusatz", "hinweise");
-        var tags = string.Join(' ', category, allergens, string.Join(' ', element.Descendants().Select(node => CleanText(node.Value))));
-        var isVegan = ContainsFoodTag(tags, "vegan");
+        var allergens = FindText(element, "kennzeichnung", "kennzeichnungen", "zusatzstoffe", "hinweise");
+        var tags = string.Join(' ', category, allergens, string.Join(' ', element.Attributes().Select(attribute => CleanText(attribute.Value))), string.Join(' ', element.Descendants().Select(node => CleanText(node.Value))));
+        var isVegan = ContainsFoodTag(tags, "vegan") || ContainsFoodTag(tags, "pflanzlich") || ContainsFoodTag(tags, "plant-based") || ContainsFoodTag(tags, "plant based");
         var isVegetarian = isVegan || ContainsFoodTag(tags, "vegetarisch") || ContainsFoodTag(tags, "vegetarian") || ContainsFoodTag(tags, "veggie");
 
         dish = new MensaDish(
             name,
+            nameLines,
             category,
             ParsePrice(FindText(element, "preis", "price", "student", "studierende")),
             string.IsNullOrWhiteSpace(allergens) ? null : allergens,
@@ -172,6 +174,35 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
             return CleanText(element.Value);
 
         return null;
+    }
+
+    private static string? FindDirectText(XElement element, params string[] names)
+    {
+        var attribute = element.Attributes().FirstOrDefault(candidate => NameMatches(candidate.Name.LocalName, names));
+        if (attribute is not null)
+            return CleanText(attribute.Value);
+
+        var child = element.Elements().FirstOrDefault(candidate => NameMatches(candidate.Name.LocalName, names));
+        return child is null ? null : CleanText(child.Value);
+    }
+
+    private static IReadOnlyList<string> ReadNameLines(XElement element, string fallbackName)
+    {
+        var nameWithBreaks = element.Descendants().FirstOrDefault(candidate => NameMatches(candidate.Name.LocalName, "nameMitUmbruch", "nameWithBreaks"));
+        if (nameWithBreaks is null)
+            return [fallbackName];
+
+        var text = WebUtility.HtmlDecode(nameWithBreaks.Value);
+        text = Regex.Replace(text, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, "<.*?>", " ");
+
+        var lines = text
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(CleanText)
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+        return lines.Count > 0 ? lines : [fallbackName];
     }
 
     private static bool NameMatches(string name, params string[] candidates)

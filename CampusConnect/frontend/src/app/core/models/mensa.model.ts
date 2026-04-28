@@ -1,5 +1,6 @@
 export interface MensaDish {
   name: string;
+  nameLines?: string[];
   category: string;
   priceStudent: number;
   allergens: string | null;

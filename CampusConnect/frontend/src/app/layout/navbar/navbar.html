@@ -1,10 +1,12 @@
-<nav class="navbar">
-  <div class="navbar__brand">
-    <span class="navbar__logo">🎓</span>
-    <span class="navbar__title">CampusConnect</span>
-  </div>
+<nav class="navbar" aria-label="Hauptnavigation">
+  <a class="navbar__brand" routerLink="/feed" routerLinkActive="navbar__brand--active" [routerLinkActiveOptions]="{ exact: true }" aria-label="CampusConnect Feed öffnen">
+    <span class="navbar__mark" aria-hidden="true"></span>
+    <span class="navbar__brand-copy">
+      <span class="navbar__overline">DHBW</span>
+      <span class="navbar__title">CampusConnect</span>
+    </span>
+  </a>
   <ul class="navbar__links">
-    <li><a routerLink="/feed" routerLinkActive="active">Feed</a></li>
     <li><a routerLink="/mensa" routerLinkActive="active">Mensa</a></li>
     <li><a routerLink="/timetable" routerLinkActive="active">Stundenplan</a></li>
     <li><a routerLink="/calendar" routerLinkActive="active">Prüfungen</a></li>
