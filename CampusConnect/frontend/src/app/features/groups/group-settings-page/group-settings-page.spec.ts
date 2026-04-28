@@ -28,6 +28,7 @@ describe('GroupSettingsPage', () => {
     },
     accounts: [
       { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true },
+      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false },
     ],
   };
 
@@ -58,5 +59,14 @@ describe('GroupSettingsPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('filters assignment rows by search text', () => {
+    (component as any)._accountSearch.set('bob');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Bob');
+    expect(text).not.toContain('alice@dhbw-loerrach.de');
   });
 });

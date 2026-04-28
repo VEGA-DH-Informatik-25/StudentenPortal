@@ -61,6 +61,55 @@ public class FeedServiceTests
         Assert.Equal("In dieser Gruppe dürfen Studierende keine Beiträge veröffentlichen.", result.Error);
     }
 
+    [Fact]
+    public async Task AddCommentAsync_WhenGroupAllowsComments_AppendsCommentToPost()
+    {
+        var user = new User
+        {
+            DisplayName = "Alice",
+            Email = "alice@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 3,
+            Course = "TIF25A"
+        };
+        var group = CourseGroup("TIF25A");
+        var post = new FeedPost { AuthorId = user.Id, AuthorName = user.DisplayName, GroupId = group.Id, Content = "Lerngruppe?" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.AddCommentAsync(new CreateCommentCommand(post.Id, user.Id, "Ich bin dabei."));
+
+        Assert.True(result.IsSuccess);
+        var comment = Assert.Single(result.Value!.Comments);
+        Assert.Equal("Ich bin dabei.", comment.Content);
+        Assert.True(comment.CanDelete);
+    }
+
+    [Fact]
+    public async Task ToggleReactionAsync_TogglesCurrentUserReaction()
+    {
+        var user = new User
+        {
+            DisplayName = "Alice",
+            Email = "alice@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 3,
+            Course = "TIF25A"
+        };
+        var group = CourseGroup("TIF25A");
+        var post = new FeedPost { AuthorId = user.Id, AuthorName = user.DisplayName, GroupId = group.Id, Content = "Lerngruppe?" };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var added = await service.ToggleReactionAsync(new ToggleReactionCommand(post.Id, user.Id, "👍"));
+        var removed = await service.ToggleReactionAsync(new ToggleReactionCommand(post.Id, user.Id, "👍"));
+
+        Assert.True(added.IsSuccess);
+        var reaction = Assert.Single(added.Value!.Reactions);
+        Assert.Equal(1, reaction.Count);
+        Assert.True(reaction.ReactedByCurrentUser);
+        Assert.True(removed.IsSuccess);
+        Assert.Empty(removed.Value!.Reactions);
+    }
+
     private static CampusGroup CourseGroup(string courseCode) => new()
     {
         Name = $"Kurs {courseCode}",
@@ -72,9 +121,9 @@ public class FeedServiceTests
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
     };
 
-    private sealed class FakeFeedRepository : IFeedRepository
+    private sealed class FakeFeedRepository(params FeedPost[] posts) : IFeedRepository
     {
-        private readonly List<FeedPost> _posts = [];
+        private readonly List<FeedPost> _posts = posts.ToList();
 
         public IReadOnlyList<FeedPost> Posts => _posts;
 
@@ -86,6 +135,41 @@ public class FeedServiceTests
         {
             _posts.Add(post);
             return Task.CompletedTask;
+        }
+
+        public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment)
+        {
+            var post = _posts.FirstOrDefault(post => post.Id == postId);
+            post?.Comments.Add(comment);
+            return Task.FromResult(post);
+        }
+
+        public Task<FeedPost?> DeleteCommentAsync(Guid postId, Guid commentId)
+        {
+            var post = _posts.FirstOrDefault(post => post.Id == postId);
+            post?.Comments.RemoveAll(comment => comment.Id == commentId);
+            return Task.FromResult(post);
+        }
+
+        public Task<FeedPost?> ToggleReactionAsync(Guid postId, string emoji, Guid userId)
+        {
+            var post = _posts.FirstOrDefault(post => post.Id == postId);
+            if (post is null)
+                return Task.FromResult<FeedPost?>(null);
+
+            var reaction = post.Reactions.FirstOrDefault(item => item.Emoji == emoji);
+            if (reaction is null)
+            {
+                post.Reactions.Add(new FeedReaction { Emoji = emoji, UserIds = [userId] });
+            }
+            else if (!reaction.UserIds.Add(userId))
+            {
+                reaction.UserIds.Remove(userId);
+                if (reaction.UserIds.Count == 0)
+                    post.Reactions.Remove(reaction);
+            }
+
+            return Task.FromResult<FeedPost?>(post);
         }
 
         public Task DeleteAsync(Guid id)

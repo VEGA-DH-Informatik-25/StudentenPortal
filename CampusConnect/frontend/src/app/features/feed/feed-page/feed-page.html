@@ -140,6 +140,73 @@
                 <small>{{ groupTypeLabel(post.group.type) }} · {{ commentPolicyLabel(post.group) }}</small>
               </div>
               <p class="post-card__content">{{ post.content }}</p>
+
+              <div class="post-card__actions" aria-label="Beitragsaktionen">
+                <div class="reaction-bar" aria-label="Reaktionen">
+                  @for (emoji of _reactionOptions; track emoji) {
+                    <button
+                      type="button"
+                      class="reaction-button"
+                      [class.reaction-button--active]="hasReacted(post, emoji)"
+                      [disabled]="isReacting(post.id, emoji)"
+                      (click)="onToggleReaction(post, emoji)"
+                      [attr.aria-label]="emoji + ' Reaktion umschalten'">
+                      <span aria-hidden="true">{{ emoji }}</span>
+                      @if (reactionCount(post, emoji) > 0) {
+                        <strong>{{ reactionCount(post, emoji) }}</strong>
+                      }
+                    </button>
+                  }
+                </div>
+
+                <span class="post-card__comment-count">
+                  {{ post.comments.length }} {{ post.comments.length === 1 ? 'Kommentar' : 'Kommentare' }}
+                </span>
+              </div>
+
+              <section class="comments" aria-label="Kommentare">
+                @if (post.comments.length > 0) {
+                  <div class="comments__list">
+                    @for (comment of post.comments; track comment.id) {
+                      <article class="comment">
+                        <span class="comment__avatar" aria-hidden="true">{{ initialsFor(comment.authorName) }}</span>
+                        <div>
+                          <header>
+                            <strong>{{ comment.authorName }}</strong>
+                            <time [attr.datetime]="comment.createdAt">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+                            @if (comment.canDelete) {
+                              <button type="button" (click)="onDeleteComment(post.id, comment.id)" aria-label="Kommentar löschen">×</button>
+                            }
+                          </header>
+                          <p>{{ comment.content }}</p>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                }
+
+                @if (post.canComment) {
+                  <form class="comment-composer" (ngSubmit)="onComment(post)">
+                    <label class="visually-hidden" [attr.for]="'comment-' + post.id">Kommentar verfassen</label>
+                    <textarea
+                      [id]="'comment-' + post.id"
+                      rows="2"
+                      maxlength="360"
+                      placeholder="Kommentieren..."
+                      [value]="commentDraft(post.id)"
+                      (input)="updateCommentDraft(post.id, $any($event.target).value)"></textarea>
+                    <button type="submit" [disabled]="!commentDraft(post.id).trim() || isCommenting(post.id)">
+                      @if (isCommenting(post.id)) {
+                        Sendet...
+                      } @else {
+                        Antworten
+                      }
+                    </button>
+                  </form>
+                } @else {
+                  <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                }
+              </section>
             </div>
           </article>
         }

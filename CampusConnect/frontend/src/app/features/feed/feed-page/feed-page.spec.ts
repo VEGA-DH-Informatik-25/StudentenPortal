@@ -47,8 +47,11 @@ describe('FeedPage', () => {
           provide: Feed,
           useValue: {
             getFeed: () => of([]),
-            createPost: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true }),
+            createPost: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
             deletePost: () => of(undefined),
+            createComment: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
+            deleteComment: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
+            toggleReaction: () => of({ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }),
           },
         },
         {

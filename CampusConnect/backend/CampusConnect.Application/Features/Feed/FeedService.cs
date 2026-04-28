@@ -7,16 +7,32 @@ using CampusConnect.Domain.Interfaces;
 namespace CampusConnect.Application.Features.Feed;
 
 public record CreatePostCommand(Guid AuthorId, Guid? GroupId, string Content);
-public record FeedPostDto(Guid Id, string AuthorName, CampusGroupDto Group, string Content, DateTime CreatedAt, bool CanDelete);
+public record CreateCommentCommand(Guid PostId, Guid AuthorId, string Content);
+public record ToggleReactionCommand(Guid PostId, Guid UserId, string Emoji);
+public record FeedCommentDto(Guid Id, string AuthorName, string Content, DateTime CreatedAt, bool CanDelete);
+public record FeedReactionDto(string Emoji, int Count, bool ReactedByCurrentUser);
+public record FeedPostDto(
+    Guid Id,
+    string AuthorName,
+    CampusGroupDto Group,
+    string Content,
+    DateTime CreatedAt,
+    bool CanDelete,
+    bool CanComment,
+    IReadOnlyList<FeedCommentDto> Comments,
+    IReadOnlyList<FeedReactionDto> Reactions);
 
 public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, IUserRepository userRepo)
 {
+    private static readonly HashSet<string> AllowedReactionEmojis = ["👍", "❤️", "🎉", "💡", "👀"];
+
     public async Task<IReadOnlyList<FeedPostDto>> GetFeedAsync(Guid currentUserId, int page = 1, int pageSize = 20)
     {
         var posts = await feedRepo.GetAllAsync(page, pageSize);
+        var currentUser = await userRepo.FindByIdAsync(currentUserId);
         var result = new List<FeedPostDto>();
         foreach (var post in posts)
-            result.Add(await ToDtoAsync(post, currentUserId));
+            result.Add(await ToDtoAsync(post, currentUserId, currentUser));
 
         return result;
     }
@@ -45,7 +61,78 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             Content = cmd.Content.Trim()
         };
         await feedRepo.AddAsync(post);
-        return Result<FeedPostDto>.Success(new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt, true));
+        return Result<FeedPostDto>.Success(await ToDtoAsync(post, cmd.AuthorId, user));
+    }
+
+    public async Task<Result<FeedPostDto>> AddCommentAsync(CreateCommentCommand cmd)
+    {
+        if (string.IsNullOrWhiteSpace(cmd.Content))
+            return Result<FeedPostDto>.Failure("Kommentar darf nicht leer sein.");
+
+        var user = await userRepo.FindByIdAsync(cmd.AuthorId);
+        if (user is null)
+            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+
+        var post = await feedRepo.FindByIdAsync(cmd.PostId);
+        if (post is null)
+            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+
+        var group = await ResolvePostGroupAsync(post);
+        if (!group.Settings.AllowComments)
+            return Result<FeedPostDto>.Failure("Kommentare sind in dieser Gruppe geschlossen.");
+
+        var comment = new FeedComment
+        {
+            AuthorId = cmd.AuthorId,
+            AuthorName = user.DisplayName,
+            Content = cmd.Content.Trim()
+        };
+
+        var updatedPost = await feedRepo.AddCommentAsync(cmd.PostId, comment);
+        return updatedPost is null
+            ? Result<FeedPostDto>.Failure("Beitrag nicht gefunden.")
+            : Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, cmd.AuthorId, user));
+    }
+
+    public async Task<Result<FeedPostDto>> DeleteCommentAsync(Guid postId, Guid commentId, Guid userId)
+    {
+        var post = await feedRepo.FindByIdAsync(postId);
+        if (post is null)
+            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+
+        var comment = post.Comments.FirstOrDefault(item => item.Id == commentId);
+        if (comment is null)
+            return Result<FeedPostDto>.Failure("Kommentar nicht gefunden.");
+
+        User? currentUser = null;
+        if (comment.AuthorId != userId)
+        {
+            currentUser = await userRepo.FindByIdAsync(userId);
+            if (currentUser?.Role != UserRole.Admin)
+                return Result<FeedPostDto>.Failure("Keine Berechtigung.");
+        }
+
+        currentUser ??= await userRepo.FindByIdAsync(userId);
+        var updatedPost = await feedRepo.DeleteCommentAsync(postId, commentId);
+        return updatedPost is null
+            ? Result<FeedPostDto>.Failure("Beitrag nicht gefunden.")
+            : Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, userId, currentUser));
+    }
+
+    public async Task<Result<FeedPostDto>> ToggleReactionAsync(ToggleReactionCommand cmd)
+    {
+        var emoji = cmd.Emoji.Trim();
+        if (!AllowedReactionEmojis.Contains(emoji))
+            return Result<FeedPostDto>.Failure("Diese Reaktion wird nicht unterstützt.");
+
+        var user = await userRepo.FindByIdAsync(cmd.UserId);
+        if (user is null)
+            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+
+        var updatedPost = await feedRepo.ToggleReactionAsync(cmd.PostId, emoji, cmd.UserId);
+        return updatedPost is null
+            ? Result<FeedPostDto>.Failure("Beitrag nicht gefunden.")
+            : Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, cmd.UserId, user));
     }
 
     public async Task<Result<bool>> DeletePostAsync(Guid postId, Guid userId)
@@ -79,21 +166,50 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             : await groupRepo.EnsureCourseGroupAsync(user.Course, user.StudyProgram);
     }
 
-    private async Task<FeedPostDto> ToDtoAsync(FeedPost post, Guid currentUserId)
-    {
-        var group = await groupRepo.FindByIdAsync(post.GroupId) ?? new CampusGroup
-        {
-            Id = post.GroupId,
-            Name = "Unbekannte Gruppe",
-            Description = "Diese Gruppe ist nicht mehr verfügbar.",
-            Type = GroupType.Social,
-            Audience = "Archiv",
-            OwnerLabel = "CampusConnect",
-            IconLabel = "?",
-            AccentColor = "#5c6672",
-            Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = false, IsDiscoverable = false }
-        };
+    private async Task<CampusGroup> ResolvePostGroupAsync(FeedPost post) => await groupRepo.FindByIdAsync(post.GroupId) ?? MissingGroup(post.GroupId);
 
-        return new FeedPostDto(post.Id, post.AuthorName, GroupDtoMapper.ToDto(group), post.Content, post.CreatedAt, post.AuthorId == currentUserId);
+    private async Task<FeedPostDto> ToDtoAsync(FeedPost post, Guid currentUserId, User? currentUser = null)
+    {
+        var group = await ResolvePostGroupAsync(post);
+        var canModerate = currentUser?.Role == UserRole.Admin;
+        var comments = post.Comments
+            .OrderBy(comment => comment.CreatedAt)
+            .Select(comment => new FeedCommentDto(
+                comment.Id,
+                comment.AuthorName,
+                comment.Content,
+                comment.CreatedAt,
+                comment.AuthorId == currentUserId || canModerate))
+            .ToList();
+        var reactions = post.Reactions
+            .Where(reaction => reaction.UserIds.Count > 0)
+            .OrderByDescending(reaction => reaction.UserIds.Count)
+            .ThenBy(reaction => reaction.Emoji, StringComparer.Ordinal)
+            .Select(reaction => new FeedReactionDto(reaction.Emoji, reaction.UserIds.Count, reaction.UserIds.Contains(currentUserId)))
+            .ToList();
+
+        return new FeedPostDto(
+            post.Id,
+            post.AuthorName,
+            GroupDtoMapper.ToDto(group),
+            post.Content,
+            post.CreatedAt,
+            post.AuthorId == currentUserId || canModerate,
+            group.Settings.AllowComments,
+            comments,
+            reactions);
     }
+
+    private static CampusGroup MissingGroup(Guid groupId) => new()
+    {
+        Id = groupId,
+        Name = "Unbekannte Gruppe",
+        Description = "Diese Gruppe ist nicht mehr verfügbar.",
+        Type = GroupType.Social,
+        Audience = "Archiv",
+        OwnerLabel = "CampusConnect",
+        IconLabel = "?",
+        AccentColor = "#5c6672",
+        Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = false, RequiresApproval = false, IsDiscoverable = false }
+    };
 }

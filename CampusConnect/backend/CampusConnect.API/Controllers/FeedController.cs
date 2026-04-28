@@ -38,6 +38,36 @@ public class FeedController(FeedService feedService) : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/comments")]
+    public async Task<IActionResult> CreateComment(Guid id, [FromBody] CreateCommentRequest request)
+    {
+        var result = await feedService.AddCommentAsync(new CreateCommentCommand(id, GetUserId(), request.Content));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{postId:guid}/comments/{commentId:guid}")]
+    public async Task<IActionResult> DeleteComment(Guid postId, Guid commentId)
+    {
+        var result = await feedService.DeleteCommentAsync(postId, commentId, GetUserId());
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/reactions")]
+    public async Task<IActionResult> ToggleReaction(Guid id, [FromBody] ToggleReactionRequest request)
+    {
+        var result = await feedService.ToggleReactionAsync(new ToggleReactionCommand(id, GetUserId(), request.Emoji));
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
     private Guid GetUserId() => Guid.Parse(
         User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
         User.FindFirst("sub")!.Value);

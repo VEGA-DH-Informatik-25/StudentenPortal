@@ -30,6 +30,55 @@ public class InMemoryFeedRepository : IFeedRepository
         return Task.CompletedTask;
     }
 
+    public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment)
+    {
+        if (!_store.TryGetValue(postId, out var post))
+            return Task.FromResult<FeedPost?>(null);
+
+        lock (post)
+        {
+            post.Comments.Add(comment);
+        }
+
+        return Task.FromResult<FeedPost?>(post);
+    }
+
+    public Task<FeedPost?> DeleteCommentAsync(Guid postId, Guid commentId)
+    {
+        if (!_store.TryGetValue(postId, out var post))
+            return Task.FromResult<FeedPost?>(null);
+
+        lock (post)
+        {
+            post.Comments.RemoveAll(comment => comment.Id == commentId);
+        }
+
+        return Task.FromResult<FeedPost?>(post);
+    }
+
+    public Task<FeedPost?> ToggleReactionAsync(Guid postId, string emoji, Guid userId)
+    {
+        if (!_store.TryGetValue(postId, out var post))
+            return Task.FromResult<FeedPost?>(null);
+
+        lock (post)
+        {
+            var reaction = post.Reactions.FirstOrDefault(item => item.Emoji == emoji);
+            if (reaction is null)
+            {
+                post.Reactions.Add(new FeedReaction { Emoji = emoji, UserIds = [userId] });
+            }
+            else if (!reaction.UserIds.Add(userId))
+            {
+                reaction.UserIds.Remove(userId);
+                if (reaction.UserIds.Count == 0)
+                    post.Reactions.Remove(reaction);
+            }
+        }
+
+        return Task.FromResult<FeedPost?>(post);
+    }
+
     public Task DeleteAsync(Guid id)
     {
         _store.TryRemove(id, out _);

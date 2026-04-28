@@ -70,15 +70,45 @@
       <section class="settings-block" aria-label="Konten zuweisen">
         <header>
           <h3>Konten</h3>
-          <p>{{ group.assignedUserCount }} zugewiesen</p>
+          <p>{{ _selectedAccountCount() }} zugewiesen · {{ _filteredAccounts().length }} sichtbar</p>
         </header>
 
         @if (_assignmentsLocked()) {
           <p class="settings-block__hint">Kursgruppen folgen der Kurszuordnung in der Benutzerverwaltung.</p>
         }
 
-        <div class="account-list">
-          @for (account of _accounts(); track account.id) {
+        <div class="account-toolbar" aria-label="Konten suchen und filtern">
+          <label>
+            <span>Suche</span>
+            <input
+              type="search"
+              placeholder="Name, E-Mail, Rolle, Kurs"
+              [value]="_accountSearch()"
+              (input)="updateAccountSearch($any($event.target).value)">
+          </label>
+
+          <label>
+            <span>Filter</span>
+            <select [value]="_accountFilter()" (change)="updateAccountFilter($any($event.target).value)">
+              <option value="All">Alle Konten</option>
+              <option value="Assigned">Zugewiesen</option>
+              <option value="Unassigned">Nicht zugewiesen</option>
+              <option value="Student">Studierende</option>
+              <option value="Lecturer">Lehrende</option>
+              <option value="Admin">Admins</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="account-table" aria-label="Zuweisbare Konten">
+          <div class="account-table__head">
+            <span>Status</span>
+            <span>Name</span>
+            <span>Rolle</span>
+            <span>Kurs</span>
+          </div>
+
+          @for (account of _filteredAccounts(); track account.id) {
             <label class="account-row" [class.account-row--owner]="isOwner(account)">
               <input
                 type="checkbox"
@@ -87,9 +117,13 @@
                 (change)="toggleAccount(account, $any($event.target).checked)">
               <span>
                 <strong>{{ account.displayName }}</strong>
-                <small>{{ account.email }} · {{ account.role }} · {{ account.course || 'Kein Kurs' }}</small>
+                <small>{{ account.email }}{{ isOwner(account) ? ' · Besitzer' : '' }}</small>
               </span>
+              <em>{{ account.role }}</em>
+              <em>{{ account.course || 'Kein Kurs' }}</em>
             </label>
+          } @empty {
+            <p class="account-table__empty">Keine Konten passen zu Suche und Filter.</p>
           }
         </div>
 

@@ -29,6 +29,10 @@ export class FeedPage implements OnInit {
   protected readonly _isLoading = signal(false);
   protected readonly _error = signal('');
   protected readonly _newContent = signal('');
+  protected readonly _commentDrafts = signal<Record<string, string>>({});
+  protected readonly _commentingPostIds = signal<string[]>([]);
+  protected readonly _reactingKeys = signal<string[]>([]);
+  protected readonly _reactionOptions = ['👍', '❤️', '🎉', '💡', '👀'];
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _groupsLoading = signal(false);
   protected readonly _groupsError = signal('');
@@ -84,12 +88,88 @@ export class FeedPage implements OnInit {
     });
   }
 
+  protected onComment(post: FeedPost): void {
+    const content = this.commentDraft(post.id).trim();
+    if (!content || !post.canComment || this.isCommenting(post.id)) {
+      return;
+    }
+
+    this._commentingPostIds.update(ids => [...ids, post.id]);
+    this._error.set('');
+    this._feedService.createComment(post.id, { content }).subscribe({
+      next: updatedPost => {
+        this._replacePost(updatedPost);
+        this.updateCommentDraft(post.id, '');
+        this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
+      },
+      error: () => {
+        this._error.set('Kommentar konnte nicht gespeichert werden.');
+        this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
+      },
+    });
+  }
+
+  protected onDeleteComment(postId: string, commentId: string): void {
+    this._feedService.deleteComment(postId, commentId).subscribe({
+      next: updatedPost => this._replacePost(updatedPost),
+      error: () => this._error.set('Kommentar konnte nicht gelöscht werden.'),
+    });
+  }
+
+  protected onToggleReaction(post: FeedPost, emoji: string): void {
+    const key = this.reactionKey(post.id, emoji);
+    if (this._reactingKeys().includes(key)) {
+      return;
+    }
+
+    this._reactingKeys.update(keys => [...keys, key]);
+    this._error.set('');
+    this._feedService.toggleReaction(post.id, { emoji }).subscribe({
+      next: updatedPost => {
+        this._replacePost(updatedPost);
+        this._reactingKeys.update(keys => keys.filter(item => item !== key));
+      },
+      error: () => {
+        this._error.set('Reaktion konnte nicht gespeichert werden.');
+        this._reactingKeys.update(keys => keys.filter(item => item !== key));
+      },
+    });
+  }
+
   protected updateContent(value: string): void {
     this._newContent.set(value);
   }
 
   protected updateSelectedGroup(value: string): void {
     this._selectedGroupId.set(value);
+  }
+
+  protected updateCommentDraft(postId: string, value: string): void {
+    this._commentDrafts.update(drafts => ({ ...drafts, [postId]: value }));
+  }
+
+  protected commentDraft(postId: string): string {
+    return this._commentDrafts()[postId] ?? '';
+  }
+
+  protected reactionCount(post: FeedPost, emoji: string): number {
+    return post.reactions.find(reaction => reaction.emoji === emoji)?.count ?? 0;
+  }
+
+  protected hasReacted(post: FeedPost, emoji: string): boolean {
+    return post.reactions.find(reaction => reaction.emoji === emoji)?.reactedByCurrentUser ?? false;
+  }
+
+  protected reactionKey(postId: string, emoji: string): string {
+    return `${postId}:${emoji}`;
+  }
+
+  protected isReacting(postId: string, emoji: string): boolean {
+    return this._reactingKeys().includes(this.reactionKey(postId, emoji));
+  }
+
+  protected isCommenting(postId: string): boolean {
+    return this._commentingPostIds().includes(postId);
   }
 
   protected groupTypeLabel(type: GroupType): string {
@@ -228,6 +308,10 @@ export class FeedPage implements OnInit {
       ?? groups.find(group => this.canPostToGroup(group));
 
     this._selectedGroupId.set(fallback?.id ?? '');
+  }
+
+  private _replacePost(updatedPost: FeedPost): void {
+    this._posts.update(posts => posts.map(post => post.id === updatedPost.id ? updatedPost : post));
   }
 
   private _resolveScheduleCourse(): string {

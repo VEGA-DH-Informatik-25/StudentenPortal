@@ -96,6 +96,46 @@
 	min-width: 0;
 }
 
+.group-directory__toolbar {
+	background: var(--dhbw-surface);
+	border: 1px solid var(--dhbw-border);
+	border-radius: 8px;
+	display: grid;
+	gap: 0.75rem;
+	grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.34fr);
+	padding: 0.75rem;
+
+	label {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	span {
+		color: var(--dhbw-ink);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	input,
+	select {
+		background: var(--dhbw-surface-muted);
+		border: 1px solid var(--dhbw-border);
+		border-radius: 8px;
+		color: var(--dhbw-ink);
+		font: inherit;
+		min-height: 2.55rem;
+		padding: 0.55rem 0.65rem;
+		width: 100%;
+
+		&:focus {
+			background: var(--dhbw-surface);
+			border-color: var(--dhbw-red);
+			box-shadow: 0 0 0 3px var(--dhbw-focus);
+			outline: none;
+		}
+	}
+}
+
 .group-tabs {
 	background: var(--dhbw-surface);
 	border: 1px solid var(--dhbw-border);
@@ -210,21 +250,6 @@
 		}
 	}
 
-	&__meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem;
-	}
-
-	em {
-		background: var(--dhbw-bg-accent);
-		border-radius: 999px;
-		color: var(--dhbw-ink-soft);
-		font-size: 0.72rem;
-		font-style: normal;
-		font-weight: 800;
-		padding: 0.18rem 0.45rem;
-	}
 }
 
 .create-group {
@@ -323,6 +348,10 @@
 	}
 
 	.groups-overview {
+		grid-template-columns: 1fr;
+	}
+
+	.group-directory__toolbar {
 		grid-template-columns: 1fr;
 	}
 

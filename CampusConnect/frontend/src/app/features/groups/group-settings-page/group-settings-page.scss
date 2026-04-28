@@ -172,6 +172,72 @@
 	padding-right: 0.1rem;
 }
 
+.account-toolbar {
+	display: grid;
+	gap: 0.7rem;
+	grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.36fr);
+
+	label {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	span {
+		color: var(--dhbw-ink);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	input,
+	select {
+		background: var(--dhbw-surface-muted);
+		border: 1px solid var(--dhbw-border);
+		border-radius: 8px;
+		color: var(--dhbw-ink);
+		font: inherit;
+		min-height: 2.55rem;
+		padding: 0.55rem 0.65rem;
+		width: 100%;
+
+		&:focus {
+			background: var(--dhbw-surface);
+			border-color: var(--dhbw-red);
+			box-shadow: 0 0 0 3px var(--dhbw-focus);
+			outline: none;
+		}
+	}
+}
+
+.account-table {
+	display: grid;
+	gap: 0.55rem;
+	max-height: 28rem;
+	overflow: auto;
+	padding-right: 0.1rem;
+
+	&__head {
+		align-items: center;
+		color: var(--dhbw-text-muted);
+		display: grid;
+		font-size: 0.72rem;
+		font-weight: 900;
+		gap: 0.7rem;
+		grid-template-columns: 4.25rem minmax(0, 1.5fr) minmax(5rem, 0.5fr) minmax(6rem, 0.6fr);
+		padding: 0 0.75rem;
+		text-transform: uppercase;
+	}
+
+	&__empty {
+		background: var(--dhbw-surface-muted);
+		border: 1px dashed var(--dhbw-border);
+		border-radius: 8px;
+		color: var(--dhbw-text-muted);
+		font-size: 0.84rem;
+		margin: 0;
+		padding: 1rem;
+	}
+}
+
 .account-row {
 	align-items: center;
 	background: var(--dhbw-surface-muted);
@@ -179,7 +245,7 @@
 	border-radius: 8px;
 	display: grid;
 	gap: 0.7rem;
-	grid-template-columns: auto minmax(0, 1fr);
+	grid-template-columns: 4.25rem minmax(0, 1.5fr) minmax(5rem, 0.5fr) minmax(6rem, 0.6fr);
 	padding: 0.75rem;
 
 	&--owner {
@@ -200,6 +266,14 @@
 		line-height: 1.4;
 		overflow-wrap: anywhere;
 	}
+
+	em {
+		color: var(--dhbw-ink-soft);
+		font-size: 0.8rem;
+		font-style: normal;
+		font-weight: 800;
+		overflow-wrap: anywhere;
+	}
 }
 
 @media (max-width: 920px) {
@@ -216,5 +290,15 @@
 		h2 {
 			font-size: 1.65rem;
 		}
+	}
+
+	.account-toolbar,
+	.account-table__head,
+	.account-row {
+		grid-template-columns: 1fr;
+	}
+
+	.account-table__head {
+		display: none;
 	}
 }

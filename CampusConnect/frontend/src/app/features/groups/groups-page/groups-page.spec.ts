@@ -49,4 +49,11 @@ describe('GroupsPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('filters visible groups by search text', () => {
+    (component as any)._searchQuery.set('bibliothek');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Für diesen Filter gibt es noch keine Gruppen.');
+  });
 });

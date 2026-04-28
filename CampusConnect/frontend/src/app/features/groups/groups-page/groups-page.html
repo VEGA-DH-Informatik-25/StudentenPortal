@@ -50,6 +50,29 @@
           }
         </div>
 
+        <div class="group-directory__toolbar" aria-label="Gruppen suchen und weiter filtern">
+          <label>
+            <span>Suche</span>
+            <input
+              type="search"
+              placeholder="Name, Kurs, Zielgruppe"
+              [value]="_searchQuery()"
+              (input)="updateSearchQuery($any($event.target).value)">
+          </label>
+
+          <label>
+            <span>Filter</span>
+            <select [value]="_policyFilter()" (change)="updatePolicyFilter($any($event.target).value)">
+              <option value="All">Alle Regeln</option>
+              <option value="StudentPosts">Studierende posten</option>
+              <option value="UniversityPosts">Nur Hochschule postet</option>
+              <option value="Approval">Mit Freigabe</option>
+              <option value="CommentsOpen">Kommentare offen</option>
+              <option value="CommentsClosed">Kommentare geschlossen</option>
+            </select>
+          </label>
+        </div>
+
         @if (_filteredGroups().length > 0) {
           <div class="group-section__grid">
             @for (group of _filteredGroups(); track group.id) {
@@ -70,14 +93,6 @@
                   </div>
 
                   <p>{{ group.description }}</p>
-                  <span class="group-card__meta">
-                    <em>{{ group.audience }}</em>
-                    <em>{{ settingLabel(group) }}</em>
-                    <em>{{ group.assignedUserCount }} Konten</em>
-                    @if (!group.settings.allowComments) {
-                      <em>Kommentare aus</em>
-                    }
-                  </span>
                 </div>
               </article>
             }

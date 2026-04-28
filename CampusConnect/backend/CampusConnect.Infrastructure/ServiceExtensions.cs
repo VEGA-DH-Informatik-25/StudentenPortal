@@ -25,6 +25,7 @@ public static class ServiceExtensions
             options.UseSqlite(configuration.GetConnectionString("CampusConnect") ?? "Data Source=campusconnect.db"));
 
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
+        services.Configure<DemoDataOptions>(configuration.GetSection(DemoDataOptions.SectionName));
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
         services.AddScoped<ICourseRepository, EntityCourseRepository>();
@@ -46,14 +47,21 @@ public static class ServiceExtensions
         services.AddScoped<CalendarService>();
         services.AddScoped<AdminUsersService>();
         services.AddScoped<DatabaseInitializer>();
+        services.AddScoped<DevelopmentDemoDataSeeder>();
 
         return services;
     }
 
-    public static async Task InitializeInfrastructureAsync(this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+    public static async Task InitializeInfrastructureAsync(this IServiceProvider serviceProvider, bool seedDevelopmentDemoData = false, CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
         await initializer.InitializeAsync(cancellationToken);
+
+        if (!seedDevelopmentDemoData)
+            return;
+
+        var demoDataSeeder = scope.ServiceProvider.GetRequiredService<DevelopmentDemoDataSeeder>();
+        await demoDataSeeder.SeedAsync(cancellationToken);
     }
 }

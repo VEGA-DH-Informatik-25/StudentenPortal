@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { GroupAccount, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
+type AccountFilter = 'All' | 'Assigned' | 'Unassigned' | 'Student' | 'Lecturer' | 'Admin';
+
 @Component({
   selector: 'app-group-settings-page',
   standalone: true,
@@ -22,8 +24,12 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _error = signal('');
   protected readonly _savingSetting = signal<keyof GroupSettings | ''>('');
   protected readonly _savingAssignments = signal(false);
+  protected readonly _accountSearch = signal('');
+  protected readonly _accountFilter = signal<AccountFilter>('All');
   protected readonly _group = computed(() => this._details()?.group ?? null);
   protected readonly _accounts = computed(() => this._details()?.accounts ?? []);
+  protected readonly _filteredAccounts = computed(() => this._accounts().filter(account => this._matchesAccountSearch(account) && this._matchesAccountFilter(account)));
+  protected readonly _selectedAccountCount = computed(() => this._selectedAccountIds().length);
   protected readonly _assignmentsLocked = computed(() => this._group()?.type === 'Course');
   protected readonly _hasAssignmentChanges = computed(() => {
     const originalIds = this._accounts()
@@ -79,6 +85,14 @@ export class GroupSettingsPage implements OnInit {
 
   protected isOwner(account: GroupAccount): boolean {
     return this._group()?.ownerUserId === account.id;
+  }
+
+  protected updateAccountSearch(value: string): void {
+    this._accountSearch.set(value);
+  }
+
+  protected updateAccountFilter(value: AccountFilter): void {
+    this._accountFilter.set(value);
   }
 
   protected toggleAccount(account: GroupAccount, checked: boolean): void {
@@ -138,5 +152,30 @@ export class GroupSettingsPage implements OnInit {
   private _setDetails(details: GroupSettingsDetails): void {
     this._details.set(details);
     this._selectedAccountIds.set(details.accounts.filter(account => account.isAssigned).map(account => account.id));
+  }
+
+  private _matchesAccountSearch(account: GroupAccount): boolean {
+    const query = this._accountSearch().trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    return [account.displayName, account.email, account.role, account.course || '']
+      .some(value => value.toLowerCase().includes(query));
+  }
+
+  private _matchesAccountFilter(account: GroupAccount): boolean {
+    switch (this._accountFilter()) {
+      case 'Assigned':
+        return this.isAccountSelected(account);
+      case 'Unassigned':
+        return !this.isAccountSelected(account);
+      case 'Student':
+      case 'Lecturer':
+      case 'Admin':
+        return account.role === this._accountFilter();
+      case 'All':
+        return true;
+    }
   }
 }

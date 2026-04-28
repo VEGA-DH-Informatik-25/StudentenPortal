@@ -40,7 +40,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-await app.Services.InitializeInfrastructureAsync();
+await app.Services.InitializeInfrastructureAsync(app.Environment.IsDevelopment());
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();

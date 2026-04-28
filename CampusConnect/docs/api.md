@@ -15,6 +15,9 @@
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
 | DELETE | `/api/feed/{id}` | Eigenen Beitrag löschen | Ja |
+| POST | `/api/feed/{id}/comments` | Kommentar unter einem Beitrag erstellen | Ja |
+| DELETE | `/api/feed/{postId}/comments/{commentId}` | Eigenen Kommentar löschen | Ja |
+| POST | `/api/feed/{id}/reactions` | Emoji-Reaktion an einem Beitrag umschalten | Ja |
 | GET | `/api/mensa` | Mensa-Speiseplan für die aktuelle Woche abrufen | Ja |
 | GET | `/api/calendar` | Prüfungskalender-Einträge abrufen | Ja |
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
@@ -46,7 +49,9 @@ Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs exist
 
 ## Gruppen und Feed
 
-Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, Bearbeitungsflag und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`; dieses Flag ist nur für die Autorin oder den Autor des Beitrags aktiv. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
+Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, Bearbeitungsflag und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
+
+Kommentare respektieren die Gruppeneinstellung `allowComments`. Emoji-Reaktionen sind als Toggle modelliert: sendet derselbe Nutzer dasselbe Emoji erneut, wird die Reaktion entfernt. Unterstützte Reaktionen sind `👍`, `❤️`, `🎉`, `💡` und `👀`.
 
 Gruppeneinstellungen enthalten aktuell:
 
