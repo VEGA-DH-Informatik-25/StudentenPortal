@@ -1,5 +1,11 @@
 # API-Referenz
 
+## Swagger und OpenAPI
+
+In der Development-Umgebung stellt die API eine interaktive Swagger-Oberfläche unter `/swagger` bereit. Das von Swagger verwendete OpenAPI-Dokument ist unter `/swagger/v1/swagger.json` abrufbar; zusätzlich bleibt der von ASP.NET Core generierte OpenAPI-Endpunkt unter `/openapi/v1.json` verfügbar.
+
+Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `POST /api/auth/login` getestet werden. Das Token wird als Bearer-Token gesendet.
+
 ## Geplante Endpunkte
 
 | Methode | Endpunkt | Beschreibung | Authentifizierung |

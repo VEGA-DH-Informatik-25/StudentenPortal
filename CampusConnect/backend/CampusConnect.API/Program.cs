@@ -1,5 +1,6 @@
 using CampusConnect.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -8,6 +9,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "CampusConnect API",
+        Version = "v1",
+        Description = "HTTP API fuer das CampusConnect Studentenportal."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "JWT aus POST /api/auth/login als Bearer-Token verwenden."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
+});
 
 builder.Services.AddCors(options =>
 {
@@ -43,7 +67,15 @@ var app = builder.Build();
 await app.Services.InitializeInfrastructureAsync(app.Environment.IsDevelopment());
 
 if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CampusConnect API v1");
+        options.DocumentTitle = "CampusConnect API";
+    });
+}
 
 app.UseCors();
 app.UseAuthentication();
