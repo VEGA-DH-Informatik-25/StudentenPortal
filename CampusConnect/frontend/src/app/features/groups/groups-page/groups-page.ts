@@ -28,6 +28,7 @@ export class GroupsPage implements OnInit {
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _isLoading = signal(false);
   protected readonly _isCreating = signal(false);
+  protected readonly _isCreateMenuOpen = signal(false);
   protected readonly _error = signal('');
   protected readonly _success = signal('');
   protected readonly _activeTab = signal<GroupTab>('All');
@@ -37,6 +38,10 @@ export class GroupsPage implements OnInit {
   protected readonly _createName = signal('');
   protected readonly _createDescription = signal('');
   protected readonly _createAudience = signal('');
+  protected readonly _createAllowStudentPosts = signal(true);
+  protected readonly _createAllowComments = signal(true);
+  protected readonly _createRequiresApproval = signal(false);
+  protected readonly _createIsDiscoverable = signal(true);
   protected readonly _officialGroups = computed(() => this._groups().filter(group => group.type === 'Official'));
   protected readonly _courseGroups = computed(() => this._groups().filter(group => group.type === 'Course'));
   protected readonly _socialGroups = computed(() => this._groups().filter(group => group.type === 'Social'));
@@ -68,12 +73,33 @@ export class GroupsPage implements OnInit {
     !this._isCreating()
   );
 
+  protected readonly _createPolicySummary = computed(() => {
+    const policies: string[] = [];
+    policies.push(this._createAllowStudentPosts() ? 'Studierende dürfen posten' : 'Nur Hochschulrollen posten');
+    policies.push(this._createAllowComments() ? 'Kommentare offen' : 'Kommentare geschlossen');
+    policies.push(this._createRequiresApproval() ? 'Beiträge mit Freigabe' : 'Beiträge ohne Freigabe');
+    policies.push(this._createIsDiscoverable() ? 'Öffentlich sichtbar' : 'Privat');
+    return policies.join(' · ');
+  });
+
   ngOnInit(): void {
     this._loadGroups();
   }
 
   protected setActiveTab(tab: GroupTab): void {
     this._activeTab.set(tab);
+  }
+
+  protected openCreateMenu(): void {
+    this._isCreateMenuOpen.set(true);
+  }
+
+  protected closeCreateMenu(): void {
+    if (this._isCreating()) {
+      return;
+    }
+
+    this._isCreateMenuOpen.set(false);
   }
 
   protected updateSearchQuery(value: string): void {
@@ -144,6 +170,10 @@ export class GroupsPage implements OnInit {
       name: this._createName().trim(),
       description: this._createDescription().trim(),
       audience: this._createAudience().trim(),
+      allowStudentPosts: this._createAllowStudentPosts(),
+      allowComments: this._createAllowComments(),
+      requiresApproval: this._createRequiresApproval(),
+      isDiscoverable: this._createIsDiscoverable(),
     }).subscribe({
       next: group => {
         this._groups.update(groups => [group, ...groups]);
@@ -151,6 +181,11 @@ export class GroupsPage implements OnInit {
         this._createName.set('');
         this._createDescription.set('');
         this._createAudience.set('');
+        this._createAllowStudentPosts.set(true);
+        this._createAllowComments.set(true);
+        this._createRequiresApproval.set(false);
+        this._createIsDiscoverable.set(true);
+        this._isCreateMenuOpen.set(false);
         this._success.set('Gruppe wurde erstellt.');
         this._isCreating.set(false);
       },

@@ -72,6 +72,38 @@ public class GroupsServiceTests
     }
 
     [Fact]
+    public async Task CreateGroupAsync_AppliesInitialSettingsFromCommand()
+    {
+        var user = new User
+        {
+            DisplayName = "Eva",
+            Email = "eva@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var groups = new FakeGroupRepository();
+        var service = new GroupsService(groups, new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            "Lerngruppe Web",
+            "Gemeinsame Vorbereitung",
+            "Interessierte Studierende",
+            AllowStudentPosts: false,
+            AllowComments: false,
+            RequiresApproval: true,
+            IsDiscoverable: false));
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value!.Settings.AllowStudentPosts);
+        Assert.False(result.Value.Settings.AllowComments);
+        Assert.True(result.Value.Settings.RequiresApproval);
+        Assert.False(result.Value.Settings.IsDiscoverable);
+    }
+
+    [Fact]
     public async Task GetGroupsForUserAsync_HidesPrivateUnassignedGroups()
     {
         var user = new User
@@ -257,6 +289,71 @@ public class GroupsServiceTests
         Assert.True(memberGroup.IsAssigned);
         Assert.False(memberGroup.CanPost);
         Assert.Equal("ReadOnly", memberGroup.MemberPermission);
+    }
+
+    [Fact]
+    public async Task GetSettingsDetailsAsync_AllowsAssignedMemberWithManagePermission()
+    {
+        var owner = new User
+        {
+            DisplayName = "Gina",
+            Email = "gina@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var manager = new User
+        {
+            DisplayName = "Iris",
+            Email = "iris@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(manager.Id);
+        group.MemberPermissions[manager.Id] = GroupMemberPermission.Manage;
+
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, manager));
+
+        var result = await service.GetSettingsDetailsAsync(group.Id, manager.Id);
+
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task GetSettingsDetailsAsync_RejectsAssignedMemberWithReadWritePermission()
+    {
+        var owner = new User
+        {
+            DisplayName = "Gina",
+            Email = "gina@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var member = new User
+        {
+            DisplayName = "Hannes",
+            Email = "hannes@dhbw-loerrach.de",
+            StudyProgram = "Wirtschaftsinformatik",
+            Semester = 2,
+            Course = "WWI25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
+
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.GetSettingsDetailsAsync(group.Id, member.Id);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(GroupsService.PermissionError, result.Error);
     }
 
     private static CampusGroup CourseGroup(string courseCode) => new()

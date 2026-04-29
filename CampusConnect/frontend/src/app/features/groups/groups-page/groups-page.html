@@ -33,8 +33,117 @@
       </div>
     </section>
 
-    <div class="groups-layout">
-      <section class="group-directory" aria-label="Gruppenverzeichnis">
+    <section class="group-directory" aria-label="Gruppenverzeichnis">
+      <div class="group-directory__create-row">
+        <button
+          type="button"
+          class="group-directory__create-toggle"
+          [attr.aria-expanded]="_isCreateMenuOpen()"
+          (click)="_isCreateMenuOpen() ? closeCreateMenu() : openCreateMenu()">
+          @if (_isCreateMenuOpen()) {
+            Menü schließen
+          } @else {
+            Neue Gruppe erstellen
+          }
+        </button>
+        <p>{{ _createPolicySummary() }}</p>
+      </div>
+
+      @if (_isCreateMenuOpen()) {
+        <section class="create-group-menu" aria-label="Neue Gruppe erstellen">
+          <header>
+            <p>Eigene Gruppe</p>
+            <h3>Neue Gruppe erstellen</h3>
+            <span>Lege direkt beim Erstellen fest, wer posten darf und ob die Gruppe öffentlich sichtbar ist.</span>
+          </header>
+
+          <form (ngSubmit)="createGroup()">
+            <div class="create-group-menu__grid">
+              <label>
+                <span>Name</span>
+                <input
+                  type="text"
+                  maxlength="80"
+                  name="group-name"
+                  [ngModel]="_createName()"
+                  (ngModelChange)="_createName.set($event)">
+              </label>
+
+              <label>
+                <span>Zielgruppe</span>
+                <input
+                  type="text"
+                  maxlength="80"
+                  name="group-audience"
+                  [ngModel]="_createAudience()"
+                  (ngModelChange)="_createAudience.set($event)">
+              </label>
+            </div>
+
+            <label>
+              <span>Beschreibung</span>
+              <textarea
+                rows="4"
+                maxlength="240"
+                name="group-description"
+                [ngModel]="_createDescription()"
+                (ngModelChange)="_createDescription.set($event)"></textarea>
+            </label>
+
+            <div class="create-group-menu__policies" aria-label="Gruppenrechte beim Erstellen">
+              <h4>Berechtigungen und Sichtbarkeit</h4>
+
+              <label>
+                <span>Studierende dürfen posten</span>
+                <input
+                  type="checkbox"
+                  name="create-allow-student-posts"
+                  [ngModel]="_createAllowStudentPosts()"
+                  (ngModelChange)="_createAllowStudentPosts.set($event)">
+              </label>
+
+              <label>
+                <span>Kommentare erlauben</span>
+                <input
+                  type="checkbox"
+                  name="create-allow-comments"
+                  [ngModel]="_createAllowComments()"
+                  (ngModelChange)="_createAllowComments.set($event)">
+              </label>
+
+              <label>
+                <span>Beiträge benötigen Freigabe</span>
+                <input
+                  type="checkbox"
+                  name="create-requires-approval"
+                  [ngModel]="_createRequiresApproval()"
+                  (ngModelChange)="_createRequiresApproval.set($event)">
+              </label>
+
+              <label>
+                <span>Gruppe ist öffentlich sichtbar</span>
+                <input
+                  type="checkbox"
+                  name="create-is-discoverable"
+                  [ngModel]="_createIsDiscoverable()"
+                  (ngModelChange)="_createIsDiscoverable.set($event)">
+              </label>
+            </div>
+
+            <div class="create-group-menu__actions">
+              <button type="button" class="create-group-menu__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">Abbrechen</button>
+              <button type="submit" [disabled]="!_canCreate()">
+                @if (_isCreating()) {
+                  Wird erstellt...
+                } @else {
+                  Gruppe erstellen
+                }
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
         <div class="group-tabs" role="tablist" aria-label="Gruppen filtern">
           @for (tab of _tabs(); track tab.id) {
             <button
@@ -111,54 +220,6 @@
         } @else {
           <p class="groups-page__state">Für diesen Filter gibt es noch keine Gruppen.</p>
         }
-      </section>
-
-      <aside class="create-group" aria-label="Gruppe erstellen">
-        <header>
-          <p>Eigene Gruppe</p>
-          <h3>Gruppe erstellen</h3>
-        </header>
-
-        <form (ngSubmit)="createGroup()">
-          <label>
-            <span>Name</span>
-            <input
-              type="text"
-              maxlength="80"
-              name="group-name"
-              [ngModel]="_createName()"
-              (ngModelChange)="_createName.set($event)">
-          </label>
-
-          <label>
-            <span>Zielgruppe</span>
-            <input
-              type="text"
-              maxlength="80"
-              name="group-audience"
-              [ngModel]="_createAudience()"
-              (ngModelChange)="_createAudience.set($event)">
-          </label>
-
-          <label>
-            <span>Beschreibung</span>
-            <textarea
-              rows="4"
-              maxlength="240"
-              name="group-description"
-              [ngModel]="_createDescription()"
-              (ngModelChange)="_createDescription.set($event)"></textarea>
-          </label>
-
-          <button type="submit" [disabled]="!_canCreate()">
-            @if (_isCreating()) {
-              Wird erstellt...
-            } @else {
-              Erstellen
-            }
-          </button>
-        </form>
-      </aside>
-    </div>
+    </section>
   }
 </div>

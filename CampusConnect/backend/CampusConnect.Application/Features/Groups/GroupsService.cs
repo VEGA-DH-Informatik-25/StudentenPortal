@@ -7,7 +7,7 @@ namespace CampusConnect.Application.Features.Groups;
 
 public record GroupSettingsDto(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record CampusGroupDto(Guid Id, string Name, string Description, string Type, string Audience, string? CourseCode, Guid? OwnerUserId, string OwnerLabel, string IconLabel, string AccentColor, int AssignedUserCount, bool CanManage, bool IsAssigned, bool CanPost, bool CanJoin, string MemberPermission, GroupSettingsDto Settings);
-public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience);
+public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true);
 public record UpdateGroupSettingsCommand(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record UpdateGroupAssignmentsCommand(IReadOnlyList<Guid> UserIds);
 public record UpdateGroupMemberPermissionCommand(Guid UserId, string Permission);
@@ -53,7 +53,13 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
             OwnerLabel = user.DisplayName,
             IconLabel = Initials(command.Name),
             AccentColor = "#2563eb",
-            Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true },
+            Settings = new GroupSettings
+            {
+                AllowStudentPosts = command.AllowStudentPosts,
+                AllowComments = command.AllowComments,
+                RequiresApproval = command.RequiresApproval,
+                IsDiscoverable = command.IsDiscoverable
+            },
             AssignedUserIds = [user.Id]
         };
 
@@ -139,7 +145,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         }
 
         if (context.Value.Group.OwnerUserId is Guid ownerId && context.Value.Group.AssignedUserIds.Contains(ownerId))
-            permissionMap[ownerId] = GroupMemberPermission.ReadWrite;
+            permissionMap[ownerId] = GroupMemberPermission.Manage;
 
         await groupRepo.UpdateMemberPermissionsAsync(groupId, permissionMap);
         var updatedGroup = await groupRepo.FindByIdAsync(groupId);
@@ -287,6 +293,7 @@ public static class GroupDtoMapper
 
     public static bool CanManage(User user, CampusGroup group) =>
         user.Role == UserRole.Admin ||
+        (IsAssigned(user, group) && CurrentUserPermission(user, group) == GroupMemberPermission.Manage) ||
         (user.Role == UserRole.Lecturer && group.Type == GroupType.Course && IsAssigned(user, group)) ||
         group.OwnerUserId == user.Id;
 
@@ -296,7 +303,9 @@ public static class GroupDtoMapper
 
     public static bool CanWrite(User user, CampusGroup group) =>
         user.Role == UserRole.Admin ||
-        (IsAssigned(user, group) && CurrentUserPermission(user, group) == GroupMemberPermission.ReadWrite);
+        (IsAssigned(user, group) &&
+         (CurrentUserPermission(user, group) == GroupMemberPermission.ReadWrite ||
+          CurrentUserPermission(user, group) == GroupMemberPermission.Manage));
 
     public static bool CanJoin(User user, CampusGroup group) =>
         user.Role != UserRole.Admin &&
@@ -308,6 +317,9 @@ public static class GroupDtoMapper
     public static bool IsAssigned(User user, CampusGroup group) => group.AssignedUserIds.Contains(user.Id);
 
     public static GroupMemberPermission MemberPermissionFor(Guid userId, CampusGroup group) =>
+        group.OwnerUserId == userId
+            ? GroupMemberPermission.Manage
+            :
         group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite;
 
     private static GroupMemberPermission CurrentUserPermission(User user, CampusGroup group) =>

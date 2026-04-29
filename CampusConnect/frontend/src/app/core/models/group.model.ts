@@ -1,5 +1,5 @@
 export type GroupType = 'Course' | 'Official' | 'Social';
-export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite';
+export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite' | 'Manage';
 
 export interface GroupSettings {
   allowStudentPosts: boolean;
@@ -32,6 +32,10 @@ export interface CreateGroupRequest {
   name: string;
   description: string;
   audience: string;
+  allowStudentPosts: boolean;
+  allowComments: boolean;
+  requiresApproval: boolean;
+  isDiscoverable: boolean;
 }
 
 export interface UpdateGroupSettingsRequest extends GroupSettings {}

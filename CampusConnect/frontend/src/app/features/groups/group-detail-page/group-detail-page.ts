@@ -247,7 +247,11 @@ export class GroupDetailPage implements OnInit {
       return group.canJoin ? 'Öffentlich auffindbar' : 'Nicht zugewiesen';
     }
 
-    return group.memberPermission === 'ReadWrite' || group.canManage ? 'Lesen & Schreiben' : 'Nur lesen';
+    if (group.memberPermission === 'Manage' || group.canManage) {
+      return 'Verwalten';
+    }
+
+    return group.memberPermission === 'ReadWrite' ? 'Lesen & Schreiben' : 'Nur lesen';
   }
 
   protected commentPolicyLabel(group: CampusGroup): string {

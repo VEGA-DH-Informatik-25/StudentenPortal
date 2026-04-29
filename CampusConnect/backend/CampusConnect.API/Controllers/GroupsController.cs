@@ -21,7 +21,15 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateGroup([FromBody] CreateGroupRequest request)
     {
-        var result = await groupsService.CreateGroupAsync(new CreateGroupCommand(GetUserId(), request.Name, request.Description, request.Audience));
+        var result = await groupsService.CreateGroupAsync(new CreateGroupCommand(
+            GetUserId(),
+            request.Name,
+            request.Description,
+            request.Audience,
+            request.AllowStudentPosts,
+            request.AllowComments,
+            request.RequiresApproval,
+            request.IsDiscoverable));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 

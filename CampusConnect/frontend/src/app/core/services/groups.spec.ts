@@ -44,11 +44,27 @@ describe('Groups', () => {
   });
 
   it('should create a group', () => {
-    service.createGroup({ name: 'Lerngruppe Web', description: 'Gemeinsam lernen', audience: 'Interessierte' }).subscribe();
+    service.createGroup({
+      name: 'Lerngruppe Web',
+      description: 'Gemeinsam lernen',
+      audience: 'Interessierte',
+      allowStudentPosts: true,
+      allowComments: true,
+      requiresApproval: false,
+      isDiscoverable: true,
+    }).subscribe();
 
     const request = http.expectOne('/api/groups');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ name: 'Lerngruppe Web', description: 'Gemeinsam lernen', audience: 'Interessierte' });
+    expect(request.request.body).toEqual({
+      name: 'Lerngruppe Web',
+      description: 'Gemeinsam lernen',
+      audience: 'Interessierte',
+      allowStudentPosts: true,
+      allowComments: true,
+      requiresApproval: false,
+      isDiscoverable: true,
+    });
     request.flush({});
   });
 
