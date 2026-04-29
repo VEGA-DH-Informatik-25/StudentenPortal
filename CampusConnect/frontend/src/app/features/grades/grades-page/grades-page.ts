@@ -42,6 +42,7 @@ export class GradesPage implements OnInit {
   protected readonly grades = computed(() => this._summary().grades);
   protected readonly planModules = computed(() => this._plan()?.modules ?? []);
   protected readonly openPlanModules = computed(() => this.planModules().filter(module => !module.isCompleted));
+  protected readonly hasOpenPlanModules = computed(() => this.openPlanModules().length > 0);
   protected readonly completedPlanModules = computed(() => this.planModules().filter(module => module.isCompleted).length);
   protected readonly totalEcts = computed(() => this._summary().totalEcts);
   protected readonly weightedAverage = computed(() => this.grades().length === 0 ? Number.NaN : this._summary().weightedAverage);
@@ -108,6 +109,11 @@ export class GradesPage implements OnInit {
     const hasPlan = this.planModules().length > 0;
     const moduleName = this.moduleName.trim();
 
+    if (hasPlan && !this.hasOpenPlanModules()) {
+      this._error.set('Alle Module aus deinem Kursplan sind bereits erfasst.');
+      return;
+    }
+
     if (hasPlan && !selectedModule) {
       this._error.set('Bitte wähle ein Modul aus deinem Kursplan aus.');
       return;
@@ -164,7 +170,7 @@ export class GradesPage implements OnInit {
   }
 
   protected selectedPlanModule(): GradePlanModule | null {
-    return this.planModules().find(module => module.code === this.selectedModuleCode) ?? null;
+    return this.openPlanModules().find(module => module.code === this.selectedModuleCode) ?? null;
   }
 
   protected examText(module: GradePlanModule): string {
@@ -279,7 +285,7 @@ export class GradesPage implements OnInit {
   }
 
   private nextOpenModuleCode(): string {
-    return this.openPlanModules()[0]?.code ?? this.planModules()[0]?.code ?? '';
+    return this.openPlanModules()[0]?.code ?? '';
   }
 
   private _readError(error: unknown, fallback: string): string {

@@ -1,36 +1,41 @@
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
-using System.Collections.Concurrent;
 
 namespace CampusConnect.Infrastructure.Repositories;
 
 public class InMemoryGroupRepository : IGroupRepository
 {
-    private readonly ConcurrentDictionary<Guid, CampusGroup> _store = new();
-    private readonly object _courseLock = new();
+    private readonly Dictionary<Guid, CampusGroup> _store = [];
+    private readonly object _syncRoot = new();
 
     public Task<IReadOnlyList<CampusGroup>> GetAllAsync()
     {
-        var groups = _store.Values
-            .OrderBy(group => SortKey(group.Type))
-            .ThenBy(group => group.CourseCode ?? group.Name)
-            .Select(Clone)
-            .ToList();
+        lock (_syncRoot)
+        {
+            var groups = _store.Values
+                .OrderBy(group => SortKey(group.Type))
+                .ThenBy(group => group.CourseCode ?? group.Name)
+                .Select(Clone)
+                .ToList();
 
-        return Task.FromResult<IReadOnlyList<CampusGroup>>(groups);
+            return Task.FromResult<IReadOnlyList<CampusGroup>>(groups);
+        }
     }
 
     public Task<CampusGroup?> FindByIdAsync(Guid id)
     {
-        _store.TryGetValue(id, out var group);
-        return Task.FromResult(group is null ? null : Clone(group));
+        lock (_syncRoot)
+        {
+            _store.TryGetValue(id, out var group);
+            return Task.FromResult(group is null ? null : Clone(group));
+        }
     }
 
     public Task<CampusGroup> EnsureCourseGroupAsync(string courseCode, string? studyProgram = null)
     {
         var normalizedCourse = NormalizeCourse(courseCode);
-        lock (_courseLock)
+        lock (_syncRoot)
         {
             var existing = _store.Values.FirstOrDefault(group =>
                 group.Type == GroupType.Course &&
@@ -47,16 +52,24 @@ public class InMemoryGroupRepository : IGroupRepository
 
     public Task AddAsync(CampusGroup group)
     {
-        _store[group.Id] = Clone(group);
+        lock (_syncRoot)
+        {
+            _store[group.Id] = Clone(group);
+        }
+
         return Task.CompletedTask;
     }
 
     public Task UpdateSettingsAsync(Guid id, GroupSettings settings)
     {
-        if (_store.TryGetValue(id, out var group))
+        lock (_syncRoot)
         {
-            group.Settings = Clone(settings);
-            _store[id] = group;
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.Settings = Clone(settings);
+                _store[id] = updated;
+            }
         }
 
         return Task.CompletedTask;
@@ -64,11 +77,15 @@ public class InMemoryGroupRepository : IGroupRepository
 
     public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
     {
-        if (_store.TryGetValue(id, out var group))
+        lock (_syncRoot)
         {
-            group.AssignedUserIds = assignedUserIds.ToHashSet();
-            SyncMemberPermissions(group);
-            _store[id] = group;
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.AssignedUserIds = assignedUserIds.ToHashSet();
+                SyncMemberPermissions(updated);
+                _store[id] = updated;
+            }
         }
 
         return Task.CompletedTask;
@@ -76,13 +93,17 @@ public class InMemoryGroupRepository : IGroupRepository
 
     public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
     {
-        if (_store.TryGetValue(id, out var group))
+        lock (_syncRoot)
         {
-            group.MemberPermissions = group.AssignedUserIds
-                .ToDictionary(
-                    userId => userId,
-                    userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
-            _store[id] = group;
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.MemberPermissions = updated.AssignedUserIds
+                    .ToDictionary(
+                        userId => userId,
+                        userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                _store[id] = updated;
+            }
         }
 
         return Task.CompletedTask;
@@ -91,15 +112,19 @@ public class InMemoryGroupRepository : IGroupRepository
     public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds)
     {
         var normalizedCourse = NormalizeCourse(courseCode);
-        var group = _store.Values.FirstOrDefault(group =>
-            group.Type == GroupType.Course &&
-            string.Equals(group.CourseCode, normalizedCourse, StringComparison.OrdinalIgnoreCase));
-
-        if (group is not null)
+        lock (_syncRoot)
         {
-            group.AssignedUserIds = assignedUserIds.ToHashSet();
-            SyncMemberPermissions(group);
-            _store[group.Id] = group;
+            var group = _store.Values.FirstOrDefault(group =>
+                group.Type == GroupType.Course &&
+                string.Equals(group.CourseCode, normalizedCourse, StringComparison.OrdinalIgnoreCase));
+
+            if (group is not null)
+            {
+                var updated = Clone(group);
+                updated.AssignedUserIds = assignedUserIds.ToHashSet();
+                SyncMemberPermissions(updated);
+                _store[updated.Id] = updated;
+            }
         }
 
         return Task.CompletedTask;

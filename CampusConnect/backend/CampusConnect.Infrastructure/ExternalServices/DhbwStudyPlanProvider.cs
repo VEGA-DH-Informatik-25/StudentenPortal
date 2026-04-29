@@ -29,9 +29,25 @@ public sealed partial class DhbwStudyPlanProvider(
         return await cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(Math.Max(5, _options.CacheMinutes));
-            await using var stream = await httpClient.GetStreamAsync(source.Url, cancellationToken);
-            return parser.Parse(stream, source.PlanName, source.Url, DateTime.UtcNow);
+            return await FetchPlanAsync(source, cancellationToken);
         });
+    }
+
+    private async Task<StudyPlan?> FetchPlanAsync(DhbwStudyPlanSource source, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await httpClient.GetAsync(source.Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            return parser.Parse(stream, source.PlanName, source.Url, DateTime.UtcNow);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
     }
 
     private async Task<DhbwStudyPlanSource?> ResolveSourceAsync(Course course, CancellationToken cancellationToken)
@@ -63,12 +79,31 @@ public sealed partial class DhbwStudyPlanProvider(
 
             foreach (var indexUrl in _options.IndexUrls.Where(url => !string.IsNullOrWhiteSpace(url)))
             {
-                var html = await httpClient.GetStringAsync(indexUrl, cancellationToken);
+                var html = await FetchStringAsync(indexUrl, cancellationToken);
+                if (html is null)
+                    continue;
+
                 sources.AddRange(DhbwStudyPlanIndexParser.Parse(html, new Uri(indexUrl), _options.CampusCode));
             }
 
             return sources;
         }) ?? [];
+    }
+
+    private async Task<string?> FetchStringAsync(string url, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await httpClient.GetAsync(url, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
     }
 
     private static int Score(string studyProgram, DhbwStudyPlanSource source)

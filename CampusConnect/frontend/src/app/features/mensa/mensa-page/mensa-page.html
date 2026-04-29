@@ -13,20 +13,19 @@
     <p class="mensa-page__state mensa-page__state--error">{{ _error() }}</p>
   } @else if (_menu().length > 0) {
     <div class="mensa-layout">
-      <aside class="mensa-days" aria-label="Speiseplantage">
+      <aside class="mensa-days" aria-label="Speiseplan-Tage">
         <div class="section-heading">
           <span>Woche</span>
           <strong>Tage</strong>
         </div>
 
-        <div class="mensa-days__list" role="tablist" aria-label="Speiseplantage">
+        <div class="mensa-days__list" aria-label="Speiseplan-Tage">
           @for (day of _menu(); track day.date; let index = $index) {
             <button
               class="mensa-days__item"
               type="button"
-              role="tab"
               [class.active]="_selectedDay() === index"
-              [attr.aria-selected]="_selectedDay() === index"
+              [attr.aria-current]="_selectedDay() === index ? 'date' : null"
               (click)="selectDay(index)">
               <span class="mensa-days__weekday">{{ day.date | date:'EEE':'':'de' }}</span>
               <span>

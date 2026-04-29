@@ -17,7 +17,9 @@ public sealed class EntityUserRepository(CampusConnectDbContext dbContext) : IUs
     public async Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var normalizedEmail = NormalizeEmail(email);
-        return await dbContext.Users.FirstOrDefaultAsync(user => user.Email.ToLower() == normalizedEmail, cancellationToken);
+        return await dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Email == normalizedEmail, cancellationToken);
     }
 
     public async Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>

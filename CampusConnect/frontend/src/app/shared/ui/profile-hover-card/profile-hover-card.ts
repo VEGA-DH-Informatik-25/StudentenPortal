@@ -9,10 +9,13 @@ import { ContactProfile } from '../../../core/models/contact.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileHoverCard {
+  private static _nextTooltipId = 0;
+
   readonly profile = input<ContactProfile | null | undefined>(null);
   readonly displayName = input.required<string>();
   readonly showAvatar = input(false);
   readonly showName = input(true);
+  protected readonly _tooltipId = `profile-hover-card-${ProfileHoverCard._nextTooltipId++}`;
 
   protected readonly _initials = computed(() => {
     const source = this.profile()?.displayName || this.displayName();

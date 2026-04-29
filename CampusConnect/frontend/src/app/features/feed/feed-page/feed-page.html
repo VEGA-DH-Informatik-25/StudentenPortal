@@ -95,7 +95,9 @@
           </textarea>
           <div class="composer__footer">
             <span>{{ _newContent().trim().length }}/600 Zeichen</span>
-            <button type="submit" [disabled]="!_newContent().trim() || _isLoading() || !_selectedGroup()">Posten</button>
+            <button type="submit" [disabled]="!_newContent().trim() || _isLoading() || _isPosting() || !_selectedGroup()">
+              {{ _isPosting() ? 'Postet...' : 'Posten' }}
+            </button>
           </div>
         </div>
       </form>
