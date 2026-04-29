@@ -10,8 +10,12 @@
       <label>Datum <input type="datetime-local" [(ngModel)]="_form.examDate" name="examDate" required /></label>
       <label>Ort <input type="text" [(ngModel)]="_form.location" name="location" /></label>
       <label>Notizen <input type="text" [(ngModel)]="_form.notes" name="notes" /></label>
-      <button type="submit">Speichern</button>
+      <button type="submit" [disabled]="_isSubmitting()">{{ _isSubmitting() ? 'Speichert...' : 'Speichern' }}</button>
     </form>
+  }
+
+  @if (_error()) {
+    <p class="calendar-page__error">{{ _error() }}</p>
   }
 
   @if (_exams().length === 0) {

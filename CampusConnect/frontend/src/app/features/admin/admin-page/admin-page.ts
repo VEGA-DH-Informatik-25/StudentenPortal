@@ -69,8 +69,14 @@ export class AdminPage implements OnInit {
     const code = this._courseForm.code.trim();
     const studyProgram = this._courseForm.studyProgram.trim();
     const semester = Number(this._courseForm.semester);
+
     if (!code || !studyProgram) {
       this._error.set('Bitte fülle alle Kursfelder aus.');
+      return;
+    }
+
+    if (!Number.isInteger(semester) || semester < 1 || semester > 6) {
+      this._error.set('Das Semester muss zwischen 1 und 6 liegen.');
       return;
     }
 

@@ -1,9 +1,9 @@
 using CampusConnect.API.DTOs.Auth;
+using CampusConnect.API.Common;
 using CampusConnect.Application.Common;
 using CampusConnect.Application.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
@@ -67,12 +67,7 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private Guid? GetCurrentUserId()
-    {
-        var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-
-        return Guid.TryParse(value, out var userId) ? userId : null;
-    }
+        => CurrentUser.GetUserId(User);
 
     private IActionResult ToProfileError(Result<UserProfileResult> result) =>
         result.Error == AuthService.UserProfileNotFoundError

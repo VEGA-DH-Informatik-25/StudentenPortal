@@ -164,7 +164,7 @@
                         [attr.aria-expanded]="isReactionMenuOpen(post.id)"
                         [attr.aria-controls]="'reaction-menu-' + post.id"
                         (click)="toggleReactionMenu(post)">
-                        Emoji
+                        +
                       </button>
 
                       @if (isReactionMenuOpen(post.id)) {
@@ -200,53 +200,55 @@
                 </div>
               </div>
 
-              <section class="comments" aria-label="Kommentare">
-                @if (post.comments.length > 0) {
-                  <div class="comments__list">
-                    @for (comment of post.comments; track comment.id) {
-                      <article class="comment">
-                        <span class="comment__avatar" aria-hidden="true">{{ initialsFor(comment.authorName) }}</span>
-                        <div>
-                          <header>
-                            <strong>{{ comment.authorName }}</strong>
-                            <time [attr.datetime]="comment.createdAt">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
-                            @if (comment.canDelete) {
-                              <button type="button" (click)="onDeleteComment(post.id, comment.id)" aria-label="Kommentar löschen">×</button>
-                            }
-                          </header>
-                          <p>{{ comment.content }}</p>
-                        </div>
-                      </article>
-                    }
-                  </div>
-                }
-
-                @if (post.canComment && isCommentComposerOpen(post.id)) {
-                  <form class="comment-composer" (ngSubmit)="onComment(post)">
-                    <label class="visually-hidden" [attr.for]="'comment-' + post.id">Kommentar verfassen</label>
-                    <textarea
-                      [id]="'comment-' + post.id"
-                      rows="2"
-                      maxlength="360"
-                      placeholder="Kommentieren..."
-                      [value]="commentDraft(post.id)"
-                      (input)="updateCommentDraft(post.id, $any($event.target).value)"></textarea>
-                    <button type="submit" [disabled]="!commentDraft(post.id).trim() || isCommenting(post.id)">
-                      @if (isCommenting(post.id)) {
-                        Sendet...
-                      } @else {
-                        Antworten
+              @if (post.comments.length > 0 || (post.canComment && isCommentComposerOpen(post.id)) || !post.canComment) {
+                <section class="comments" aria-label="Kommentare">
+                  @if (post.comments.length > 0) {
+                    <div class="comments__list">
+                      @for (comment of post.comments; track comment.id) {
+                        <article class="comment">
+                          <span class="comment__avatar" aria-hidden="true">{{ initialsFor(comment.authorName) }}</span>
+                          <div>
+                            <header>
+                              <strong>{{ comment.authorName }}</strong>
+                              <time [attr.datetime]="comment.createdAt">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+                              @if (comment.canDelete) {
+                                <button type="button" (click)="onDeleteComment(post.id, comment.id)" aria-label="Kommentar löschen">×</button>
+                              }
+                            </header>
+                            <p>{{ comment.content }}</p>
+                          </div>
+                        </article>
                       }
-                    </button>
-                  </form>
-                } @else if (!post.canComment) {
-                  @if (post.group.settings.allowComments) {
-                    <p class="comments__closed">Kommentare sind nur für Gruppenmitglieder verfügbar.</p>
-                  } @else {
-                    <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                    </div>
                   }
-                }
-              </section>
+
+                  @if (post.canComment && isCommentComposerOpen(post.id)) {
+                    <form class="comment-composer" (ngSubmit)="onComment(post)">
+                      <label class="visually-hidden" [attr.for]="'comment-' + post.id">Kommentar verfassen</label>
+                      <textarea
+                        [id]="'comment-' + post.id"
+                        rows="2"
+                        maxlength="360"
+                        placeholder="Kommentieren..."
+                        [value]="commentDraft(post.id)"
+                        (input)="updateCommentDraft(post.id, $any($event.target).value)"></textarea>
+                      <button type="submit" [disabled]="!commentDraft(post.id).trim() || isCommenting(post.id)">
+                        @if (isCommenting(post.id)) {
+                          Sendet...
+                        } @else {
+                          Antworten
+                        }
+                      </button>
+                    </form>
+                  } @else if (!post.canComment) {
+                    @if (post.group.settings.allowComments) {
+                      <p class="comments__closed">Kommentare sind nur für Gruppenmitglieder verfügbar.</p>
+                    } @else {
+                      <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                    }
+                  }
+                </section>
+              }
             </div>
           </article>
         }

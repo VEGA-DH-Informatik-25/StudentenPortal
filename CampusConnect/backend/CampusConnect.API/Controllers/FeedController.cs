@@ -1,8 +1,8 @@
+using CampusConnect.API.Common;
 using CampusConnect.API.DTOs.Feed;
 using CampusConnect.Application.Features.Feed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
@@ -14,14 +14,22 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetFeed([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var posts = await feedService.GetFeedAsync(GetUserId(), page, pageSize);
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var posts = await feedService.GetFeedAsync(userId.Value, page, pageSize);
         return Ok(posts);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
     {
-        var result = await feedService.CreatePostAsync(new CreatePostCommand(GetUserId(), request.GroupId, request.Content));
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await feedService.CreatePostAsync(new CreatePostCommand(userId.Value, request.GroupId, request.Content));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -31,7 +39,11 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePost(Guid id)
     {
-        var result = await feedService.DeletePostAsync(id, GetUserId());
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await feedService.DeletePostAsync(id, userId.Value);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -41,7 +53,11 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpPost("{id:guid}/comments")]
     public async Task<IActionResult> CreateComment(Guid id, [FromBody] CreateCommentRequest request)
     {
-        var result = await feedService.AddCommentAsync(new CreateCommentCommand(id, GetUserId(), request.Content));
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await feedService.AddCommentAsync(new CreateCommentCommand(id, userId.Value, request.Content));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -51,7 +67,11 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpDelete("{postId:guid}/comments/{commentId:guid}")]
     public async Task<IActionResult> DeleteComment(Guid postId, Guid commentId)
     {
-        var result = await feedService.DeleteCommentAsync(postId, commentId, GetUserId());
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await feedService.DeleteCommentAsync(postId, commentId, userId.Value);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -61,14 +81,16 @@ public class FeedController(FeedService feedService) : ControllerBase
     [HttpPost("{id:guid}/reactions")]
     public async Task<IActionResult> ToggleReaction(Guid id, [FromBody] ToggleReactionRequest request)
     {
-        var result = await feedService.ToggleReactionAsync(new ToggleReactionCommand(id, GetUserId(), request.Emoji));
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await feedService.ToggleReactionAsync(new ToggleReactionCommand(id, userId.Value, request.Emoji));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
         return Ok(result.Value);
     }
 
-    private Guid GetUserId() => Guid.Parse(
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-        User.FindFirst("sub")!.Value);
+    private Guid? GetCurrentUserId() => CurrentUser.GetUserId(User);
 }

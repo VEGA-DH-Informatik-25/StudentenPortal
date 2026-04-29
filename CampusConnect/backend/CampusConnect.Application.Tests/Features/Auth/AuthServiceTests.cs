@@ -52,6 +52,23 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_AcceptsEmailWithDifferentCaseAndWhitespace()
+    {
+        var users = new FakeUserRepository();
+        var service = CreateService(users);
+        await service.RegisterAsync(new RegisterCommand(
+            "alice@dhbw-loerrach.de",
+            "secret",
+            "Alice",
+            "TIF25A"));
+
+        var result = await service.LoginAsync(new LoginCommand("  ALICE@DHBW-LOERRACH.DE  ", "secret"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("alice@dhbw-loerrach.de", result.Value!.Profile.Email);
+    }
+
+    [Fact]
     public async Task UpdateProfileAsync_UpdatesOnlyProfileFieldsForUser()
     {
         var users = new FakeUserRepository();

@@ -22,10 +22,10 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 | Schicht | Technologie |
 |---|---|
 | Frontend | Angular 21 |
-| Backend | ASP.NET Core 9 |
-| Datenbank | PostgreSQL |
+| Backend | ASP.NET Core 10 |
+| Datenbank | SQLite |
 | Authentifizierung | JWT |
-| Containerisierung | Docker |
+| Containerisierung | Docker Compose *(Platzhalter, noch nicht produktiv eingerichtet)* |
 | CI/CD | GitHub Actions |
 
 ---
@@ -33,11 +33,12 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 ## Erste Schritte
 
 1. Repository klonen.
-2. Voraussetzungen installieren: Node.js, .NET 9 SDK, Docker.
+2. Voraussetzungen installieren: Node.js und .NET 10 SDK.
 3. Im Ordner `frontend/` den Befehl `npm install` ausführen.
-4. Im Ordner `backend/` den Befehl `dotnet restore` ausführen.
-5. Alle Dienste mit `docker compose up` starten.
-6. Im Browser `http://localhost:4200` aufrufen.
+4. Im Ordner `backend/` den Befehl `dotnet restore .\CampusConnect.slnx` ausführen.
+5. Die API mit `dotnet run --project .\CampusConnect.API\CampusConnect.API.csproj` starten.
+6. Das Frontend mit `npm start` im Ordner `frontend/` starten.
+7. Im Browser `http://localhost:4200` aufrufen.
 
 ---
 
@@ -45,14 +46,14 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 
 ### Systemüberblick
 
-CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine PostgreSQL-Datenbank als Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
+CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine SQLite-Datenbank als aktuelle Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
 
 ### Frontend-Architektur
 
 Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenständige Komponenten (Standalone Components), sodass NgModules nicht benötigt werden. Die wichtigsten Architekturentscheidungen:
 
 - **Signals** (`signal()`, `computed()`) als Standard-Reaktivitätsmodell.
-- **Zoneless-ready**: `provideZoneChangeDetection({ eventCoalescing: true })`.
+- **Zoneless-ready**: `provideZonelessChangeDetection()`.
 - **Lazy Loading**: Alle Feature-Bereiche werden über `loadComponent` erst bei Bedarf geladen.
 - **Functional Guards & Interceptors**: `CanActivateFn` und `HttpInterceptorFn`, registriert via `provideHttpClient(withInterceptors([...]))`.
 - **`withComponentInputBinding()`**: Route-Parameter direkt an Component-Inputs bindbar.
@@ -88,7 +89,7 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 
 ## API-Referenz
 
-### Geplante Endpunkte
+### Implementierte Endpunkte
 
 | Methode | Endpunkt | Beschreibung | Authentifizierung |
 |---|---|---|---|
@@ -99,25 +100,31 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
+| GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
+| DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
 | DELETE | `/api/feed/{id}` | Eigenen Beitrag löschen | Ja |
+| POST | `/api/feed/{id}/comments` | Kommentar unter einem Beitrag erstellen | Ja |
+| DELETE | `/api/feed/{postId}/comments/{commentId}` | Eigenen Kommentar löschen | Ja |
+| POST | `/api/feed/{id}/reactions` | Emoji-Reaktion an einem Beitrag umschalten | Ja |
 | GET | `/api/mensa` | Mensa-Speiseplan für die aktuelle Woche abrufen | Ja |
 | GET | `/api/calendar` | Prüfungskalender-Einträge abrufen | Ja |
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
+| DELETE | `/api/calendar/{id}` | Eigenen Prüfungseintrag löschen | Ja |
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
+| DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
+| GET | `/api/timetable` | Stundenplan für einen Kurs abrufen | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
 | POST | `/api/groups` | Eigene Campusgruppe erstellen | Ja |
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |
 | PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe und Schreibrechte ändern | Ja |
 | PUT | `/api/groups/{id}/assignments` | Konten einer bearbeitbaren Gruppe zuweisen | Ja |
-| GET | `/api/contacts` | Alle Adressbuch-Einträge abrufen | Ja |
-| GET | `/api/contacts/{id}` | Einzelnen Kontakt abrufen | Ja |
-| POST | `/api/contacts` | Neuen Kontakt anlegen (Admin) | Ja |
-| PUT | `/api/contacts/{id}` | Kontakt aktualisieren (Admin) | Ja |
-| DELETE | `/api/contacts/{id}` | Kontakt löschen (Admin) | Ja |
+| PUT | `/api/groups/{id}/member-permissions` | Berechtigungen zugewiesener Gruppenmitglieder setzen | Ja |
+| POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
 
 > **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
 > ```

@@ -1,3 +1,4 @@
+using CampusConnect.API.Common;
 using CampusConnect.API.DTOs.Calendar;
 using CampusConnect.Application.Features.Calendar;
 using Microsoft.AspNetCore.Authorization;
@@ -13,17 +14,23 @@ public class CalendarController(CalendarService calendarService) : ControllerBas
     [HttpGet]
     public async Task<IActionResult> GetExams()
     {
-        var userId = GetUserId();
-        var exams = await calendarService.GetExamsAsync(userId);
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var exams = await calendarService.GetExamsAsync(userId.Value);
         return Ok(exams);
     }
 
     [HttpPost]
     public async Task<IActionResult> AddExam([FromBody] AddExamRequest request)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
         var result = await calendarService.AddExamAsync(new AddExamCommand(
-            userId, request.ModuleName, request.ExamDate, request.Location, request.Notes));
+            userId.Value, request.ModuleName, request.ExamDate, request.Location, request.Notes));
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
@@ -34,12 +41,13 @@ public class CalendarController(CalendarService calendarService) : ControllerBas
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteExam(Guid id)
     {
-        var userId = GetUserId();
-        await calendarService.DeleteExamAsync(id, userId);
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        await calendarService.DeleteExamAsync(id, userId.Value);
         return NoContent();
     }
 
-    private Guid GetUserId() => Guid.Parse(
-        User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst("sub")!.Value);
+    private Guid? GetCurrentUserId() => CurrentUser.GetUserId(User);
 }

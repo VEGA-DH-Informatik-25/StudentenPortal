@@ -106,7 +106,7 @@
                       [attr.aria-expanded]="isReactionMenuOpen(post.id)"
                       [attr.aria-controls]="'group-reaction-menu-' + post.id"
                       (click)="toggleReactionMenu(post)">
-                      Emoji
+                      +
                     </button>
 
                     @if (isReactionMenuOpen(post.id)) {

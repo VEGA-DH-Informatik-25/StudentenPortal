@@ -4,10 +4,53 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  placeholder:
+  backend:
     runs-on: ubuntu-latest
     steps:
-      - name: CI placeholder
-        run: echo "CI placeholder"
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore backend
+        working-directory: CampusConnect/backend
+        run: dotnet restore ./CampusConnect.slnx
+
+      - name: Build backend
+        working-directory: CampusConnect/backend
+        run: dotnet build ./CampusConnect.slnx --configuration Release --no-restore
+
+      - name: Test backend
+        working-directory: CampusConnect/backend
+        run: dotnet test ./CampusConnect.slnx --configuration Release --no-build
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: CampusConnect/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: CampusConnect/frontend
+        run: npm ci
+
+      - name: Test frontend
+        working-directory: CampusConnect/frontend
+        run: npm test -- --watch=false
+
+      - name: Build frontend
+        working-directory: CampusConnect/frontend
+        run: npm run build

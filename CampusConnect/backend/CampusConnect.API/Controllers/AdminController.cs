@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using CampusConnect.API.Common;
 using CampusConnect.API.DTOs.Admin;
 using CampusConnect.API.DTOs.Courses;
 using CampusConnect.Application.Features.Admin;
@@ -23,7 +23,11 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     [HttpPatch("users/{id:guid}/role")]
     public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request, CancellationToken cancellationToken)
     {
-        var result = await adminUsersService.UpdateRoleAsync(new UpdateUserRoleCommand(id, request.Role, GetUserId()), cancellationToken);
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await adminUsersService.UpdateRoleAsync(new UpdateUserRoleCommand(id, request.Role, currentUserId.Value), cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -43,7 +47,11 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     [HttpDelete("users/{id:guid}")]
     public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
     {
-        var result = await adminUsersService.DeleteUserAsync(id, GetUserId(), cancellationToken);
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await adminUsersService.DeleteUserAsync(id, currentUserId.Value, cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -67,7 +75,5 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
         return Created($"/api/admin/courses/{result.Value!.Code}", result.Value);
     }
 
-    private Guid GetUserId() => Guid.Parse(
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-        ?? User.FindFirst("sub")!.Value);
+    private Guid? GetCurrentUserId() => CurrentUser.GetUserId(User);
 }

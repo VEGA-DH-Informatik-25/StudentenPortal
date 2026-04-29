@@ -124,15 +124,13 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
         if (comment is null)
             return Result<FeedPostDto>.Failure("Kommentar nicht gefunden.");
 
-        User? currentUser = null;
-        if (comment.AuthorId != userId)
-        {
-            currentUser = await userRepo.FindByIdAsync(userId);
-            if (currentUser?.Role != UserRole.Admin)
-                return Result<FeedPostDto>.Failure("Keine Berechtigung.");
-        }
+        var currentUser = await userRepo.FindByIdAsync(userId);
+        if (currentUser is null)
+            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
 
-        currentUser ??= await userRepo.FindByIdAsync(userId);
+        if (comment.AuthorId != userId && currentUser.Role != UserRole.Admin)
+            return Result<FeedPostDto>.Failure("Keine Berechtigung.");
+
         var updatedPost = await feedRepo.DeleteCommentAsync(postId, commentId);
         var group = await ResolvePostGroupAsync(post);
         return updatedPost is null

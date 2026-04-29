@@ -1,8 +1,8 @@
+using CampusConnect.API.Common;
 using CampusConnect.API.DTOs.Groups;
 using CampusConnect.Application.Features.Groups;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
@@ -14,15 +14,23 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetGroups()
     {
-        var groups = await groupsService.GetGroupsForUserAsync(GetUserId());
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var groups = await groupsService.GetGroupsForUserAsync(userId.Value);
         return Ok(groups);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateGroup([FromBody] CreateGroupRequest request)
     {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
         var result = await groupsService.CreateGroupAsync(new CreateGroupCommand(
-            GetUserId(),
+            userId.Value,
             request.Name,
             request.Description,
             request.Audience,
@@ -39,7 +47,11 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpGet("{id:guid}/settings")]
     public async Task<IActionResult> GetSettings(Guid id)
     {
-        var result = await groupsService.GetSettingsDetailsAsync(id, GetUserId());
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await groupsService.GetSettingsDetailsAsync(id, userId.Value);
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
@@ -49,9 +61,13 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpPut("{id:guid}/settings")]
     public async Task<IActionResult> UpdateSettings(Guid id, [FromBody] UpdateGroupSettingsRequest request)
     {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
         var result = await groupsService.UpdateSettingsAsync(
             id,
-            GetUserId(),
+            userId.Value,
             new UpdateGroupSettingsCommand(request.AllowStudentPosts, request.AllowComments, request.RequiresApproval, request.IsDiscoverable));
 
         if (!result.IsSuccess)
@@ -63,7 +79,11 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpPut("{id:guid}/assignments")]
     public async Task<IActionResult> UpdateAssignments(Guid id, [FromBody] UpdateGroupAssignmentsRequest request)
     {
-        var result = await groupsService.UpdateAssignmentsAsync(id, GetUserId(), new UpdateGroupAssignmentsCommand(request.UserIds));
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await groupsService.UpdateAssignmentsAsync(id, userId.Value, new UpdateGroupAssignmentsCommand(request.UserIds));
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
@@ -73,10 +93,14 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpPut("{id:guid}/member-permissions")]
     public async Task<IActionResult> UpdateMemberPermissions(Guid id, [FromBody] UpdateGroupMemberPermissionsRequest request)
     {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
         var permissions = request.Permissions
             .Select(item => new UpdateGroupMemberPermissionCommand(item.UserId, item.Permission))
             .ToList();
-        var result = await groupsService.UpdateMemberPermissionsAsync(id, GetUserId(), new UpdateGroupMemberPermissionsCommand(permissions));
+        var result = await groupsService.UpdateMemberPermissionsAsync(id, userId.Value, new UpdateGroupMemberPermissionsCommand(permissions));
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
@@ -86,7 +110,11 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     [HttpPost("{id:guid}/join")]
     public async Task<IActionResult> JoinGroup(Guid id)
     {
-        var result = await groupsService.JoinGroupAsync(id, GetUserId());
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await groupsService.JoinGroupAsync(id, userId.Value);
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
@@ -98,7 +126,5 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
             ? Forbid()
             : BadRequest(new { error });
 
-    private Guid GetUserId() => Guid.Parse(
-        User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-        User.FindFirst("sub")!.Value);
+    private Guid? GetCurrentUserId() => CurrentUser.GetUserId(User);
 }

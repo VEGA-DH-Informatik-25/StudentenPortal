@@ -53,7 +53,8 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
 
     public async Task<Result<AuthResult>> LoginAsync(LoginCommand cmd)
     {
-        var user = await userRepo.FindByEmailAsync(cmd.Email.ToLowerInvariant());
+        var email = cmd.Email.Trim().ToLowerInvariant();
+        var user = await userRepo.FindByEmailAsync(email);
         if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
             return Result<AuthResult>.Failure("Ungültige E-Mail-Adresse oder Passwort.");
 

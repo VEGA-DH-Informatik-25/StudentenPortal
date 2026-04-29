@@ -14,6 +14,9 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         await EnsureCourseTableAsync(cancellationToken);
 
         var options = adminOptions.Value;
+        var courseCode = options.Course.Trim().ToUpperInvariant();
+        await EnsureAdminCourseAsync(courseCode, options, cancellationToken);
+
         var email = options.Email.Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(options.Password))
             return;
@@ -37,7 +40,7 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             DisplayName = options.DisplayName,
             StudyProgram = options.StudyProgram,
             Semester = Math.Max(1, options.Semester),
-            Course = options.Course,
+            Course = string.IsNullOrWhiteSpace(courseCode) ? options.Course : courseCode,
             Role = UserRole.Admin
         });
 
@@ -55,5 +58,53 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
                 "CreatedAt" TEXT NOT NULL
             );
             """, cancellationToken);
+    }
+
+    private async Task EnsureAdminCourseAsync(string courseCode, AdminOptions options, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(courseCode))
+            return;
+
+        var studyProgram = string.IsNullOrWhiteSpace(options.StudyProgram)
+            ? "Administration"
+            : options.StudyProgram.Trim();
+        var semester = Math.Clamp(options.Semester, 1, 6);
+
+        var existing = await dbContext.Courses.FirstOrDefaultAsync(course => course.Code == courseCode, cancellationToken);
+        if (existing is null)
+        {
+            dbContext.Courses.Add(new Course
+            {
+                Code = courseCode,
+                StudyProgram = studyProgram,
+                Semester = semester,
+                IsActive = true
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var changed = false;
+        if (!existing.IsActive)
+        {
+            existing.IsActive = true;
+            changed = true;
+        }
+
+        if (existing.StudyProgram != studyProgram)
+        {
+            existing.StudyProgram = studyProgram;
+            changed = true;
+        }
+
+        if (existing.Semester != semester)
+        {
+            existing.Semester = semester;
+            changed = true;
+        }
+
+        if (changed)
+            await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

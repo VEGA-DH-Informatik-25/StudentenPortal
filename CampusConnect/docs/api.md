@@ -6,7 +6,7 @@ In der Development-Umgebung stellt die API eine interaktive Swagger-Oberfläche 
 
 Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `POST /api/auth/login` getestet werden. Das Token wird als Bearer-Token gesendet.
 
-## Geplante Endpunkte
+## Implementierte Endpunkte
 
 | Methode | Endpunkt | Beschreibung | Authentifizierung |
 |---|---|---|---|
@@ -17,7 +17,10 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
+| GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
+| DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
 | DELETE | `/api/feed/{id}` | Eigenen Beitrag löschen | Ja |
@@ -27,9 +30,11 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | GET | `/api/mensa` | Mensa-Speiseplan für die aktuelle Woche abrufen | Ja |
 | GET | `/api/calendar` | Prüfungskalender-Einträge abrufen | Ja |
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
+| DELETE | `/api/calendar/{id}` | Eigenen Prüfungseintrag löschen | Ja |
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
+| GET | `/api/timetable` | Stundenplan für einen Kurs abrufen (`course` erforderlich, `days` optional) | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
 | POST | `/api/groups` | Eigene Campusgruppe erstellen (optional mit initialen Einstellungen für Sichtbarkeit, Kommentare und Posting-Rechte) | Ja |
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |
@@ -37,11 +42,6 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | PUT | `/api/groups/{id}/assignments` | Konten einer bearbeitbaren Gruppe zuweisen | Ja |
 | PUT | `/api/groups/{id}/member-permissions` | Berechtigungen (`ReadOnly`, `ReadWrite`, `Manage`) zugewiesener Gruppenmitglieder setzen | Ja |
 | POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
-| GET | `/api/contacts` | Alle Adressbuch-Einträge abrufen | Ja |
-| GET | `/api/contacts/{id}` | Einzelnen Kontakt abrufen | Ja |
-| POST | `/api/contacts` | Neuen Kontakt anlegen (Admin) | Ja |
-| PUT | `/api/contacts/{id}` | Kontakt aktualisieren (Admin) | Ja |
-| DELETE | `/api/contacts/{id}` | Kontakt löschen (Admin) | Ja |
 
 > **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
 > ```

@@ -2,14 +2,14 @@
 
 ## Systemüberblick
 
-CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine PostgreSQL-Datenbank als Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
+CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine SQLite-Datenbank als aktuelle Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
 
 ## Frontend-Architektur
 
 Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenständige Komponenten (Standalone Components), sodass NgModules nicht benötigt werden. Die wichtigsten Architekturentscheidungen:
 
 - **Signals** (`signal()`, `computed()`) statt klassischer Properties als Standard-Reaktivitätsmodell.
-- **Zoneless-ready**: `provideZoneChangeDetection({ eventCoalescing: true })` reduziert überflüssige Change-Detection-Zyklen.
+- **Zoneless-ready**: `provideZonelessChangeDetection()` aktiviert zonenlose Change Detection.
 - **Lazy Loading**: Alle Feature-Bereiche (Feed, Mensa, Kalender, Noten, Gruppen, Admin) werden über `loadComponent` in `app.routes.ts` erst bei Bedarf geladen.
 - **Functional Guards**: Der Auth-Guard ist als `CanActivateFn`-Funktion implementiert (kein Interface-basiertes Klassen-Guard mehr).
 - **Functional Interceptors**: `authTokenInterceptor` und `errorHandlerInterceptor` sind als `HttpInterceptorFn`-Funktionen implementiert und werden über `provideHttpClient(withInterceptors([...]))` registriert.
@@ -28,6 +28,10 @@ Das Backend folgt der **Clean Architecture** mit vier Schichten:
 | API | `CampusConnect.API` | Application |
 
 Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und API implementieren Interfaces, die in der Application-Schicht definiert sind.
+
+## Persistenz und Repository-Strategie
+
+Die aktuelle Implementierung persistiert Benutzer und Kurse in SQLite über Entity Framework Core. Gruppen, Feed-Beiträge, Noten und Prüfungseinträge werden derzeit über In-Memory-Repositories gehalten und beim Neustart neu aufgebaut beziehungsweise verworfen. Services, die Kurszuordnungen ändern, synchronisieren deshalb zusätzlich die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht während der Laufzeit konsistent bleiben.
 
 ## Externe APIs
 
