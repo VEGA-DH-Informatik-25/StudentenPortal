@@ -1,6 +1,7 @@
 using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Features.Auth;
 using CampusConnect.Application.Features.Calendar;
+using CampusConnect.Application.Features.Contacts;
 using CampusConnect.Application.Features.Courses;
 using CampusConnect.Application.Features.Feed;
 using CampusConnect.Application.Features.Groups;
@@ -45,6 +46,7 @@ public static class ServiceExtensions
         services.AddScoped<GroupsService>();
         services.AddScoped<GradesService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ContactsService>();
         services.AddScoped<AdminUsersService>();
         services.AddScoped<DatabaseInitializer>();
         services.AddScoped<DevelopmentDemoDataSeeder>();

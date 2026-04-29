@@ -82,6 +82,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  &__wide {
+    grid-column: 1 / -1;
+  }
+
   label {
     color: var(--dhbw-ink);
     display: flex;
@@ -92,7 +96,8 @@
   }
 
   input,
-  select {
+  select,
+  textarea {
     background: var(--dhbw-surface);
     border: 1px solid var(--dhbw-border);
     border-radius: 6px;
@@ -110,6 +115,11 @@
       background: var(--dhbw-bg-accent);
       color: var(--dhbw-text-muted);
     }
+  }
+
+  textarea {
+    line-height: 1.45;
+    resize: vertical;
   }
 
   &__actions {

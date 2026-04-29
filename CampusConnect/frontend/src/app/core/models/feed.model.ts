@@ -1,8 +1,10 @@
 import { CampusGroup } from './group.model';
+import { ContactProfile } from './contact.model';
 
 export interface FeedPost {
   id: string;
   authorName: string;
+  author?: ContactProfile | null;
   group: CampusGroup;
   content: string;
   createdAt: string;
@@ -20,6 +22,7 @@ export interface CreatePostRequest {
 export interface FeedComment {
   id: string;
   authorName: string;
+  author?: ContactProfile | null;
   content: string;
   createdAt: string;
   canDelete: boolean;

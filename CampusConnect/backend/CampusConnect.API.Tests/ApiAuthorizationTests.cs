@@ -12,6 +12,7 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     [InlineData("/api/groups")]
     [InlineData("/api/grades")]
     [InlineData("/api/calendar")]
+    [InlineData("/api/contacts")]
     [InlineData("/api/timetable?course=TIF25A")]
     [InlineData("/api/mensa")]
     [InlineData("/api/admin/users")]

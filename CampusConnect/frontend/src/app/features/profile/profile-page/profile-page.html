@@ -73,6 +73,21 @@
           Semester
           <input type="text" [value]="(selectedCourse()?.semester ?? profile.semester) + '. Semester'" readonly />
         </label>
+
+        <label>
+          Telefon
+          <input type="tel" name="phoneNumber" [(ngModel)]="_form.phoneNumber" maxlength="40" autocomplete="tel" />
+        </label>
+
+        <label>
+          Ort
+          <input type="text" name="location" [(ngModel)]="_form.location" maxlength="120" placeholder="z. B. Bibliothek, Campus, Raum" />
+        </label>
+
+        <label class="profile-form__wide">
+          Profilnotiz
+          <textarea name="profileNote" [(ngModel)]="_form.profileNote" maxlength="280" rows="4" placeholder="Kurzinfo für Kommilitonen und Lehrende"></textarea>
+        </label>
       </div>
 
       <div class="profile-form__actions">

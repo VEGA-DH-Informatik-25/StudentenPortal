@@ -38,6 +38,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/groups/groups-page/groups-page').then(m => m.GroupsPage),
       },
       {
+        path: 'contacts',
+        loadComponent: () => import('./features/contacts/contact-book-page/contact-book-page').then(m => m.ContactBookPage),
+      },
+      {
         path: 'groups/:id/settings',
         loadComponent: () => import('./features/groups/group-settings-page/group-settings-page').then(m => m.GroupSettingsPage),
       },

@@ -246,6 +246,10 @@
     width: 2.5rem;
   }
 
+  &__profile-avatar {
+    align-self: start;
+  }
+
   &__body {
     display: grid;
     gap: 0.75rem;
@@ -349,7 +353,7 @@
   }
 
   .composer__avatar,
-  .post-card__avatar {
+  .post-card__profile-avatar {
     display: none;
   }
 

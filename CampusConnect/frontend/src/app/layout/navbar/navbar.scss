@@ -285,6 +285,18 @@
     }
   }
 
+  &__profile-note {
+    background: var(--dhbw-bg-accent);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    color: var(--dhbw-ink-soft);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    margin: 0 0 0.85rem;
+    overflow-wrap: anywhere;
+    padding: 0.6rem;
+  }
+
   &__profile-action,
   &__logout {
     align-items: center;

@@ -11,6 +11,7 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        await EnsureUserProfileColumnsAsync(cancellationToken);
         await EnsureCourseTableAsync(cancellationToken);
 
         var options = adminOptions.Value;
@@ -58,6 +59,46 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
                 "CreatedAt" TEXT NOT NULL
             );
             """, cancellationToken);
+    }
+
+    private async Task EnsureUserProfileColumnsAsync(CancellationToken cancellationToken)
+    {
+        var columns = await GetUserColumnsAsync(cancellationToken);
+        if (!columns.Contains("PhoneNumber"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "PhoneNumber" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+
+        if (!columns.Contains("Location"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "Location" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+
+        if (!columns.Contains("ProfileNote"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "ProfileNote" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+    }
+
+    private async Task<HashSet<string>> GetUserColumnsAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var connection = dbContext.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA table_info(\"Users\");";
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            columns.Add(reader.GetString(1));
+
+        return columns;
     }
 
     private async Task EnsureAdminCourseAsync(string courseCode, AdminOptions options, CancellationToken cancellationToken)

@@ -1,0 +1,85 @@
+<div class="contact-book-page">
+  <header class="contact-book-page__header">
+    <div>
+      <p>Kontaktbuch</p>
+      <h2>Personen suchen</h2>
+    </div>
+    <span>{{ _resultLabel() }}</span>
+  </header>
+
+  <form class="contact-search" (ngSubmit)="search()" role="search">
+    <label for="contact-query">Suche</label>
+    <div class="contact-search__row">
+      <input
+        id="contact-query"
+        type="search"
+        name="query"
+        [value]="_query()"
+        (input)="updateQuery($any($event.target).value)"
+        placeholder="Name, E-Mail, Kurs, Studiengang, Ort"
+        autocomplete="off" />
+      <button type="submit" [disabled]="_isLoading()">Suchen</button>
+      @if (_query()) {
+        <button type="button" class="contact-search__secondary" (click)="clearSearch()">Zurücksetzen</button>
+      }
+    </div>
+  </form>
+
+  @if (_error()) {
+    <p class="contact-book-page__state contact-book-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="contact-book-page__state">Kontakte werden geladen...</p>
+  }
+
+  @if (!_isLoading() && _contacts().length === 0) {
+    <p class="contact-book-page__state">Keine passenden Kontakte gefunden.</p>
+  }
+
+  <section class="contact-list" aria-label="Gefundene Kontakte">
+    @for (contact of _contacts(); track contact.id) {
+      <article class="contact-card">
+        <app-profile-hover-card [profile]="contact" [displayName]="contact.displayName" [showAvatar]="true" [showName]="false" />
+        <div class="contact-card__body">
+          <header>
+            <div>
+              <strong>{{ contact.displayName }}</strong>
+              <span>{{ roleLabel(contact.role) }}</span>
+            </div>
+            <a [href]="'mailto:' + contact.email">E-Mail</a>
+          </header>
+          <dl>
+            <div>
+              <dt>Kurs</dt>
+              <dd>{{ contact.course || 'Nicht angegeben' }}</dd>
+            </div>
+            <div>
+              <dt>Studiengang</dt>
+              <dd>{{ contact.studyProgram || 'Nicht angegeben' }}</dd>
+            </div>
+            <div>
+              <dt>Semester</dt>
+              <dd>{{ contact.semester }}. Semester</dd>
+            </div>
+            @if (contact.location) {
+              <div>
+                <dt>Ort</dt>
+                <dd>{{ contact.location }}</dd>
+              </div>
+            }
+            @if (contact.phoneNumber) {
+              <div>
+                <dt>Telefon</dt>
+                <dd>{{ contact.phoneNumber }}</dd>
+              </div>
+            }
+          </dl>
+          @if (contact.profileNote) {
+            <p>{{ contact.profileNote }}</p>
+          }
+        </div>
+      </article>
+    }
+  </section>
+</div>

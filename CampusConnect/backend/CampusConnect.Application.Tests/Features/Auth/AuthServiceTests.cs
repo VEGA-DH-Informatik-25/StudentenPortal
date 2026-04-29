@@ -87,7 +87,10 @@ public class AuthServiceTests
 
         var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand(
             "Bob B.",
-            "TIF25B"));
+            "TIF25B",
+            " +49 7621 123456 ",
+            " Bibliothek ",
+            " Sucht Projektpartner für Webentwicklung. "));
 
         Assert.True(result.IsSuccess);
         var profile = result.Value!;
@@ -97,6 +100,9 @@ public class AuthServiceTests
         Assert.Equal("Informatik", profile.StudyProgram);
         Assert.Equal(3, profile.Semester);
         Assert.Equal("TIF25B", profile.Course);
+        Assert.Equal("+49 7621 123456", profile.PhoneNumber);
+        Assert.Equal("Bibliothek", profile.Location);
+        Assert.Equal("Sucht Projektpartner für Webentwicklung.", profile.ProfileNote);
         Assert.Contains(user.Id, groups.AssignedUserIdsByCourse["TIF25B"]);
 
         var storedUser = await users.FindByIdAsync(user.Id);
@@ -119,7 +125,7 @@ public class AuthServiceTests
         await users.AddAsync(user);
         var service = CreateService(users);
 
-        var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand("", "TIF25A"));
+        var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand("", "TIF25A", "", "", ""));
 
         Assert.False(result.IsSuccess);
         Assert.Equal("Bitte fülle alle Profilfelder aus.", result.Error);

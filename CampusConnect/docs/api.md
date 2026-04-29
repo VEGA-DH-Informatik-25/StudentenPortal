@@ -13,8 +13,9 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | POST | `/api/auth/register` | Registrierung mit Hochschul-E-Mail-Adresse | Nein |
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
-| PUT | `/api/auth/me` | Eigenes Benutzerprofil aktualisieren | Ja |
+| PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails des eigenen Profils aktualisieren | Ja |
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
+| GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |

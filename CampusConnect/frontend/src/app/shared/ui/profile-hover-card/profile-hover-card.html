@@ -1,0 +1,55 @@
+<span class="profile-hover-card" tabindex="0">
+  <span class="profile-hover-card__trigger">
+    @if (showAvatar()) {
+      <span class="profile-hover-card__avatar" aria-hidden="true">{{ _initials() }}</span>
+    }
+    @if (showName()) {
+      <span class="profile-hover-card__name">{{ displayName() }}</span>
+    }
+  </span>
+
+  @if (profile(); as contact) {
+    <span class="profile-hover-card__panel" role="tooltip">
+      <span class="profile-hover-card__header">
+        <span class="profile-hover-card__avatar profile-hover-card__avatar--large" aria-hidden="true">{{ _initials() }}</span>
+        <span>
+          <strong>{{ contact.displayName }}</strong>
+          <small>{{ roleLabel(contact.role) }}</small>
+        </span>
+      </span>
+      <span class="profile-hover-card__details">
+        <span>
+          <small>E-Mail</small>
+          <strong>{{ contact.email }}</strong>
+        </span>
+        <span>
+          <small>Kurs</small>
+          <strong>{{ contact.course || 'Kein Kurs' }}</strong>
+        </span>
+        <span>
+          <small>Studiengang</small>
+          <strong>{{ contact.studyProgram || 'Nicht angegeben' }}</strong>
+        </span>
+        <span>
+          <small>Semester</small>
+          <strong>{{ contact.semester }}. Semester</strong>
+        </span>
+        @if (contact.phoneNumber) {
+          <span>
+            <small>Telefon</small>
+            <strong>{{ contact.phoneNumber }}</strong>
+          </span>
+        }
+        @if (contact.location) {
+          <span>
+            <small>Ort</small>
+            <strong>{{ contact.location }}</strong>
+          </span>
+        }
+      </span>
+      @if (contact.profileNote) {
+        <span class="profile-hover-card__note">{{ contact.profileNote }}</span>
+      }
+    </span>
+  }
+</span>

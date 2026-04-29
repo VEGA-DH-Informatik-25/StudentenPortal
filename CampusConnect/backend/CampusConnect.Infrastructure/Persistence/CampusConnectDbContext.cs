@@ -20,6 +20,9 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
         user.Property(entity => entity.DisplayName).HasMaxLength(120).IsRequired();
         user.Property(entity => entity.StudyProgram).HasMaxLength(120).IsRequired();
         user.Property(entity => entity.Course).HasMaxLength(40).IsRequired();
+        user.Property(entity => entity.PhoneNumber).HasMaxLength(40).IsRequired();
+        user.Property(entity => entity.Location).HasMaxLength(120).IsRequired();
+        user.Property(entity => entity.ProfileNote).HasMaxLength(280).IsRequired();
         user.Property(entity => entity.Role)
             .HasConversion(role => role.ToString(), value => Enum.Parse<UserRole>(value))
             .HasMaxLength(32)

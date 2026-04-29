@@ -9,11 +9,12 @@ import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 import { TimetableEvent } from '../../../core/models/timetable.model';
 import { Timetable } from '../../../core/services/timetable';
+import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
 
 @Component({
   selector: 'app-feed-page',
   standalone: true,
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, ProfileHoverCard],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -214,7 +215,7 @@ export class FeedPage implements OnInit {
   }
 
   protected canReactToPost(post: FeedPost): boolean {
-    return post.group.canManage || (post.group.isAssigned && post.group.memberPermission === 'ReadWrite');
+    return post.group.canManage || (post.group.isAssigned && (post.group.memberPermission === 'ReadWrite' || post.group.memberPermission === 'Manage'));
   }
 
   protected groupTypeLabel(type: GroupType): string {

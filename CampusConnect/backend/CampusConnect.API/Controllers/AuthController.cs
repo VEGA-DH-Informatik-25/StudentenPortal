@@ -58,7 +58,12 @@ public class AuthController(AuthService authService) : ControllerBase
         if (userId is null)
             return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
 
-        var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(request.DisplayName, request.Course));
+        var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(
+            request.DisplayName,
+            request.Course,
+            request.PhoneNumber,
+            request.Location,
+            request.ProfileNote));
 
         if (!result.IsSuccess)
             return ToProfileError(result);
@@ -81,5 +86,5 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private static UserProfileResponse ToUserProfileResponse(UserProfileResult profile) =>
-        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Semester, profile.Course, profile.Role, profile.CreatedAt);
+        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Semester, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.CreatedAt);
 }

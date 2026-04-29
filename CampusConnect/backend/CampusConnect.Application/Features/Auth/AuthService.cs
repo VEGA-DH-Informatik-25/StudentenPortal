@@ -9,8 +9,8 @@ namespace CampusConnect.Application.Features.Auth;
 
 public record RegisterCommand(string Email, string Password, string DisplayName, string Course);
 public record LoginCommand(string Email, string Password);
-public record UpdateUserProfileCommand(string DisplayName, string Course);
-public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, int Semester, string Course, string Role, DateTime CreatedAt);
+public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
+public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, int Semester, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
@@ -77,6 +77,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         if (validationError is not null)
             return Result<UserProfileResult>.Failure(validationError);
 
+        validationError = ValidateContactFields(cmd.PhoneNumber, cmd.Location, cmd.ProfileNote);
+        if (validationError is not null)
+            return Result<UserProfileResult>.Failure(validationError);
+
         var user = await userRepo.FindByIdAsync(id);
         if (user is null)
             return Result<UserProfileResult>.Failure(UserProfileNotFoundError);
@@ -90,6 +94,9 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         user.StudyProgram = course.StudyProgram;
         user.Semester = course.Semester;
         user.Course = course.Code;
+        user.PhoneNumber = NormalizeOptional(cmd.PhoneNumber);
+        user.Location = NormalizeOptional(cmd.Location);
+        user.ProfileNote = NormalizeOptional(cmd.ProfileNote);
 
         await userRepo.UpdateAsync(user);
         await SyncCourseAssignmentsAsync(course.Code, previousCourse);
@@ -97,7 +104,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static UserProfileResult ToProfileResult(User user) =>
-        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Semester, user.Course, user.Role.ToString(), user.CreatedAt);
+        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Semester, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.CreatedAt);
 
     private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive)
     {
@@ -161,4 +168,20 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
 
         return null;
     }
+
+    private static string? ValidateContactFields(string? phoneNumber, string? location, string? profileNote)
+    {
+        if (NormalizeOptional(phoneNumber).Length > 40)
+            return "Die Telefonnummer darf höchstens 40 Zeichen lang sein.";
+
+        if (NormalizeOptional(location).Length > 120)
+            return "Der Ort darf höchstens 120 Zeichen lang sein.";
+
+        if (NormalizeOptional(profileNote).Length > 280)
+            return "Die Profilnotiz darf höchstens 280 Zeichen lang sein.";
+
+        return null;
+    }
+
+    private static string NormalizeOptional(string? value) => value?.Trim() ?? string.Empty;
 }

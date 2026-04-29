@@ -309,18 +309,8 @@
   grid-template-columns: auto minmax(0, 1fr);
   padding: 1rem;
 
-  &__avatar {
-    align-items: center;
-    background: var(--dhbw-bg-accent);
-    border: 1px solid var(--dhbw-border);
-    border-radius: 50%;
-    color: var(--dhbw-red-dark);
-    display: inline-flex;
-    font-size: 0.8rem;
-    font-weight: 900;
-    height: 2.5rem;
-    justify-content: center;
-    width: 2.5rem;
+  &__profile-avatar {
+    align-self: start;
   }
 
   &__body {
@@ -542,7 +532,7 @@
   }
 
   .composer__avatar,
-  .post-card__avatar {
+  .post-card__profile-avatar {
     display: none;
   }
 

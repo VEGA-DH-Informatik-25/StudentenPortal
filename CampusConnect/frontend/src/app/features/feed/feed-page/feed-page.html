@@ -122,11 +122,11 @@
       <div class="feed-page__posts">
         @for (post of _posts(); track post.id) {
           <article class="post-card">
-            <span class="post-card__avatar" aria-hidden="true">{{ initialsFor(post.authorName) }}</span>
+            <app-profile-hover-card class="post-card__profile-avatar" [profile]="post.author ?? null" [displayName]="post.authorName" [showAvatar]="true" [showName]="false" />
             <div class="post-card__body">
               <header class="post-card__header">
                 <div>
-                  <strong>{{ post.authorName }}</strong>
+                  <strong><app-profile-hover-card [profile]="post.author ?? null" [displayName]="post.authorName" /></strong>
                   <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
                 </div>
                 @if (post.canDelete) {
@@ -206,10 +206,10 @@
                     <div class="comments__list">
                       @for (comment of post.comments; track comment.id) {
                         <article class="comment">
-                          <span class="comment__avatar" aria-hidden="true">{{ initialsFor(comment.authorName) }}</span>
+                          <app-profile-hover-card class="comment__profile-avatar" [profile]="comment.author ?? null" [displayName]="comment.authorName" [showAvatar]="true" [showName]="false" />
                           <div>
                             <header>
-                              <strong>{{ comment.authorName }}</strong>
+                              <strong><app-profile-hover-card [profile]="comment.author ?? null" [displayName]="comment.authorName" /></strong>
                               <time [attr.datetime]="comment.createdAt">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
                               @if (comment.canDelete) {
                                 <button type="button" (click)="onDeleteComment(post.id, comment.id)" aria-label="Kommentar löschen">×</button>

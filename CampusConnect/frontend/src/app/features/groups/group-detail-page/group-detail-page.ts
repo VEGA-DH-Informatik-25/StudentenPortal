@@ -8,11 +8,12 @@ import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Auth } from '../../../core/services/auth';
 import { Feed } from '../../../core/services/feed';
 import { Groups } from '../../../core/services/groups';
+import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
 
 @Component({
   selector: 'app-group-detail-page',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, ProfileHoverCard],
   templateUrl: './group-detail-page.html',
   styleUrl: './group-detail-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -228,7 +229,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   protected canReactToPost(post: FeedPost): boolean {
-    return post.group.canManage || (post.group.isAssigned && post.group.memberPermission === 'ReadWrite');
+    return post.group.canManage || (post.group.isAssigned && (post.group.memberPermission === 'ReadWrite' || post.group.memberPermission === 'Manage'));
   }
 
   protected groupTypeLabel(type: GroupType): string {

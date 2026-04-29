@@ -1,0 +1,238 @@
+.contact-book-page {
+  display: grid;
+  gap: 1rem;
+
+  &__header {
+    align-items: end;
+    border-bottom: 1px solid var(--dhbw-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+
+    p {
+      color: var(--dhbw-red);
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin: 0 0 0.25rem;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      color: var(--dhbw-ink);
+      font-size: 2.2rem;
+      line-height: 1.05;
+      margin: 0;
+    }
+
+    > span {
+      background: var(--dhbw-surface);
+      border: 1px solid var(--dhbw-border);
+      border-radius: 8px;
+      color: var(--dhbw-red-dark);
+      font-weight: 800;
+      padding: 0.55rem 0.75rem;
+    }
+  }
+
+  &__state {
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    color: var(--dhbw-text-muted);
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+
+    &--error {
+      background: var(--dhbw-red-soft);
+      color: var(--dhbw-red-dark);
+    }
+  }
+}
+
+.contact-search,
+.contact-card {
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
+  border-radius: 8px;
+  box-shadow: var(--dhbw-shadow);
+}
+
+.contact-search {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+
+  label {
+    color: var(--dhbw-ink);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  &__row {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  input {
+    background: var(--dhbw-surface-muted);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    color: var(--dhbw-ink);
+    min-height: 2.6rem;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+
+    &:focus {
+      background: var(--dhbw-surface);
+      border-color: var(--dhbw-red);
+      box-shadow: 0 0 0 3px var(--dhbw-focus);
+      outline: none;
+    }
+  }
+
+  button {
+    background: var(--dhbw-red);
+    border: 1px solid var(--dhbw-red);
+    border-radius: 8px;
+    color: var(--dhbw-surface);
+    cursor: pointer;
+    font-weight: 800;
+    min-height: 2.6rem;
+    padding: 0.55rem 0.9rem;
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      background: var(--dhbw-red-dark);
+      border-color: var(--dhbw-red-dark);
+      outline: none;
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+  }
+
+  &__secondary {
+    background: var(--dhbw-surface-muted) !important;
+    border-color: var(--dhbw-border) !important;
+    color: var(--dhbw-ink-soft) !important;
+  }
+}
+
+.contact-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.contact-card {
+  align-items: start;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 1rem;
+
+  &__body {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  header {
+    align-items: start;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+
+    strong,
+    span {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      color: var(--dhbw-ink);
+      font-size: 1rem;
+    }
+
+    span {
+      color: var(--dhbw-text-muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-top: 0.12rem;
+      text-transform: uppercase;
+    }
+
+    a {
+      background: var(--dhbw-red-soft);
+      border-radius: 999px;
+      color: var(--dhbw-red-dark);
+      flex: 0 0 auto;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.3rem 0.65rem;
+      text-decoration: none;
+
+      &:hover,
+      &:focus-visible {
+        background: var(--dhbw-red);
+        color: var(--dhbw-surface);
+        outline: none;
+      }
+    }
+  }
+
+  dl {
+    display: grid;
+    gap: 0.55rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  dt {
+    color: var(--dhbw-text-muted);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  dd {
+    color: var(--dhbw-ink-soft);
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin: 0.1rem 0 0;
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    background: var(--dhbw-bg-accent);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    color: var(--dhbw-ink-soft);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0;
+    overflow-wrap: anywhere;
+    padding: 0.7rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .contact-book-page__header {
+    align-items: start;
+    flex-direction: column;
+
+    h2 {
+      font-size: 1.8rem;
+    }
+  }
+
+  .contact-search__row,
+  .contact-card,
+  .contact-card dl {
+    grid-template-columns: 1fr;
+  }
+}

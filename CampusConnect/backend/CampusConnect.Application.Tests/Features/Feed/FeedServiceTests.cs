@@ -29,6 +29,8 @@ public class FeedServiceTests
         Assert.True(result.IsSuccess);
         Assert.Equal(group.Id, result.Value!.Group.Id);
         Assert.Equal("Kurs TIF25A", result.Value.Group.Name);
+        Assert.Equal("alice@dhbw-loerrach.de", result.Value.Author?.Email);
+        Assert.Equal("TIF25A", result.Value.Author?.Course);
         Assert.True(result.Value.CanDelete);
         Assert.Equal(group.Id, feed.Posts.Single().GroupId);
     }
@@ -204,6 +206,7 @@ public class FeedServiceTests
         Assert.True(result.IsSuccess);
         var comment = Assert.Single(result.Value!.Comments);
         Assert.Equal("Ich bin dabei.", comment.Content);
+        Assert.Equal("alice@dhbw-loerrach.de", comment.Author?.Email);
         Assert.True(comment.CanDelete);
     }
 

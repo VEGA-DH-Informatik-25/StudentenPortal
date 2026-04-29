@@ -74,6 +74,9 @@ export class Auth {
       studyProgram: '',
       semester: 1,
       course: '',
+      phoneNumber: '',
+      location: '',
+      profileNote: '',
       role: res.role,
       createdAt: '',
     };

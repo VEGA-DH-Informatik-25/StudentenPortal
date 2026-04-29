@@ -232,6 +232,10 @@ button {
   gap: 0.55rem;
   grid-template-columns: auto minmax(0, 1fr);
 
+  &__profile-avatar {
+    align-self: start;
+  }
+
   &__avatar {
     align-items: center;
     background: var(--dhbw-surface);
@@ -353,7 +357,8 @@ button {
     justify-content: flex-start;
   }
 
-  .comment__avatar {
+  .comment__avatar,
+  .comment__profile-avatar {
     display: none;
   }
 }

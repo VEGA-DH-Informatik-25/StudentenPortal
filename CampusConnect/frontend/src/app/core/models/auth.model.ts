@@ -25,6 +25,9 @@ export interface UserProfile {
   studyProgram: string;
   semester: number;
   course: string;
+  phoneNumber: string;
+  location: string;
+  profileNote: string;
   role: string;
   createdAt: string;
 }
@@ -32,4 +35,7 @@ export interface UserProfile {
 export interface UpdateProfileRequest {
   displayName: string;
   course: string;
+  phoneNumber: string;
+  location: string;
+  profileNote: string;
 }
