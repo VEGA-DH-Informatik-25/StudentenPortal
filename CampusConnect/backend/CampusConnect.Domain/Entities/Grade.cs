@@ -4,6 +4,7 @@ public class Grade
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid UserId { get; set; }
+    public string ModuleCode { get; set; } = string.Empty;
     public string ModuleName { get; set; } = string.Empty;
     public decimal Value { get; set; }
     public int Ects { get; set; }

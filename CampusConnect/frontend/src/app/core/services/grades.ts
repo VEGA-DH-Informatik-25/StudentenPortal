@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Grade, GradeSummary, AddGradeRequest } from '../models/grade.model';
+import { Grade, GradePlan, GradeSummary, AddGradeRequest } from '../models/grade.model';
 
 @Injectable({ providedIn: 'root' })
 export class Grades {
@@ -9,6 +9,10 @@ export class Grades {
 
   getGrades(): Observable<GradeSummary> {
     return this._http.get<GradeSummary>('/api/grades');
+  }
+
+  getGradePlan(): Observable<GradePlan> {
+    return this._http.get<GradePlan>('/api/grades/plan');
   }
 
   addGrade(req: AddGradeRequest): Observable<Grade> {

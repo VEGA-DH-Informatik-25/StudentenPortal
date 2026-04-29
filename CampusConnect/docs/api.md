@@ -33,6 +33,7 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
 | DELETE | `/api/calendar/{id}` | Eigenen Prüfungseintrag löschen | Ja |
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
+| GET | `/api/grades/plan` | Aus dem zugeordneten Kurs abgeleiteten DHBW-Studienplan mit Modulen und Prüfungsformen abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
 | GET | `/api/timetable` | Stundenplan für einen Kurs abrufen (`course` erforderlich, `days` optional) | Ja |
@@ -55,6 +56,12 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `semester`, `isActive` und `createdAt`. Registrierung und Profiländerung senden nur den Kurscode; Studiengang und Semester werden serverseitig aus dem Kurskatalog übernommen. Admins können neue aktive Kurse anlegen und Benutzer in der Benutzerverwaltung einem anderen Kurs zuordnen.
 
 Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs existiert eine Kursgruppe mit identischem `courseCode`. Die Zuweisungen dieser Kursgruppen werden aus den Benutzerprofilen abgeleitet; manuelle Kontenzuweisungen in den Gruppeneinstellungen sind deshalb für Kursgruppen gesperrt. Offizielle Gruppen und Campusgruppen behalten ihre manuelle Kontenzuweisung.
+
+## Noten und Studienplan
+
+Der Notenbereich liest den Studienplan nicht aus einer manuell gepflegten Modulliste, sondern löst den Kurs des angemeldeten Nutzers gegen die öffentlichen DHBW-Studienplan-Indexseiten auf. Für Lörrach werden die dort verlinkten Modulhandbuch-PDFs geladen und serverseitig geparst. `GET /api/grades/plan` liefert die Module, ECTS, Studienjahr, Prüfungsform und den Erfassungsstatus für den aktuellen Kurs zurück. Wenn für einen Kurs kein eindeutiger Plan gefunden wird, antwortet der Endpunkt mit `404 Not Found` und einer `{ error = ... }`-Meldung.
+
+`POST /api/grades` akzeptiert bevorzugt `moduleCode` aus diesem Plan und `value`; Modulname und ECTS werden dann serverseitig aus dem Studienplan übernommen. Für Kurse ohne gefundenen Plan bleibt die manuelle Eingabe mit `moduleName`, `ects` und `value` möglich. Eine `moduleCode`, die nicht im Kursplan des angemeldeten Nutzers vorkommt, wird abgelehnt.
 
 ## Gruppen und Feed
 
