@@ -244,6 +244,10 @@
     gap: 0.75rem;
     margin-bottom: 0.75rem;
     padding-bottom: 0.75rem;
+  }
+
+  &__profile-copy {
+    min-width: 0;
 
     strong,
     span {

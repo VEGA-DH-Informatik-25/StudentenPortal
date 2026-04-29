@@ -2,7 +2,7 @@
   <header class="contact-book-page__header">
     <div>
       <p>Kontaktbuch</p>
-      <h2>Personen suchen</h2>
+      <h1>Personen suchen</h1>
     </div>
     <span>{{ _resultLabel() }}</span>
   </header>
@@ -49,32 +49,32 @@
             </div>
             <a [href]="'mailto:' + contact.email">E-Mail</a>
           </header>
-          <dl>
+          <div class="contact-card__details">
             <div>
-              <dt>Kurs</dt>
-              <dd>{{ contact.course || 'Nicht angegeben' }}</dd>
+              <span>Kurs</span>
+              <strong>{{ contact.course || 'Nicht angegeben' }}</strong>
             </div>
             <div>
-              <dt>Studiengang</dt>
-              <dd>{{ contact.studyProgram || 'Nicht angegeben' }}</dd>
+              <span>Studiengang</span>
+              <strong>{{ contact.studyProgram || 'Nicht angegeben' }}</strong>
             </div>
             <div>
-              <dt>Semester</dt>
-              <dd>{{ contact.semester }}. Semester</dd>
+              <span>Semester</span>
+              <strong>{{ contact.semester }}. Semester</strong>
             </div>
             @if (contact.location) {
               <div>
-                <dt>Ort</dt>
-                <dd>{{ contact.location }}</dd>
+                <span>Ort</span>
+                <strong>{{ contact.location }}</strong>
               </div>
             }
             @if (contact.phoneNumber) {
               <div>
-                <dt>Telefon</dt>
-                <dd>{{ contact.phoneNumber }}</dd>
+                <span>Telefon</span>
+                <strong>{{ contact.phoneNumber }}</strong>
               </div>
             }
-          </dl>
+          </div>
           @if (contact.profileNote) {
             <p>{{ contact.profileNote }}</p>
           }

@@ -1,42 +1,48 @@
 <div class="timetable-page">
   @if (!_course()) {
     <section class="course-setup">
-      <div>
-        <p class="timetable-page__eyebrow">DHBW Lörrach</p>
-        <h2>Vorlesungsplan</h2>
-      </div>
+      <header class="timetable-hero">
+        <div>
+          <p class="timetable-page__eyebrow">DHBW Lörrach</p>
+          <h1>Vorlesungsplan</h1>
+          <p>Wähle deinen Kurs aus und prüfe Vorlesungen, Räume und Tagesansichten.</p>
+        </div>
+      </header>
 
-      <div class="course-picker">
-        <label class="course-field">
-          <span>Kurs</span>
-          <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
-            <option value="">Kurs auswählen</option>
-            @for (course of _courseOptions(); track course) {
-              <option [value]="course">{{ course }}</option>
-            }
-            <option value="custom">Anderen Kurs eingeben</option>
-          </select>
-        </label>
+      <div class="course-panel">
+        <div class="course-picker">
+          <label class="course-field">
+            <span>Kurs</span>
+            <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
+              <option value="">Kurs auswählen</option>
+              @for (course of _courseOptions(); track course) {
+                <option [value]="course">{{ course }}</option>
+              }
+              <option value="custom">Anderen Kurs eingeben</option>
+            </select>
+          </label>
 
-        <label class="course-field course-field--manual">
-          <span>Kurscode</span>
-          <input type="text" placeholder="Kursname eingeben" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
-        </label>
+          <label class="course-field course-field--manual">
+            <span>Kurscode</span>
+            <input type="text" placeholder="Kursname eingeben" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
+          </label>
 
-        <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" aria-label="Kurs anzeigen">⌕</button>
-      </div>
+          <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" aria-label="Kurs anzeigen">⌕</button>
+        </div>
 
-      <div class="course-history" aria-label="Kursauswahl">
-        @for (course of _courseOptions(); track course) {
-          <button type="button" (click)="selectCourse(course)">{{ course }}</button>
-        }
+        <div class="course-history" aria-label="Kursauswahl">
+          @for (course of _courseOptions(); track course) {
+            <button type="button" (click)="selectCourse(course)">{{ course }}</button>
+          }
+        </div>
       </div>
     </section>
   } @else {
-    <header class="schedule-header">
+    <header class="timetable-hero timetable-hero--with-actions">
       <div>
         <p class="timetable-page__eyebrow">Vorlesungsplan</p>
-        <h2>{{ _course() }}</h2>
+        <h1>{{ _course() }}</h1>
+        <p>Vorlesungen, Räume und Tagesansichten für deinen ausgewählten Kurs.</p>
       </div>
       <div class="schedule-actions">
         <button type="button" (click)="changeCourse()">Kurs wechseln</button>

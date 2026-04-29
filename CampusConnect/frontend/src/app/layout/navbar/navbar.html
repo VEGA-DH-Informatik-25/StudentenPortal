@@ -31,7 +31,7 @@
         @if (_auth.userProfile(); as profile) {
           <div class="navbar__profile-header">
             <span class="navbar__avatar navbar__avatar--large" aria-hidden="true">{{ _profileInitials() }}</span>
-            <div>
+            <div class="navbar__profile-copy">
               <strong>{{ profile.displayName }}</strong>
               <span>{{ profile.email }}</span>
             </div>

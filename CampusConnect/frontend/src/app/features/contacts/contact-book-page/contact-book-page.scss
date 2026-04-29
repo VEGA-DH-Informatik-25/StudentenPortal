@@ -1,6 +1,6 @@
 .contact-book-page {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
 
   &__header {
     align-items: end;
@@ -8,7 +8,7 @@
     display: flex;
     gap: 1rem;
     justify-content: space-between;
-    padding-bottom: 1rem;
+    padding: 0.4rem 0 1.35rem;
 
     p {
       color: var(--dhbw-red);
@@ -18,10 +18,10 @@
       text-transform: uppercase;
     }
 
-    h2 {
+    h1 {
       color: var(--dhbw-ink);
-      font-size: 2.2rem;
-      line-height: 1.05;
+      font-size: 3.2rem;
+      line-height: 1;
       margin: 0;
     }
 
@@ -185,22 +185,23 @@
     }
   }
 
-  dl {
+  &__details {
     display: grid;
     gap: 0.55rem;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0;
   }
 
-  dt {
+  &__details span {
     color: var(--dhbw-text-muted);
+    display: block;
     font-size: 0.68rem;
     font-weight: 900;
     text-transform: uppercase;
   }
 
-  dd {
+  &__details strong {
     color: var(--dhbw-ink-soft);
+    display: block;
     font-size: 0.88rem;
     font-weight: 700;
     margin: 0.1rem 0 0;
@@ -225,14 +226,14 @@
     align-items: start;
     flex-direction: column;
 
-    h2 {
-      font-size: 1.8rem;
+    h1 {
+      font-size: 2.25rem;
     }
   }
 
   .contact-search__row,
   .contact-card,
-  .contact-card dl {
+  .contact-card__details {
     grid-template-columns: 1fr;
   }
 }

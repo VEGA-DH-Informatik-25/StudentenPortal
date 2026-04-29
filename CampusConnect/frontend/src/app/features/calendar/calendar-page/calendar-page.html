@@ -1,8 +1,12 @@
 <div class="calendar-page">
-  <div class="calendar-page__header">
-    <h2>📅 Prüfungskalender</h2>
+  <header class="calendar-page__header">
+    <div>
+      <p class="calendar-page__eyebrow">DHBW Lörrach</p>
+      <h1>Prüfungskalender</h1>
+      <p>Plane Prüfungstermine, Orte und persönliche Notizen an einem Ort.</p>
+    </div>
     <button (click)="_showForm.set(!_showForm())">+ Prüfung hinzufügen</button>
-  </div>
+  </header>
 
   @if (_showForm()) {
     <form class="calendar-page__form" (ngSubmit)="onAdd()">
