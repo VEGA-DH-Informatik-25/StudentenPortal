@@ -22,14 +22,28 @@ public class GradesController(GradesService gradesService) : ControllerBase
         return Ok(summary);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> AddGrade([FromBody] AddGradeRequest request)
+    [HttpGet("plan")]
+    public async Task<IActionResult> GetPlan(CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
         if (userId is null)
             return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
 
-        var result = await gradesService.AddGradeAsync(new AddGradeCommand(userId.Value, request.ModuleName, request.Value, request.Ects));
+        var result = await gradesService.GetPlanAsync(userId.Value, cancellationToken);
+        if (!result.IsSuccess)
+            return NotFound(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddGrade([FromBody] AddGradeRequest request, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+
+        var result = await gradesService.AddGradeAsync(new AddGradeCommand(userId.Value, request.ModuleName, request.Value, request.Ects, request.ModuleCode), cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 

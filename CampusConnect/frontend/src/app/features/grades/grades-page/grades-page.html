@@ -18,33 +18,58 @@
   <div class="content-grid">
     <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
       <h2>Neue Note eintragen</h2>
-      <label>
-        Modul / Prüfung
-        <input
-          name="moduleName"
-          [(ngModel)]="moduleName"
-          #moduleInput="ngModel"
-          placeholder="z. B. Mathematik I"
-          aria-describedby="module-error"
-          required
-        />
-      </label>
-      @if (moduleInput.invalid && (moduleInput.touched || gradeForm.submitted)) {
-        <span id="module-error" class="field-error">Bitte gib ein Modul oder eine Prüfung ein.</span>
+      @if (planModules().length > 0) {
+        <label>
+          Modul aus deinem Kursplan
+          <select name="selectedModuleCode" [(ngModel)]="selectedModuleCode" required>
+            @for (module of openPlanModules(); track module.code) {
+              <option [value]="module.code">{{ module.name }} · {{ module.ects }} ECTS</option>
+            }
+          </select>
+        </label>
+        @if (selectedPlanModule(); as selectedModule) {
+          <div class="selected-module">
+            <strong>{{ selectedModule.code }}</strong>
+            <span>{{ selectedModule.name }}</span>
+            <small>{{ examText(selectedModule) }}</small>
+          </div>
+        }
+      } @else {
+        <label>
+          Modul / Prüfung
+          <input
+            name="moduleName"
+            [(ngModel)]="moduleName"
+            #moduleInput="ngModel"
+            placeholder="z. B. Mathematik I"
+            aria-describedby="module-error"
+            required
+          />
+        </label>
+        @if (moduleInput.invalid && (moduleInput.touched || gradeForm.submitted)) {
+          <span id="module-error" class="field-error">Bitte gib ein Modul oder eine Prüfung ein.</span>
+        }
       }
       <div class="form-row">
         <label>
           Note
           <input name="grade" type="number" min="1" max="5" step="0.1" [(ngModel)]="grade" />
         </label>
-        <label>
-          ECTS
-          <input name="ects" type="number" min="1" step="1" [(ngModel)]="ects" />
-        </label>
+        @if (planModules().length === 0) {
+          <label>
+            ECTS
+            <input name="ects" type="number" min="1" step="1" [(ngModel)]="ects" />
+          </label>
+        }
       </div>
       <button type="submit" [disabled]="_isSubmitting()">Note speichern</button>
       @if (_error()) {
         <span class="field-error">{{ _error() }}</span>
+      }
+      @if (_isPlanLoading()) {
+        <span class="form-note">Kursplan wird geladen.</span>
+      } @else if (_planNotice()) {
+        <span class="form-note">{{ _planNotice() }}</span>
       }
     </form>
 
@@ -86,7 +111,35 @@
       <span>Beste Note</span>
       <strong>{{ format(bestGrade()) }}</strong>
     </article>
+    <article>
+      <span>Kursplan</span>
+      <strong>{{ completedPlanModules() }}/{{ planModules().length }}</strong>
+    </article>
   </section>
+
+  @if (planModules().length > 0) {
+    <section class="panel">
+      <div class="section-header">
+        <h2>Kursplan</h2>
+        <span>{{ _plan()?.courseCode }} · {{ _plan()?.studyProgram }}</span>
+      </div>
+      <div class="plan-grid">
+        @for (module of planModules(); track module.code) {
+          <article class="plan-module" [class.completed]="module.isCompleted">
+            <div>
+              <span>{{ module.code }}</span>
+              <strong>{{ module.name }}</strong>
+            </div>
+            <small>{{ module.studyYear ? module.studyYear + '. Studienjahr · ' : '' }}{{ module.ects }} ECTS</small>
+            <small>{{ examText(module) }}</small>
+            @if (module.isCompleted) {
+              <span class="plan-status">Note {{ format(module.grade ?? 0) }}</span>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
 
   <section class="panel">
     <div class="section-header">
@@ -108,6 +161,7 @@
         <table>
           <thead>
             <tr>
+              <th>Code</th>
               <th>Modul</th>
               <th>Note</th>
               <th>ECTS</th>
@@ -118,6 +172,7 @@
           <tbody>
             @for (entry of grades(); track entry.id) {
               <tr>
+                <td>{{ entry.moduleCode || '–' }}</td>
                 <td>{{ entry.moduleName }}</td>
                 <td>
                   <span class="grade-badge" [class.failed]="entry.value > 4">{{ format(entry.value) }}</span>

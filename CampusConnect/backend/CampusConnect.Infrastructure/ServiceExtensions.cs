@@ -27,6 +27,8 @@ public static class ServiceExtensions
 
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
         services.Configure<DemoDataOptions>(configuration.GetSection(DemoDataOptions.SectionName));
+        services.Configure<DhbwStudyPlanOptions>(configuration.GetSection(DhbwStudyPlanOptions.SectionName));
+        services.AddMemoryCache();
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
         services.AddScoped<ICourseRepository, EntityCourseRepository>();
@@ -39,6 +41,8 @@ public static class ServiceExtensions
         services.Configure<MensaOptions>(configuration.GetSection(MensaOptions.SectionName));
         services.AddHttpClient<IMensaService, MensaApiClient>();
         services.AddHttpClient<ITimetableService, DhbwTimetableService>();
+        services.AddSingleton<DhbwStudyPlanParser>();
+        services.AddHttpClient<IStudyPlanProvider, DhbwStudyPlanProvider>();
 
         services.AddScoped<AuthService>();
         services.AddScoped<CoursesService>();
