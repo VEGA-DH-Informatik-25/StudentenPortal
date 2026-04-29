@@ -45,4 +45,31 @@ describe('MensaPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should ignore day selections outside the loaded menu', () => {
+    component['selectDay'](99);
+
+    expect(component['_selectedDay']()).toBe(0);
+
+    component['selectDay'](-1);
+
+    expect(component['_selectedDay']()).toBe(0);
+  });
+
+  it('should derive readable category markers', () => {
+    expect(component['categoryMarker']('Essen 1')).toBe('E1');
+    expect(component['categoryMarker']('  ')).toBe('ME');
+  });
+
+  it('should fall back to the dish name when no pre-split name lines exist', () => {
+    expect(component['dishNameLines']({
+      name: 'Pasta mit Tomatensauce',
+      nameLines: [],
+      category: 'Essen 2',
+      priceStudent: 3.4,
+      allergens: null,
+      isVegetarian: true,
+      isVegan: false,
+    })).toEqual(['Pasta mit Tomatensauce']);
+  });
 });

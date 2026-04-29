@@ -1,5 +1,6 @@
 using CampusConnect.API.Common;
 using CampusConnect.API.DTOs.Grades;
+using CampusConnect.Application.Common;
 using CampusConnect.Application.Features.Grades;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,9 +30,18 @@ public class GradesController(GradesService gradesService) : ControllerBase
         if (userId is null)
             return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
 
-        var result = await gradesService.GetPlanAsync(userId.Value, cancellationToken);
+        Result<GradePlanDto> result;
+        try
+        {
+            result = await gradesService.GetPlanAsync(userId.Value, cancellationToken);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Der DHBW-Studienplan konnte aktuell nicht geladen werden." });
+        }
+
         if (!result.IsSuccess)
-            return NotFound(new { error = result.Error });
+            return PlanFailure(result.Error);
 
         return Ok(result.Value);
     }
@@ -62,4 +72,12 @@ public class GradesController(GradesService gradesService) : ControllerBase
     }
 
     private Guid? GetCurrentUserId() => CurrentUser.GetUserId(User);
+
+    private IActionResult PlanFailure(string? error) => error switch
+    {
+        "Benutzerprofil wurde nicht gefunden." => BadRequest(new { error }),
+        "Für dein Profil ist kein gültiger Kurs hinterlegt." => BadRequest(new { error }),
+        "Für deinen Kurs wurde kein DHBW-Studienplan gefunden." => NotFound(new { error }),
+        _ => BadRequest(new { error = error ?? "Der Studienplan konnte nicht geladen werden." })
+    };
 }
