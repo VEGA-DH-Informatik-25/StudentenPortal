@@ -1,78 +1,126 @@
 .calendar-page {
-  h2 { margin-top: 0; color: var(--dhbw-red); }
+  display: grid;
+  gap: 1.5rem;
+
+  h1 { color: var(--dhbw-ink); font-size: 3.2rem; line-height: 1; margin: 0 0 0.7rem; }
+
+  &__eyebrow {
+    color: var(--dhbw-red);
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin: 0 0 0.45rem;
+    text-transform: uppercase;
+  }
+
+  &__header p:not(.calendar-page__eyebrow) {
+    color: var(--dhbw-text-muted);
+    line-height: 1.65;
+    margin: 0;
+    max-width: 40rem;
+  }
 
   &__header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--dhbw-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 0.4rem 0 1.35rem;
 
     button {
       background: var(--dhbw-red);
-      color: var(--dhbw-surface);
       border: none;
-      padding: 0.45rem 1rem;
-      border-radius: 6px;
+      border-radius: 8px;
+      color: var(--dhbw-surface);
       cursor: pointer;
+      font-weight: 800;
+      min-height: 2.5rem;
+      padding: 0.55rem 0.9rem;
       &:hover { background: var(--dhbw-red-dark); }
     }
   }
 
   &__form {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
     background: var(--dhbw-surface);
     border: 1px solid var(--dhbw-border);
     border-radius: 8px;
+    box-shadow: var(--dhbw-shadow);
+    display: grid;
+    gap: 0.8rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    align-items: end;
     padding: 1rem;
-    margin-bottom: 1.5rem;
-    align-items: flex-end;
 
     label {
       display: flex;
       flex-direction: column;
       gap: 0.3rem;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 800;
       input {
-        padding: 0.5rem;
+        background: var(--dhbw-surface-muted);
         border: 1px solid var(--dhbw-border);
-        border-radius: 6px;
+        border-radius: 8px;
+        color: var(--dhbw-ink);
         font-size: 0.95rem;
+        min-height: 2.55rem;
+        padding: 0.55rem 0.65rem;
+
+        &:focus {
+          background: var(--dhbw-surface);
+          border-color: var(--dhbw-red);
+          box-shadow: 0 0 0 3px var(--dhbw-focus);
+          outline: none;
+        }
       }
     }
 
     button {
       background: var(--dhbw-red);
-      color: var(--dhbw-surface);
       border: none;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
+      border-radius: 8px;
+      color: var(--dhbw-surface);
       cursor: pointer;
+      font-weight: 800;
+      min-height: 2.55rem;
+      padding: 0.55rem 1rem;
     }
   }
 
-  &__empty { color: var(--dhbw-text-muted); text-align: center; padding: 2rem 0; }
-  &__list { display: flex; flex-direction: column; gap: 0.75rem; }
+  &__empty,
+  &__error {
+    background: var(--dhbw-surface);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    box-shadow: var(--dhbw-shadow);
+    color: var(--dhbw-text-muted);
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  &__error { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
+  &__list { display: grid; gap: 0.85rem; }
 }
 
 .exam-card {
   background: var(--dhbw-surface);
   border: 1px solid var(--dhbw-border);
   border-radius: 8px;
-  padding: 1rem 1.25rem;
-  display: flex;
-  align-items: flex-start;
+  box-shadow: var(--dhbw-shadow);
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   gap: 1rem;
-  position: relative;
 
   &__date {
-    background: var(--dhbw-red);
-    color: var(--dhbw-surface);
-    border-radius: 6px;
-    padding: 0.4rem 0.75rem;
+    background: var(--dhbw-red-soft);
+    color: var(--dhbw-red-dark);
+    border-radius: 999px;
     font-size: 0.85rem;
+    font-weight: 800;
+    padding: 0.4rem 0.75rem;
     white-space: nowrap;
   }
 
@@ -88,13 +136,29 @@
   &__notes { color: var(--dhbw-text-muted); font-style: italic; }
 
   &__delete {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
     background: none;
-    border: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
     color: #8a919b;
     cursor: pointer;
+    height: 2rem;
+    width: 2rem;
     &:hover { color: var(--dhbw-red-dark); }
+  }
+}
+
+@media (max-width: 820px) {
+  .calendar-page__form,
+  .exam-card {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-page__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .calendar-page h1 {
+    font-size: 2.25rem;
   }
 }

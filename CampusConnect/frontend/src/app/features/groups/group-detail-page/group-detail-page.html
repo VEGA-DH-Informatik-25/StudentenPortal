@@ -1,0 +1,202 @@
+<div class="group-detail-page">
+  <button type="button" class="group-detail-page__back" (click)="backToGroups()">Zurück zu Gruppen</button>
+
+  @if (_error()) {
+    <p class="group-detail-page__state group-detail-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="group-detail-page__state">Gruppe wird geladen...</p>
+  } @else if (_group(); as group) {
+    <header class="group-detail-page__header" [style.border-left-color]="group.accentColor">
+      <span class="group-detail-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
+      <div>
+        <p>{{ groupTypeLabel(group.type) }} · {{ permissionLabel(group) }}</p>
+        <h2>{{ group.name }}</h2>
+        <span>{{ group.description }}</span>
+      </div>
+      <div class="group-detail-page__actions">
+        @if (group.canJoin) {
+          <button type="button" class="group-detail-page__secondary" [disabled]="_isJoining()" (click)="joinGroup(group)">
+            @if (_isJoining()) {
+              Tritt bei...
+            } @else {
+              Beitreten
+            }
+          </button>
+        }
+        @if (group.canManage) {
+          <button type="button" class="group-detail-page__secondary" (click)="openSettings(group)">Einstellungen</button>
+        }
+      </div>
+    </header>
+
+    @if (group.canPost) {
+      <form class="composer" (ngSubmit)="onPost()" aria-label="Gruppenbeitrag erstellen">
+        <span class="composer__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
+        <div class="composer__body">
+          <div class="composer__target">
+            <span>{{ group.name }} · {{ groupTypeLabel(group.type) }} · {{ commentPolicyLabel(group) }}</span>
+          </div>
+
+          <label class="visually-hidden" for="group-feed-content">Neuen Gruppenbeitrag verfassen</label>
+          <textarea
+            id="group-feed-content"
+            [value]="_newContent()"
+            (input)="updateContent($any($event.target).value)"
+            placeholder="Was gibt es Neues in dieser Gruppe?"
+            maxlength="600"
+            rows="4">
+          </textarea>
+          <div class="composer__footer">
+            <span>{{ _newContent().trim().length }}/600 Zeichen</span>
+            <button type="submit" [disabled]="!_newContent().trim() || _isLoading()">Posten</button>
+          </div>
+        </div>
+      </form>
+    }
+
+    <section class="group-detail-page__posts" aria-label="Gruppenbeiträge">
+      <div class="group-detail-page__section-head">
+        <span>{{ _postCountLabel() }}</span>
+        <strong>Beiträge</strong>
+      </div>
+
+      @for (post of _posts(); track post.id) {
+        <article class="post-card">
+          <app-profile-hover-card class="post-card__profile-avatar" [profile]="post.author ?? null" [displayName]="post.authorName" [showAvatar]="true" [showName]="false" />
+          <div class="post-card__body">
+            <header class="post-card__header">
+              <div>
+                <strong><app-profile-hover-card [profile]="post.author ?? null" [displayName]="post.authorName" /></strong>
+                <time [attr.datetime]="post.createdAt">{{ post.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+              </div>
+              @if (post.canDelete) {
+                <button class="post-card__delete" type="button" (click)="onDelete(post.id)" aria-label="Beitrag löschen">×</button>
+              }
+            </header>
+            <div class="post-card__meta" aria-label="Veröffentlichungsgruppe">
+              <span class="post-card__group" [style.border-color]="post.group.accentColor">
+                {{ post.group.name }}
+              </span>
+              <small>{{ groupTypeLabel(post.group.type) }} · {{ commentPolicyLabel(post.group) }}</small>
+            </div>
+            <p class="post-card__content">{{ post.content }}</p>
+
+            <div class="post-card__actions" aria-label="Beitragsaktionen">
+              <div class="reaction-bar" aria-label="Reaktionen">
+                @for (reaction of post.reactions; track reaction.emoji) {
+                  <button
+                    type="button"
+                    class="reaction-button"
+                    [class.reaction-button--active]="reaction.reactedByCurrentUser"
+                    [disabled]="!canReactToPost(post) || isReacting(post.id, reaction.emoji)"
+                    (click)="onToggleReaction(post, reaction.emoji)"
+                    [attr.aria-label]="reaction.emoji + ' Reaktion umschalten'">
+                    <span aria-hidden="true">{{ reaction.emoji }}</span>
+                    <strong>{{ reaction.count }}</strong>
+                  </button>
+                }
+
+                @if (canReactToPost(post)) {
+                  <div class="reaction-picker">
+                    <button
+                      type="button"
+                      class="reaction-picker__trigger"
+                      [attr.aria-expanded]="isReactionMenuOpen(post.id)"
+                      [attr.aria-controls]="'group-reaction-menu-' + post.id"
+                      (click)="toggleReactionMenu(post)">
+                      +
+                    </button>
+
+                    @if (isReactionMenuOpen(post.id)) {
+                      <div class="reaction-picker__menu" [id]="'group-reaction-menu-' + post.id" aria-label="Emoji auswählen">
+                        <div class="reaction-picker__grid">
+                          @for (emoji of _emojiOptions; track emoji) {
+                            <button
+                              type="button"
+                              [class.reaction-picker__emoji--active]="hasReacted(post, emoji)"
+                              [disabled]="isReacting(post.id, emoji)"
+                              (click)="onPickReaction(post, emoji)"
+                              [attr.aria-label]="emoji + ' Reaktion umschalten'">
+                              {{ emoji }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="post-card__comment-actions">
+                <span class="post-card__comment-count">
+                  {{ post.comments.length }} {{ post.comments.length === 1 ? 'Kommentar' : 'Kommentare' }}
+                </span>
+                @if (post.canComment) {
+                  <button type="button" class="post-card__comment-toggle" (click)="toggleCommentComposer(post)">
+                    {{ isCommentComposerOpen(post.id) ? 'Schließen' : 'Kommentieren' }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <section class="comments" aria-label="Kommentare">
+              @if (post.comments.length > 0) {
+                <div class="comments__list">
+                  @for (comment of post.comments; track comment.id) {
+                    <article class="comment">
+                      <app-profile-hover-card class="comment__profile-avatar" [profile]="comment.author ?? null" [displayName]="comment.authorName" [showAvatar]="true" [showName]="false" />
+                      <div>
+                        <header>
+                          <strong><app-profile-hover-card [profile]="comment.author ?? null" [displayName]="comment.authorName" /></strong>
+                          <time [attr.datetime]="comment.createdAt">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</time>
+                          @if (comment.canDelete) {
+                            <button type="button" (click)="onDeleteComment(post.id, comment.id)" aria-label="Kommentar löschen">×</button>
+                          }
+                        </header>
+                        <p>{{ comment.content }}</p>
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+
+              @if (post.canComment && isCommentComposerOpen(post.id)) {
+                <form class="comment-composer" (ngSubmit)="onComment(post)">
+                  <label class="visually-hidden" [attr.for]="'group-comment-' + post.id">Kommentar verfassen</label>
+                  <textarea
+                    [id]="'group-comment-' + post.id"
+                    rows="2"
+                    maxlength="360"
+                    placeholder="Kommentieren..."
+                    [value]="commentDraft(post.id)"
+                    (input)="updateCommentDraft(post.id, $any($event.target).value)"></textarea>
+                  <button type="submit" [disabled]="!commentDraft(post.id).trim() || isCommenting(post.id)">
+                    @if (isCommenting(post.id)) {
+                      Sendet...
+                    } @else {
+                      Antworten
+                    }
+                  </button>
+                </form>
+              } @else if (!post.canComment) {
+                @if (post.group.settings.allowComments) {
+                  <p class="comments__closed">Kommentare sind nur für schreibberechtigte Gruppenmitglieder verfügbar.</p>
+                } @else {
+                  <p class="comments__closed">Kommentare sind für diese Gruppe geschlossen.</p>
+                }
+              }
+            </section>
+          </div>
+        </article>
+      } @empty {
+        @if (group.canJoin) {
+          <p class="group-detail-page__state">Tritt der Gruppe bei, um Beiträge zu lesen und mitzuschreiben.</p>
+        } @else {
+          <p class="group-detail-page__state">In dieser Gruppe gibt es noch keine Beiträge.</p>
+        }
+      }
+    </section>
+  }
+</div>

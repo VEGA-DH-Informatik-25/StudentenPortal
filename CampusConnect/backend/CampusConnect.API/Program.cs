@@ -1,5 +1,6 @@
 using CampusConnect.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -9,6 +10,29 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "CampusConnect API",
+        Version = "v1",
+        Description = "HTTP API fuer das CampusConnect Studentenportal."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "JWT aus POST /api/auth/login als Bearer-Token verwenden."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -17,7 +41,10 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+    throw new InvalidOperationException("Jwt:Secret must be configured through environment variables, user secrets, or deployment configuration.");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -37,10 +64,18 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-await app.Services.InitializeInfrastructureAsync();
+await app.Services.InitializeInfrastructureAsync(app.Environment.IsDevelopment());
 
 if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "CampusConnect API v1");
+        options.DocumentTitle = "CampusConnect API";
+    });
+}
 
 app.UseCors();
 app.UseAuthentication();
@@ -48,4 +83,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;
 

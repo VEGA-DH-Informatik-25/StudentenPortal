@@ -11,8 +11,13 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        await EnsureUserProfileColumnsAsync(cancellationToken);
+        await EnsureCourseTableAsync(cancellationToken);
 
         var options = adminOptions.Value;
+        var courseCode = options.Course.Trim().ToUpperInvariant();
+        await EnsureAdminCourseAsync(courseCode, options, cancellationToken);
+
         var email = options.Email.Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(options.Password))
             return;
@@ -36,10 +41,111 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             DisplayName = options.DisplayName,
             StudyProgram = options.StudyProgram,
             Semester = Math.Max(1, options.Semester),
-            Course = options.Course,
+            Course = string.IsNullOrWhiteSpace(courseCode) ? options.Course : courseCode,
             Role = UserRole.Admin
         });
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureCourseTableAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "Courses" (
+                "Code" TEXT NOT NULL CONSTRAINT "PK_Courses" PRIMARY KEY,
+                "StudyProgram" TEXT NOT NULL,
+                "Semester" INTEGER NOT NULL,
+                "IsActive" INTEGER NOT NULL,
+                "CreatedAt" TEXT NOT NULL
+            );
+            """, cancellationToken);
+    }
+
+    private async Task EnsureUserProfileColumnsAsync(CancellationToken cancellationToken)
+    {
+        var columns = await GetUserColumnsAsync(cancellationToken);
+        if (!columns.Contains("PhoneNumber"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "PhoneNumber" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+
+        if (!columns.Contains("Location"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "Location" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+
+        if (!columns.Contains("ProfileNote"))
+        {
+            await dbContext.Database.ExecuteSqlRawAsync("""
+                ALTER TABLE "Users" ADD COLUMN "ProfileNote" TEXT NOT NULL DEFAULT '';
+                """, cancellationToken);
+        }
+    }
+
+    private async Task<HashSet<string>> GetUserColumnsAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.Database.OpenConnectionAsync(cancellationToken);
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var connection = dbContext.Database.GetDbConnection();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA table_info(\"Users\");";
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+            columns.Add(reader.GetString(1));
+
+        return columns;
+    }
+
+    private async Task EnsureAdminCourseAsync(string courseCode, AdminOptions options, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(courseCode))
+            return;
+
+        var studyProgram = string.IsNullOrWhiteSpace(options.StudyProgram)
+            ? "Administration"
+            : options.StudyProgram.Trim();
+        var semester = Math.Clamp(options.Semester, 1, 6);
+
+        var existing = await dbContext.Courses.FirstOrDefaultAsync(course => course.Code == courseCode, cancellationToken);
+        if (existing is null)
+        {
+            dbContext.Courses.Add(new Course
+            {
+                Code = courseCode,
+                StudyProgram = studyProgram,
+                Semester = semester,
+                IsActive = true
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var changed = false;
+        if (!existing.IsActive)
+        {
+            existing.IsActive = true;
+            changed = true;
+        }
+
+        if (existing.StudyProgram != studyProgram)
+        {
+            existing.StudyProgram = studyProgram;
+            changed = true;
+        }
+
+        if (existing.Semester != semester)
+        {
+            existing.Semester = semester;
+            changed = true;
+        }
+
+        if (changed)
+            await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

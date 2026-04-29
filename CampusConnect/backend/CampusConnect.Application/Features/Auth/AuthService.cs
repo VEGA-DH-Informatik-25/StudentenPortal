@@ -1,20 +1,22 @@
 using CampusConnect.Application.Common;
 using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Common.Security;
+using CampusConnect.Application.Features.Courses;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Interfaces;
 
 namespace CampusConnect.Application.Features.Auth;
 
-public record RegisterCommand(string Email, string Password, string DisplayName, string StudyProgram, int Semester, string Course);
+public record RegisterCommand(string Email, string Password, string DisplayName, string Course);
 public record LoginCommand(string Email, string Password);
-public record UpdateUserProfileCommand(string DisplayName, string StudyProgram, int Semester, string Course);
-public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, int Semester, string Course, string Role, DateTime CreatedAt);
+public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
+public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, int Semester, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
-public class AuthService(IUserRepository userRepo, IJwtService jwtService)
+public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
 {
     public const string UserProfileNotFoundError = "Benutzerprofil wurde nicht gefunden.";
+    private const string InvalidCourseError = "Bitte wähle einen gültigen Kurs aus.";
 
     public async Task<Result<AuthResult>> RegisterAsync(RegisterCommand cmd)
     {
@@ -22,9 +24,13 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
         if (!email.EndsWith("@dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
             return Result<AuthResult>.Failure("Nur @dhbw-loerrach.de E-Mail-Adressen sind erlaubt.");
 
-        var validationError = ValidateProfile(cmd.DisplayName, cmd.StudyProgram, cmd.Semester, cmd.Course);
+        var validationError = ValidateDisplayName(cmd.DisplayName);
         if (validationError is not null)
             return Result<AuthResult>.Failure(validationError);
+
+        var course = await ResolveCourseAsync(cmd.Course, requireActive: true);
+        if (course is null)
+            return Result<AuthResult>.Failure(InvalidCourseError);
 
         if (await userRepo.FindByEmailAsync(email) is not null)
             return Result<AuthResult>.Failure("Diese E-Mail-Adresse ist bereits registriert.");
@@ -34,22 +40,25 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
             Email = email,
             PasswordHash = PasswordHasher.Hash(cmd.Password),
             DisplayName = cmd.DisplayName.Trim(),
-            StudyProgram = cmd.StudyProgram.Trim(),
-            Semester = cmd.Semester,
-            Course = cmd.Course.Trim()
+            StudyProgram = course.StudyProgram,
+            Semester = course.Semester,
+            Course = course.Code
         };
 
         await userRepo.AddAsync(user);
+        await SyncCourseAssignmentsAsync(course.Code);
         var token = jwtService.GenerateToken(user);
         return Result<AuthResult>.Success(new AuthResult(token, ToProfileResult(user)));
     }
 
     public async Task<Result<AuthResult>> LoginAsync(LoginCommand cmd)
     {
-        var user = await userRepo.FindByEmailAsync(cmd.Email.ToLowerInvariant());
+        var email = cmd.Email.Trim().ToLowerInvariant();
+        var user = await userRepo.FindByEmailAsync(email);
         if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
             return Result<AuthResult>.Failure("Ungültige E-Mail-Adresse oder Passwort.");
 
+        await SyncProfileMetadataFromCourseAsync(user);
         var token = jwtService.GenerateToken(user);
         return Result<AuthResult>.Success(new AuthResult(token, ToProfileResult(user)));
     }
@@ -59,12 +68,16 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
         var user = await userRepo.FindByIdAsync(id);
         return user is null
             ? Result<UserProfileResult>.Failure(UserProfileNotFoundError)
-            : Result<UserProfileResult>.Success(ToProfileResult(user));
+            : Result<UserProfileResult>.Success(await ToSynchronizedProfileResultAsync(user));
     }
 
     public async Task<Result<UserProfileResult>> UpdateProfileAsync(Guid id, UpdateUserProfileCommand cmd)
     {
-        var validationError = ValidateProfile(cmd.DisplayName, cmd.StudyProgram, cmd.Semester, cmd.Course);
+        var validationError = ValidateDisplayName(cmd.DisplayName);
+        if (validationError is not null)
+            return Result<UserProfileResult>.Failure(validationError);
+
+        validationError = ValidateContactFields(cmd.PhoneNumber, cmd.Location, cmd.ProfileNote);
         if (validationError is not null)
             return Result<UserProfileResult>.Failure(validationError);
 
@@ -72,35 +85,103 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService)
         if (user is null)
             return Result<UserProfileResult>.Failure(UserProfileNotFoundError);
 
+        var course = await ResolveCourseAsync(cmd.Course, requireActive: !string.Equals(user.Course, cmd.Course, StringComparison.OrdinalIgnoreCase));
+        if (course is null)
+            return Result<UserProfileResult>.Failure(InvalidCourseError);
+
+        var previousCourse = user.Course;
         user.DisplayName = cmd.DisplayName.Trim();
-        user.StudyProgram = cmd.StudyProgram.Trim();
-        user.Semester = cmd.Semester;
-        user.Course = cmd.Course.Trim();
+        user.StudyProgram = course.StudyProgram;
+        user.Semester = course.Semester;
+        user.Course = course.Code;
+        user.PhoneNumber = NormalizeOptional(cmd.PhoneNumber);
+        user.Location = NormalizeOptional(cmd.Location);
+        user.ProfileNote = NormalizeOptional(cmd.ProfileNote);
 
         await userRepo.UpdateAsync(user);
+        await SyncCourseAssignmentsAsync(course.Code, previousCourse);
         return Result<UserProfileResult>.Success(ToProfileResult(user));
     }
 
     private static UserProfileResult ToProfileResult(User user) =>
-        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Semester, user.Course, user.Role.ToString(), user.CreatedAt);
+        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Semester, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.CreatedAt);
 
-    private static string? ValidateProfile(string displayName, string studyProgram, int semester, string course)
+    private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive)
     {
-        if (string.IsNullOrWhiteSpace(displayName) || string.IsNullOrWhiteSpace(studyProgram) || string.IsNullOrWhiteSpace(course))
-            return "Bitte fülle alle Profilfelder aus.";
+        if (string.IsNullOrWhiteSpace(courseCode))
+            return null;
 
-        if (semester is < 1 or > 6)
-            return "Das Semester muss zwischen 1 und 6 liegen.";
+        var course = await courseRepo.FindByCodeAsync(CoursesService.NormalizeCourseCode(courseCode));
+        if (course is null || requireActive && !course.IsActive)
+            return null;
+
+        return course;
+    }
+
+    private async Task<UserProfileResult> ToSynchronizedProfileResultAsync(User user)
+    {
+        await SyncProfileMetadataFromCourseAsync(user);
+        return ToProfileResult(user);
+    }
+
+    private async Task SyncProfileMetadataFromCourseAsync(User user)
+    {
+        if (string.IsNullOrWhiteSpace(user.Course))
+            return;
+
+        var course = await courseRepo.FindByCodeAsync(CoursesService.NormalizeCourseCode(user.Course));
+        if (course is null)
+            return;
+
+        if (user.Course == course.Code && user.StudyProgram == course.StudyProgram && user.Semester == course.Semester)
+            return;
+
+        user.Course = course.Code;
+        user.StudyProgram = course.StudyProgram;
+        user.Semester = course.Semester;
+        await userRepo.UpdateAsync(user);
+    }
+
+    private async Task SyncCourseAssignmentsAsync(params string[] courseCodes)
+    {
+        var users = await userRepo.ListAsync();
+        foreach (var courseCode in courseCodes.Where(code => !string.IsNullOrWhiteSpace(code)).Select(CoursesService.NormalizeCourseCode).Distinct())
+        {
+            var course = await courseRepo.FindByCodeAsync(courseCode);
+            if (course is null)
+                continue;
+
+            await groupRepo.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
+            await groupRepo.SyncCourseAssignmentsAsync(
+                course.Code,
+                users.Where(user => string.Equals(user.Course, course.Code, StringComparison.OrdinalIgnoreCase)).Select(user => user.Id).ToList());
+        }
+    }
+
+    private static string? ValidateDisplayName(string displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+            return "Bitte fülle alle Profilfelder aus.";
 
         if (displayName.Trim().Length > 120)
             return "Der Anzeigename darf höchstens 120 Zeichen lang sein.";
 
-        if (studyProgram.Trim().Length > 120)
-            return "Der Studiengang darf höchstens 120 Zeichen lang sein.";
+        return null;
+    }
 
-        if (course.Trim().Length > 40)
-            return "Der Kurs darf höchstens 40 Zeichen lang sein.";
+    private static string? ValidateContactFields(string? phoneNumber, string? location, string? profileNote)
+    {
+        if (NormalizeOptional(phoneNumber).Length > 40)
+            return "Die Telefonnummer darf höchstens 40 Zeichen lang sein.";
+
+        if (NormalizeOptional(location).Length > 120)
+            return "Der Ort darf höchstens 120 Zeichen lang sein.";
+
+        if (NormalizeOptional(profileNote).Length > 280)
+            return "Die Profilnotiz darf höchstens 280 Zeichen lang sein.";
 
         return null;
     }
+
+    private static string NormalizeOptional(string? value) => value?.Trim() ?? string.Empty;
 }

@@ -17,6 +17,9 @@ describe('Auth', () => {
     studyProgram: 'Informatik',
     semester: 3,
     course: 'TIF25A',
+    phoneNumber: '+49 7621 123456',
+    location: 'Bibliothek',
+    profileNote: 'Sucht eine Projektgruppe.',
     role: 'Student',
     createdAt: '2026-04-27T10:00:00Z',
   };
@@ -62,9 +65,10 @@ describe('Auth', () => {
 
     service.updateProfile({
       displayName: updatedProfile.displayName,
-      studyProgram: updatedProfile.studyProgram,
-      semester: updatedProfile.semester,
       course: updatedProfile.course,
+      phoneNumber: updatedProfile.phoneNumber,
+      location: updatedProfile.location,
+      profileNote: updatedProfile.profileNote,
     }).subscribe();
 
     const request = http.expectOne('/api/auth/me');

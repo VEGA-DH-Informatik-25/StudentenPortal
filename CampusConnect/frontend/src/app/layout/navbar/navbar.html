@@ -12,6 +12,7 @@
     <li><a routerLink="/calendar" routerLinkActive="active">Prüfungen</a></li>
     <li><a routerLink="/grades" routerLinkActive="active">Noten</a></li>
     <li><a routerLink="/groups" routerLinkActive="active">Gruppen</a></li>
+    <li><a routerLink="/contacts" routerLinkActive="active">Kontakte</a></li>
     <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
   </ul>
   <div class="navbar__user">
@@ -30,7 +31,7 @@
         @if (_auth.userProfile(); as profile) {
           <div class="navbar__profile-header">
             <span class="navbar__avatar navbar__avatar--large" aria-hidden="true">{{ _profileInitials() }}</span>
-            <div>
+            <div class="navbar__profile-copy">
               <strong>{{ profile.displayName }}</strong>
               <span>{{ profile.email }}</span>
             </div>
@@ -48,7 +49,22 @@
               <dt>Rolle</dt>
               <dd>{{ profile.role }}</dd>
             </div>
+            @if (profile.phoneNumber) {
+              <div>
+                <dt>Telefon</dt>
+                <dd>{{ profile.phoneNumber }}</dd>
+              </div>
+            }
+            @if (profile.location) {
+              <div>
+                <dt>Ort</dt>
+                <dd>{{ profile.location }}</dd>
+              </div>
+            }
           </dl>
+          @if (profile.profileNote) {
+            <p class="navbar__profile-note">{{ profile.profileNote }}</p>
+          }
         }
 
         <a class="navbar__profile-action" routerLink="/profile">Profil bearbeiten</a>

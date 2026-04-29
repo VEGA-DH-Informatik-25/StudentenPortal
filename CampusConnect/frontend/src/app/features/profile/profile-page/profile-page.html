@@ -1,7 +1,8 @@
 <div class="profile-page">
   <header class="profile-page__header">
     <div>
-      <h2>Mein Profil</h2>
+      <p class="profile-page__eyebrow">Konto</p>
+      <h1>Mein Profil</h1>
       @if (_profile(); as profile) {
         <p>{{ profile.email }}</p>
       }
@@ -53,23 +54,45 @@
         </label>
 
         <label>
-          Studiengang
-          <input type="text" name="studyProgram" [(ngModel)]="_form.studyProgram" maxlength="120" required />
+          Kurs
+          <select name="course" [(ngModel)]="_form.course" [disabled]="_coursesLoading()" required>
+            @if (_form.course && !selectedCourse()) {
+              <option [value]="_form.course">{{ _form.course }} · nicht im Kurskatalog</option>
+            }
+            @for (course of _courses(); track course.code) {
+              <option [value]="course.code">{{ courseLabel(course) }}</option>
+            }
+          </select>
         </label>
 
         <label>
-          Kurs
-          <input type="text" name="course" [(ngModel)]="_form.course" maxlength="40" required />
+          Studiengang
+          <input type="text" [value]="selectedCourse()?.studyProgram ?? profile.studyProgram" readonly />
         </label>
 
         <label>
           Semester
-          <input type="number" name="semester" [(ngModel)]="_form.semester" min="1" max="6" required />
+          <input type="text" [value]="(selectedCourse()?.semester ?? profile.semester) + '. Semester'" readonly />
+        </label>
+
+        <label>
+          Telefon
+          <input type="tel" name="phoneNumber" [(ngModel)]="_form.phoneNumber" maxlength="40" autocomplete="tel" />
+        </label>
+
+        <label>
+          Ort
+          <input type="text" name="location" [(ngModel)]="_form.location" maxlength="120" placeholder="z. B. Bibliothek, Campus, Raum" />
+        </label>
+
+        <label class="profile-form__wide">
+          Profilnotiz
+          <textarea name="profileNote" [(ngModel)]="_form.profileNote" maxlength="280" rows="4" placeholder="Kurzinfo für Kommilitonen und Lehrende"></textarea>
         </label>
       </div>
 
       <div class="profile-form__actions">
-        <button type="submit" [disabled]="_isSaving()">
+        <button type="submit" [disabled]="_isSaving() || _coursesLoading() || !_form.course">
           {{ _isSaving() ? 'Speichere…' : 'Änderungen speichern' }}
         </button>
       </div>

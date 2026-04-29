@@ -45,23 +45,17 @@
           <input type="text" [(ngModel)]="_registerForm.displayName" name="displayName" required />
         </label>
         <label>
-          Studiengang
-          <input type="text" [(ngModel)]="_registerForm.studyProgram" name="studyProgram" placeholder="z.B. Informatik" required />
+          Kurs
+          <select [(ngModel)]="_registerForm.course" name="course" [disabled]="_coursesLoading()" required>
+            @for (course of _courses(); track course.code) {
+              <option [value]="course.code">{{ courseLabel(course) }}</option>
+            }
+          </select>
         </label>
-        <div class="login-card__row">
-          <label>
-            Semester
-            <input type="number" [(ngModel)]="_registerForm.semester" name="semester" min="1" max="6" required />
-          </label>
-          <label>
-            Kurs
-            <input type="text" [(ngModel)]="_registerForm.course" name="course" placeholder="z.B. WWI23A" required />
-          </label>
-        </div>
         @if (_error()) {
           <p class="login-card__error">{{ _error() }}</p>
         }
-        <button type="submit" [disabled]="_isLoading()">
+        <button type="submit" [disabled]="_isLoading() || _coursesLoading() || !_registerForm.course">
           {{ _isLoading() ? 'Bitte warten…' : 'Konto erstellen' }}
         </button>
       </form>

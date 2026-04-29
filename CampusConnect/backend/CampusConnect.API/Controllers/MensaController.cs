@@ -1,8 +1,10 @@
 using CampusConnect.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CampusConnect.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/mensa")]
 public class MensaController(IMensaService mensaService) : ControllerBase

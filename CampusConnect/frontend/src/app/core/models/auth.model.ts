@@ -10,8 +10,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   displayName: string;
-  studyProgram: string;
-  semester: number;
   course: string;
 }
 
@@ -27,13 +25,17 @@ export interface UserProfile {
   studyProgram: string;
   semester: number;
   course: string;
+  phoneNumber: string;
+  location: string;
+  profileNote: string;
   role: string;
   createdAt: string;
 }
 
 export interface UpdateProfileRequest {
   displayName: string;
-  studyProgram: string;
-  semester: number;
   course: string;
+  phoneNumber: string;
+  location: string;
+  profileNote: string;
 }

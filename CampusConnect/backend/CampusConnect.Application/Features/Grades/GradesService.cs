@@ -25,8 +25,14 @@ public class GradesService(IGradeRepository gradeRepo)
 
     public async Task<Result<GradeDto>> AddGradeAsync(AddGradeCommand cmd)
     {
+        if (string.IsNullOrWhiteSpace(cmd.ModuleName))
+            return Result<GradeDto>.Failure("Modulname darf nicht leer sein.");
+
         if (cmd.Value < 1.0m || cmd.Value > 5.0m)
             return Result<GradeDto>.Failure("Note muss zwischen 1,0 und 5,0 liegen.");
+
+        if (cmd.Ects <= 0)
+            return Result<GradeDto>.Failure("ECTS-Punkte müssen größer als 0 sein.");
 
         var grade = new Grade
         {
@@ -37,5 +43,11 @@ public class GradesService(IGradeRepository gradeRepo)
         };
         await gradeRepo.AddAsync(grade);
         return Result<GradeDto>.Success(new GradeDto(grade.Id, grade.ModuleName, grade.Value, grade.Ects, grade.CreatedAt));
+    }
+
+    public async Task<Result<bool>> DeleteGradeAsync(Guid gradeId, Guid userId)
+    {
+        await gradeRepo.DeleteAsync(gradeId, userId);
+        return Result<bool>.Success(true);
     }
 }

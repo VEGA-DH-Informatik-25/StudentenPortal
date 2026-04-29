@@ -1,9 +1,9 @@
 using CampusConnect.API.DTOs.Auth;
+using CampusConnect.API.Common;
 using CampusConnect.Application.Common;
 using CampusConnect.Application.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
@@ -17,8 +17,7 @@ public class AuthController(AuthService authService) : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var result = await authService.RegisterAsync(new RegisterCommand(
-            request.Email, request.Password, request.DisplayName,
-            request.StudyProgram, request.Semester, request.Course));
+            request.Email, request.Password, request.DisplayName, request.Course));
 
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
@@ -60,7 +59,11 @@ public class AuthController(AuthService authService) : ControllerBase
             return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
 
         var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(
-            request.DisplayName, request.StudyProgram, request.Semester, request.Course));
+            request.DisplayName,
+            request.Course,
+            request.PhoneNumber,
+            request.Location,
+            request.ProfileNote));
 
         if (!result.IsSuccess)
             return ToProfileError(result);
@@ -69,12 +72,7 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private Guid? GetCurrentUserId()
-    {
-        var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-
-        return Guid.TryParse(value, out var userId) ? userId : null;
-    }
+        => CurrentUser.GetUserId(User);
 
     private IActionResult ToProfileError(Result<UserProfileResult> result) =>
         result.Error == AuthService.UserProfileNotFoundError
@@ -88,5 +86,5 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private static UserProfileResponse ToUserProfileResponse(UserProfileResult profile) =>
-        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Semester, profile.Course, profile.Role, profile.CreatedAt);
+        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Semester, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.CreatedAt);
 }

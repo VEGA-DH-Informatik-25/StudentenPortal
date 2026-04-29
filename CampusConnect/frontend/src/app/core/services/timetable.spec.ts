@@ -9,6 +9,8 @@ describe('Timetable', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
+    localStorage.clear();
+
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
@@ -31,5 +33,11 @@ describe('Timetable', () => {
     expect(request.request.params.get('days')).toBe('120');
 
     request.flush({ course: 'TIF25A', timezone: 'Europe/Berlin', days: [] });
+  });
+
+  it('should build course options from backend courses and stored history only', () => {
+    localStorage.setItem('campusconnect.timetable.courseHistory', JSON.stringify(['wwi25a']));
+
+    expect(service.getCourseOptions(['tif25a', 'TIF25B'])).toEqual(['TIF25A', 'TIF25B', 'WWI25A']);
   });
 });

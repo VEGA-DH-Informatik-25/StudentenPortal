@@ -1,0 +1,334 @@
+.group-settings-page {
+	display: grid;
+	gap: 1rem;
+}
+
+.group-settings-page__back {
+	background: transparent;
+	border: 1px solid var(--dhbw-border);
+	border-radius: 8px;
+	color: var(--dhbw-ink-soft);
+	cursor: pointer;
+	font-weight: 800;
+	justify-self: start;
+	padding: 0.55rem 0.75rem;
+
+	&:hover,
+	&:focus-visible {
+		background: var(--dhbw-surface-muted);
+		outline: none;
+	}
+}
+
+.group-settings-page__state,
+.group-settings-page__header,
+.settings-block {
+	background: var(--dhbw-surface);
+	border: 1px solid var(--dhbw-border);
+	border-radius: 8px;
+	box-shadow: var(--dhbw-shadow);
+}
+
+.group-settings-page__state {
+	color: var(--dhbw-text-muted);
+	margin: 0;
+	padding: 1rem;
+	text-align: center;
+
+	&--error {
+		background: var(--dhbw-red-soft);
+		color: var(--dhbw-red-dark);
+	}
+}
+
+.group-settings-page__header {
+	align-items: center;
+	border-left: 4px solid var(--dhbw-red);
+	display: grid;
+	gap: 0.9rem;
+	grid-template-columns: auto minmax(0, 1fr);
+	padding: 1rem;
+
+	p {
+		color: var(--dhbw-red);
+		font-size: 0.76rem;
+		font-weight: 800;
+		margin: 0 0 0.2rem;
+		text-transform: uppercase;
+	}
+
+	h2 {
+		color: var(--dhbw-ink);
+		font-size: 2rem;
+		line-height: 1.05;
+		margin: 0 0 0.35rem;
+		overflow-wrap: anywhere;
+	}
+
+	span {
+		color: var(--dhbw-text-muted);
+		line-height: 1.45;
+	}
+}
+
+.group-settings-page__icon {
+	align-items: center;
+	border-radius: 8px;
+	color: var(--dhbw-surface);
+	display: inline-flex;
+	font-weight: 900;
+	height: 2.75rem;
+	justify-content: center;
+	width: 2.75rem;
+}
+
+.group-settings-layout {
+	align-items: start;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: minmax(0, 0.8fr) minmax(20rem, 1.2fr);
+}
+
+.settings-block {
+	display: grid;
+	gap: 0.9rem;
+	padding: 1rem;
+
+	header {
+		display: grid;
+		gap: 0.15rem;
+	}
+
+	h3 {
+		color: var(--dhbw-ink);
+		font-size: 1.15rem;
+		margin: 0;
+	}
+
+	header p,
+	&__hint {
+		color: var(--dhbw-text-muted);
+		font-size: 0.84rem;
+		line-height: 1.45;
+		margin: 0;
+	}
+
+	&__controls {
+		display: grid;
+		gap: 0.65rem;
+
+		label {
+			align-items: center;
+			background: var(--dhbw-surface-muted);
+			border: 1px solid var(--dhbw-border);
+			border-radius: 8px;
+			display: flex;
+			gap: 0.8rem;
+			justify-content: space-between;
+			padding: 0.75rem;
+		}
+
+		span {
+			color: var(--dhbw-ink);
+			font-weight: 800;
+		}
+	}
+
+	input[type='checkbox'] {
+		accent-color: var(--dhbw-red);
+		height: 1.1rem;
+		width: 1.1rem;
+	}
+
+	&__save {
+		background: var(--dhbw-red);
+		border: 0;
+		border-radius: 8px;
+		color: var(--dhbw-surface);
+		cursor: pointer;
+		font-weight: 800;
+		justify-self: start;
+		padding: 0.75rem 1rem;
+
+		&:hover,
+		&:focus-visible {
+			background: var(--dhbw-red-dark);
+			outline: none;
+		}
+
+		&:disabled {
+			background: var(--dhbw-border);
+			color: var(--dhbw-text-muted);
+			cursor: not-allowed;
+		}
+	}
+}
+
+.account-list {
+	display: grid;
+	gap: 0.55rem;
+	max-height: 28rem;
+	overflow: auto;
+	padding-right: 0.1rem;
+}
+
+.account-toolbar {
+	display: grid;
+	gap: 0.7rem;
+	grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.36fr);
+
+	label {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	span {
+		color: var(--dhbw-ink);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	input,
+	select {
+		background: var(--dhbw-surface-muted);
+		border: 1px solid var(--dhbw-border);
+		border-radius: 8px;
+		color: var(--dhbw-ink);
+		font: inherit;
+		min-height: 2.55rem;
+		padding: 0.55rem 0.65rem;
+		width: 100%;
+
+		&:focus {
+			background: var(--dhbw-surface);
+			border-color: var(--dhbw-red);
+			box-shadow: 0 0 0 3px var(--dhbw-focus);
+			outline: none;
+		}
+	}
+}
+
+.account-table {
+	display: grid;
+	gap: 0.55rem;
+	max-height: 28rem;
+	overflow: auto;
+	padding-right: 0.1rem;
+
+	&__head {
+		align-items: center;
+		color: var(--dhbw-text-muted);
+		display: grid;
+		font-size: 0.72rem;
+		font-weight: 900;
+		gap: 0.7rem;
+		grid-template-columns: 4.25rem minmax(0, 1.45fr) minmax(5rem, 0.45fr) minmax(6rem, 0.55fr) minmax(9rem, 0.75fr);
+		padding: 0 0.75rem;
+		text-transform: uppercase;
+	}
+
+	&__empty {
+		background: var(--dhbw-surface-muted);
+		border: 1px dashed var(--dhbw-border);
+		border-radius: 8px;
+		color: var(--dhbw-text-muted);
+		font-size: 0.84rem;
+		margin: 0;
+		padding: 1rem;
+	}
+}
+
+.account-row {
+	align-items: center;
+	background: var(--dhbw-surface-muted);
+	border: 1px solid var(--dhbw-border);
+	border-radius: 8px;
+	display: grid;
+	gap: 0.7rem;
+	grid-template-columns: 4.25rem minmax(0, 1.45fr) minmax(5rem, 0.45fr) minmax(6rem, 0.55fr) minmax(9rem, 0.75fr);
+	padding: 0.75rem;
+
+	&--owner {
+		border-color: var(--dhbw-red-soft);
+	}
+
+	strong {
+		color: var(--dhbw-ink);
+		display: block;
+		font-size: 0.9rem;
+		overflow-wrap: anywhere;
+	}
+
+	small {
+		color: var(--dhbw-text-muted);
+		display: block;
+		font-size: 0.78rem;
+		line-height: 1.4;
+		overflow-wrap: anywhere;
+	}
+
+	em {
+		color: var(--dhbw-ink-soft);
+		font-size: 0.8rem;
+		font-style: normal;
+		font-weight: 800;
+		overflow-wrap: anywhere;
+	}
+
+	&__permission {
+		display: block;
+		min-width: 0;
+
+		select {
+			background: var(--dhbw-surface);
+			border: 1px solid var(--dhbw-border);
+			border-radius: 8px;
+			color: var(--dhbw-ink);
+			font: inherit;
+			font-size: 0.8rem;
+			font-weight: 800;
+			min-height: 2.35rem;
+			padding: 0.4rem 0.55rem;
+			width: 100%;
+
+			&:focus {
+				border-color: var(--dhbw-red);
+				box-shadow: 0 0 0 3px var(--dhbw-focus);
+				outline: none;
+			}
+
+			&:disabled {
+				background: var(--dhbw-surface-muted);
+				color: var(--dhbw-text-muted);
+				cursor: not-allowed;
+			}
+		}
+	}
+}
+
+@media (max-width: 920px) {
+	.group-settings-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 640px) {
+	.group-settings-page__header {
+		align-items: start;
+		grid-template-columns: 1fr;
+
+		h2 {
+			font-size: 1.65rem;
+		}
+	}
+
+	.account-toolbar,
+	.account-table__head,
+	.account-row {
+		grid-template-columns: 1fr;
+	}
+
+	.account-table__head {
+		display: none;
+	}
+}

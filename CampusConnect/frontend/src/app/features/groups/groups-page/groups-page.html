@@ -1,13 +1,225 @@
 <div class="groups-page">
   <header class="groups-page__header">
     <div>
-      <p class="groups-page__eyebrow">Studium</p>
-      <h2>Lerngruppen</h2>
+      <p class="groups-page__eyebrow">Campuskommunikation</p>
+      <h1>Gruppen</h1>
+      <p>Kurse, offizielle Mitteilungen und soziale Campusbereiche an einem Ort.</p>
     </div>
   </header>
 
-  <section class="groups-page__empty" aria-label="Lerngruppen">
-    <strong>Noch keine Lerngruppen</strong>
-    <p>Hier erscheinen deine Gruppen, sobald sie angelegt sind.</p>
-  </section>
+  @if (_error()) {
+    <p class="groups-page__state groups-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_success()) {
+    <p class="groups-page__state groups-page__state--success">{{ _success() }}</p>
+  }
+
+  @if (_isLoading()) {
+    <p class="groups-page__state">Gruppen werden geladen...</p>
+  } @else {
+    <section class="groups-overview" aria-label="Gruppenübersicht">
+      <div>
+        <span>Offiziell</span>
+        <strong>{{ _officialGroups().length }}</strong>
+      </div>
+      <div>
+        <span>Kurse</span>
+        <strong>{{ _courseGroups().length }}</strong>
+      </div>
+      <div>
+        <span>Campus</span>
+        <strong>{{ _socialGroups().length }}</strong>
+      </div>
+    </section>
+
+    <section class="group-directory" aria-label="Gruppenverzeichnis">
+      <div class="group-directory__create-row">
+        <button
+          type="button"
+          class="group-directory__create-toggle"
+          [attr.aria-expanded]="_isCreateMenuOpen()"
+          (click)="_isCreateMenuOpen() ? closeCreateMenu() : openCreateMenu()">
+          @if (_isCreateMenuOpen()) {
+            Menü schließen
+          } @else {
+            Neue Gruppe erstellen
+          }
+        </button>
+        <p>{{ _createPolicySummary() }}</p>
+      </div>
+
+      @if (_isCreateMenuOpen()) {
+        <section class="create-group-menu" aria-label="Neue Gruppe erstellen">
+          <header>
+            <p>Eigene Gruppe</p>
+            <h3>Neue Gruppe erstellen</h3>
+            <span>Lege direkt beim Erstellen fest, wer posten darf und ob die Gruppe öffentlich sichtbar ist.</span>
+          </header>
+
+          <form (ngSubmit)="createGroup()">
+            <div class="create-group-menu__grid">
+              <label>
+                <span>Name</span>
+                <input
+                  type="text"
+                  maxlength="80"
+                  name="group-name"
+                  [ngModel]="_createName()"
+                  (ngModelChange)="_createName.set($event)">
+              </label>
+
+              <label>
+                <span>Zielgruppe</span>
+                <input
+                  type="text"
+                  maxlength="80"
+                  name="group-audience"
+                  [ngModel]="_createAudience()"
+                  (ngModelChange)="_createAudience.set($event)">
+              </label>
+            </div>
+
+            <label>
+              <span>Beschreibung</span>
+              <textarea
+                rows="4"
+                maxlength="240"
+                name="group-description"
+                [ngModel]="_createDescription()"
+                (ngModelChange)="_createDescription.set($event)"></textarea>
+            </label>
+
+            <div class="create-group-menu__policies" aria-label="Gruppenrechte beim Erstellen">
+              <h4>Berechtigungen und Sichtbarkeit</h4>
+
+              <label>
+                <span>Studierende dürfen posten</span>
+                <input
+                  type="checkbox"
+                  name="create-allow-student-posts"
+                  [ngModel]="_createAllowStudentPosts()"
+                  (ngModelChange)="_createAllowStudentPosts.set($event)">
+              </label>
+
+              <label>
+                <span>Kommentare erlauben</span>
+                <input
+                  type="checkbox"
+                  name="create-allow-comments"
+                  [ngModel]="_createAllowComments()"
+                  (ngModelChange)="_createAllowComments.set($event)">
+              </label>
+
+              <label>
+                <span>Beiträge benötigen Freigabe</span>
+                <input
+                  type="checkbox"
+                  name="create-requires-approval"
+                  [ngModel]="_createRequiresApproval()"
+                  (ngModelChange)="_createRequiresApproval.set($event)">
+              </label>
+
+              <label>
+                <span>Gruppe ist öffentlich sichtbar</span>
+                <input
+                  type="checkbox"
+                  name="create-is-discoverable"
+                  [ngModel]="_createIsDiscoverable()"
+                  (ngModelChange)="_createIsDiscoverable.set($event)">
+              </label>
+            </div>
+
+            <div class="create-group-menu__actions">
+              <button type="button" class="create-group-menu__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">Abbrechen</button>
+              <button type="submit" [disabled]="!_canCreate()">
+                @if (_isCreating()) {
+                  Wird erstellt...
+                } @else {
+                  Gruppe erstellen
+                }
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+        <div class="group-tabs" role="tablist" aria-label="Gruppen filtern">
+          @for (tab of _tabs(); track tab.id) {
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="_activeTab() === tab.id"
+              [class.group-tabs__tab--active]="_activeTab() === tab.id"
+              class="group-tabs__tab"
+              (click)="setActiveTab(tab.id)">
+              <span>{{ tab.label }}</span>
+              <strong>{{ tab.count }}</strong>
+            </button>
+          }
+        </div>
+
+        <div class="group-directory__toolbar" aria-label="Gruppen suchen und weiter filtern">
+          <label>
+            <span>Suche</span>
+            <input
+              type="search"
+              placeholder="Name, Kurs, Zielgruppe"
+              [value]="_searchQuery()"
+              (input)="updateSearchQuery($any($event.target).value)">
+          </label>
+
+          <label>
+            <span>Filter</span>
+            <select [value]="_policyFilter()" (change)="updatePolicyFilter($any($event.target).value)">
+              <option value="All">Alle Regeln</option>
+              <option value="StudentPosts">Studierende posten</option>
+              <option value="UniversityPosts">Nur Hochschule postet</option>
+              <option value="Approval">Mit Freigabe</option>
+              <option value="CommentsOpen">Kommentare offen</option>
+              <option value="CommentsClosed">Kommentare geschlossen</option>
+            </select>
+          </label>
+        </div>
+
+        @if (_filteredGroups().length > 0) {
+          <div class="group-section__grid">
+            @for (group of _filteredGroups(); track group.id) {
+              <article class="group-card" [style.border-left-color]="group.accentColor">
+                <span class="group-card__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
+                <div class="group-card__body">
+                  <div class="group-card__title-row">
+                    <div>
+                      <strong>{{ group.name }}</strong>
+                      <small>{{ groupTypeLabel(group.type) }}</small>
+                    </div>
+
+                    <div class="group-card__actions">
+                      <button type="button" class="group-card__open" (click)="openGroup(group)">Öffnen</button>
+                      @if (group.canJoin) {
+                        <button type="button" class="group-card__join" [disabled]="isJoining(group.id)" (click)="joinGroup(group)">
+                          @if (isJoining(group.id)) {
+                            Tritt bei...
+                          } @else {
+                            Beitreten
+                          }
+                        </button>
+                      } @else if (group.canManage) {
+                        <button type="button" class="group-card__settings" (click)="openSettings(group)">
+                          Einstellungen
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <p>{{ group.description }}</p>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="groups-page__state">Für diesen Filter gibt es noch keine Gruppen.</p>
+        }
+    </section>
+  }
 </div>

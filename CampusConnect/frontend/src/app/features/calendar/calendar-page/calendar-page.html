@@ -1,8 +1,12 @@
 <div class="calendar-page">
-  <div class="calendar-page__header">
-    <h2>📅 Prüfungskalender</h2>
+  <header class="calendar-page__header">
+    <div>
+      <p class="calendar-page__eyebrow">DHBW Lörrach</p>
+      <h1>Prüfungskalender</h1>
+      <p>Plane Prüfungstermine, Orte und persönliche Notizen an einem Ort.</p>
+    </div>
     <button (click)="_showForm.set(!_showForm())">+ Prüfung hinzufügen</button>
-  </div>
+  </header>
 
   @if (_showForm()) {
     <form class="calendar-page__form" (ngSubmit)="onAdd()">
@@ -10,8 +14,12 @@
       <label>Datum <input type="datetime-local" [(ngModel)]="_form.examDate" name="examDate" required /></label>
       <label>Ort <input type="text" [(ngModel)]="_form.location" name="location" /></label>
       <label>Notizen <input type="text" [(ngModel)]="_form.notes" name="notes" /></label>
-      <button type="submit">Speichern</button>
+      <button type="submit" [disabled]="_isSubmitting()">{{ _isSubmitting() ? 'Speichert...' : 'Speichern' }}</button>
     </form>
+  }
+
+  @if (_error()) {
+    <p class="calendar-page__error">{{ _error() }}</p>
   }
 
   @if (_exams().length === 0) {

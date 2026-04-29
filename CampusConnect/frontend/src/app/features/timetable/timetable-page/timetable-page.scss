@@ -1,54 +1,63 @@
 .timetable-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  gap: 1.5rem;
 
-  h2 { color: var(--dhbw-red); margin-bottom: 0; }
-  &__eyebrow { color: var(--dhbw-text-muted); font-size: 0.76rem; font-weight: 700; margin: 0 0 0.2rem; text-transform: uppercase; }
-  &__state { color: var(--dhbw-text-muted); margin: 0; padding: 1.5rem; text-align: center; }
+  h1 { color: var(--dhbw-ink); font-size: 3.2rem; line-height: 1; margin: 0 0 0.7rem; }
+  &__eyebrow { color: var(--dhbw-red); font-size: 0.78rem; font-weight: 800; margin: 0 0 0.45rem; text-transform: uppercase; }
+  &__state { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; box-shadow: var(--dhbw-shadow); color: var(--dhbw-text-muted); margin: 0; padding: 1rem; text-align: center; }
   &__state--error { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
 }
 
-.course-setup { align-items: center; display: flex; flex-direction: column; gap: 1rem; padding: 1rem 0; text-align: center; }
-.course-picker { align-items: end; display: grid; gap: 0.75rem; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr) 2.7rem; max-width: 44rem; width: 100%; }
-.course-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 13rem; }
-.course-field span { color: var(--dhbw-text-muted); font-size: 0.76rem; font-weight: 700; }
-.course-field select,
-.course-field input {
+.course-picker,
+.view-tabs,
+.timetable-page__state,
+.day-section,
+.calendar-view {
   background: var(--dhbw-surface);
   border: 1px solid var(--dhbw-border);
-  border-radius: 6px;
-  color: var(--dhbw-ink);
-  min-height: 2.4rem;
-  padding: 0.45rem 0.65rem;
-
-  &:focus { border-color: var(--dhbw-red); box-shadow: 0 0 0 2px var(--dhbw-focus); outline: none; }
+  border-radius: 8px;
 }
 
-.course-history { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; max-width: 44rem; }
-.course-history button { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; cursor: pointer; font-weight: 700; padding: 0.55rem 0.8rem; }
-.course-history button:hover { border-color: var(--dhbw-red); color: var(--dhbw-red); }
+.timetable-hero { align-items: end; border-bottom: 1px solid var(--dhbw-border); display: flex; gap: 1rem; justify-content: space-between; padding: 0.4rem 0 1.35rem; }
+.timetable-hero p:not(.timetable-page__eyebrow) { color: var(--dhbw-text-muted); margin: 0; }
+.course-setup { display: grid; gap: 1.5rem; }
+.course-panel { display: grid; gap: 1rem; }
+.course-picker { align-items: end; display: grid; gap: 0.75rem; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr) 2.7rem; padding: 1rem; width: 100%; }
+.course-field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 13rem; }
+.course-field span { color: var(--dhbw-ink); font-size: 0.85rem; font-weight: 800; }
+.course-field select,
+.course-field input {
+  background: var(--dhbw-surface-muted);
+  border: 1px solid var(--dhbw-border);
+  border-radius: 8px;
+  color: var(--dhbw-ink);
+  min-height: 2.6rem;
+  padding: 0.55rem 0.75rem;
 
-.schedule-header { align-items: end; display: flex; gap: 1rem; justify-content: space-between; }
+  &:focus { border-color: var(--dhbw-red); box-shadow: 0 0 0 3px var(--dhbw-focus); outline: none; }
+}
+
+.course-history { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.course-history button { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; cursor: pointer; font-weight: 800; padding: 0.55rem 0.8rem; }
+
 .schedule-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
 .schedule-actions button,
 .icon-action,
 .view-tabs button,
-.calendar-nav button { border-radius: 6px; cursor: pointer; min-height: 2.35rem; }
+.calendar-nav button { border-radius: 8px; cursor: pointer; min-height: 2.5rem; }
 .schedule-actions button,
-.icon-action { background: var(--dhbw-red); border: 0; color: var(--dhbw-surface); padding: 0.45rem 0.8rem; }
+.icon-action { background: var(--dhbw-red); border: 0; color: var(--dhbw-surface); font-weight: 800; padding: 0.55rem 0.9rem; }
 .schedule-actions button:first-child { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
 button:disabled { cursor: not-allowed; opacity: 0.55; }
 
-.view-tabs { background: var(--dhbw-bg-accent); border: 1px solid var(--dhbw-border); border-radius: 8px; display: grid; grid-template-columns: repeat(3, 1fr); padding: 0.25rem; }
+.view-tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0.25rem; }
 .view-tabs button { background: transparent; border: 0; color: var(--dhbw-text-muted); font-weight: 800; }
-.view-tabs button.active { background: var(--dhbw-surface); color: var(--dhbw-red); }
+.view-tabs button.active { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
 
-.timetable-page__state,
-.day-section { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; overflow: hidden; }
+.day-section { overflow: hidden; }
 
-.day-section__header { align-items: center; background: var(--dhbw-bg-accent); border-bottom: 1px solid var(--dhbw-border); display: flex; justify-content: space-between; padding: 0.8rem 1rem; }
-.day-section__weekday { color: var(--dhbw-text-muted); font-size: 0.76rem; font-weight: 700; }
+.day-section__header { align-items: center; border-bottom: 1px solid var(--dhbw-border); display: flex; justify-content: space-between; padding: 0.8rem 1rem; }
+.day-section__weekday { color: var(--dhbw-red); font-size: 0.76rem; font-weight: 800; text-transform: uppercase; }
 .day-section h3 { font-size: 1rem; margin: 0.1rem 0 0; }
 .day-section__badge,
 .lecture-card__chip { border-radius: 999px; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.45rem; }
@@ -64,8 +73,8 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .lecture-card__chip { background: #dbeafe; color: #1d4ed8; flex: 0 0 auto; }
 .lecture-card__meta { color: var(--dhbw-text-muted); display: flex; flex-direction: column; font-size: 0.82rem; gap: 0.2rem; margin-top: 0.35rem; overflow-wrap: anywhere; }
 
-.calendar-view { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; overflow: hidden; }
-.calendar-nav { align-items: center; background: var(--dhbw-bg-accent); border-bottom: 1px solid var(--dhbw-border); display: flex; gap: 0.5rem; padding: 0.65rem 0.8rem; }
+.calendar-view { overflow: hidden; }
+.calendar-nav { align-items: center; border-bottom: 1px solid var(--dhbw-border); display: flex; gap: 0.5rem; padding: 0.65rem 0.8rem; }
 .calendar-nav strong { color: var(--dhbw-red); flex: 1; text-align: center; }
 .calendar-nav button { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); color: var(--dhbw-red); font-weight: 800; padding: 0 0.7rem; }
 
@@ -103,8 +112,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .calendar-event--compact:is(:hover, :focus-visible) .calendar-event__chip { align-self: flex-start; display: inline; }
 
 @media (max-width: 720px) {
-  .schedule-header,
+  .timetable-hero,
   .schedule-actions { align-items: stretch; flex-direction: column; }
+  .timetable-page h1 { font-size: 2.25rem; }
   .course-picker { grid-template-columns: 1fr; }
   .course-field { min-width: 0; }
   .lecture-card { gap: 0.45rem; grid-template-columns: 1fr; }

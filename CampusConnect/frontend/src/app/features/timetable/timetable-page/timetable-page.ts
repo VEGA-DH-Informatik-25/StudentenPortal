@@ -3,6 +3,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TimetableEvent, TimetableDay } from '../../../core/models/timetable.model';
+import { Auth } from '../../../core/services/auth';
+import { Courses } from '../../../core/services/courses';
 import { Timetable } from '../../../core/services/timetable';
 
 type TimetableView = 'list' | 'week' | 'day';
@@ -29,6 +31,8 @@ const COMPACT_EVENT_MAX_HEIGHT = 96;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimetablePage implements OnInit {
+  private readonly _auth = inject(Auth);
+  private readonly _coursesService = inject(Courses);
   private readonly _timetableService = inject(Timetable);
 
   protected readonly _courseOptions = signal<string[]>([]);
@@ -96,11 +100,23 @@ export class TimetablePage implements OnInit {
   });
 
   ngOnInit(): void {
-    this._courseOptions.set(this._timetableService.getCourseOptions());
-    const storedCourse = this._timetableService.getStoredCourse();
-    if (storedCourse) {
-      this._setCourseSelection(storedCourse);
-      this._loadCourse(storedCourse);
+    this._coursesService.getCourses().subscribe({
+      next: courses => this._initializeCourseOptions(courses.map(course => course.code)),
+      error: () => this._initializeCourseOptions([]),
+    });
+  }
+
+  private _initializeCourseOptions(courseCodes: string[]): void {
+    const profileCourse = this._profileCourse();
+    const courseOptions = profileCourse
+      ? [...new Set([profileCourse, ...this._timetableService.getCourseOptions(courseCodes)])].sort((a, b) => a.localeCompare(b, 'de', { numeric: true, sensitivity: 'base' }))
+      : this._timetableService.getCourseOptions(courseCodes);
+    this._courseOptions.set(courseOptions);
+
+    const initialCourse = profileCourse || this._timetableService.getStoredCourse();
+    if (initialCourse) {
+      this._setCourseSelection(initialCourse);
+      this._loadCourse(initialCourse);
     }
   }
 
@@ -151,6 +167,15 @@ export class TimetablePage implements OnInit {
       : this._courseSelection();
 
     this._loadCourse(selectedCourse);
+  }
+
+  private _profileCourse(): string {
+    const profile = this._auth.userProfile();
+    if (!profile || profile.role === 'Admin') {
+      return '';
+    }
+
+    return this._timetableService.normalizeCourse(profile.course);
   }
 
   protected dayBadge(date: string): string | null {
@@ -272,7 +297,7 @@ export class TimetablePage implements OnInit {
         this._days.set(timetable.days);
         this._anchorDate.set(this._dateKey(new Date()));
         this._timetableService.storeCourse(timetable.course);
-        this._courseOptions.set(this._timetableService.getCourseOptions());
+        this._courseOptions.set(this._timetableService.getCourseOptions(this._courseOptions()));
         this._setCourseSelection(timetable.course);
         this._isLoading.set(false);
       },
