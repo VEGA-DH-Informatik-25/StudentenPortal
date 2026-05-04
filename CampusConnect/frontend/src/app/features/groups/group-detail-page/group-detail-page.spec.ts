@@ -103,12 +103,28 @@ describe('GroupDetailPage', () => {
     expect(text).not.toContain('Soll nicht sichtbar sein');
   });
 
-  it('creates posts for the selected group', () => {
+  it('creates posts for the selected group from the form submit', () => {
     fixture.detectChanges();
 
     (component as any).updateContent('Neue Info');
-    (component as any).onPost();
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form.composer') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
     expect(feedApi.createPost).toHaveBeenCalledWith({ content: 'Neue Info', groupId: 'group-1' });
+  });
+
+  it('creates comments from the comment form submit', () => {
+    fixture.detectChanges();
+
+    (component as any).toggleCommentComposer(posts[0]);
+    (component as any).updateCommentDraft('post-1', 'Bin dabei');
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form.comment-composer') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    expect(feedApi.createComment).toHaveBeenCalledWith('post-1', { content: 'Bin dabei' });
   });
 });
