@@ -26,7 +26,7 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 | Datenbank | SQLite |
 | Authentifizierung | JWT |
 | Containerisierung | Docker Compose *(Platzhalter, noch nicht produktiv eingerichtet)* |
-| CI/CD | GitHub Actions |
+| CI/CD | GitHub Actions *(Platzhalter, noch nicht produktiv eingerichtet)* |
 
 ---
 
@@ -75,15 +75,21 @@ Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und A
 
 Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erfordert einen API-Schlüssel von SWFR. Um CORS-Probleme zu vermeiden und den Schlüssel geheim zu halten, leitet das Backend alle Anfragen an diesen Dienst weiter, bevor die aufbereiteten Daten an das Angular-Frontend übergeben werden.
 
+### Persistenz
+
+Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge werden in SQLite über Entity Framework Core persistiert. Das Schema wird über EF-Migrations verwaltet; lokale Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen und anschließend weiter migriert.
+
 ### Authentifizierungsablauf
 
 CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 
 1. Der Benutzer sendet seine Anmeldedaten an `POST /api/auth/login`.
 2. Das Backend prüft die Anmeldedaten und stellt ein signiertes JWT aus.
-3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage).
+3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage).
 4. Jede folgende Anfrage an einen geschützten Endpunkt enthält den Header `Authorization: Bearer <token>`.
 5. Das Backend prüft Signatur und Ablaufzeit des Tokens bei jeder Anfrage.
+
+Ein Browser-Reload beendet diese flüchtige Frontend-Sitzung; persistente Browser-Sessions und Refresh Tokens sind aktuell nicht implementiert.
 
 ---
 

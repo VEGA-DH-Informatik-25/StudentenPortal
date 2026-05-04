@@ -31,7 +31,7 @@ Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und A
 
 ## Persistenz und Repository-Strategie
 
-Die aktuelle Implementierung persistiert Benutzer und Kurse in SQLite über Entity Framework Core. Gruppen, Feed-Beiträge, Noten und Prüfungseinträge werden derzeit über In-Memory-Repositories gehalten und beim Neustart neu aufgebaut beziehungsweise verworfen. Services, die Kurszuordnungen ändern, synchronisieren deshalb zusätzlich die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht während der Laufzeit konsistent bleiben.
+Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge in SQLite über Entity Framework Core. EF-Migrations verwalten das Datenbankschema; bestehende lokale SQLite-Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen, damit sie ohne Datenverlust weiter migriert werden können. Feed-Kommentare, Reaktionen sowie Gruppeneinstellungen und Mitgliedsrechte werden als strukturierte JSON-Spalten gespeichert. Services, die Kurszuordnungen ändern, synchronisieren weiterhin die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht konsistent bleiben.
 
 ## Externe APIs
 
@@ -43,6 +43,8 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 
 1. Der Benutzer sendet seine Anmeldedaten an `POST /api/auth/login`.
 2. Das Backend prüft die Anmeldedaten und stellt ein signiertes JWT aus.
-3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage).
+3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage).
 4. Jede folgende Anfrage an einen geschützten Endpunkt enthält den Header `Authorization: Bearer <token>`.
 5. Das Backend prüft Signatur und Ablaufzeit des Tokens bei jeder Anfrage.
+
+Ein Browser-Reload leert diese bewusst flüchtige Sitzung; Nutzer melden sich danach erneut an. Persistente Browser-Sessions oder Refresh Tokens sind in der aktuellen Implementierung nicht enthalten.

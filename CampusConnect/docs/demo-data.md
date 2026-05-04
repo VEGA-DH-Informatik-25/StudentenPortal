@@ -25,9 +25,9 @@ All seeded accounts use the password from `DemoData:Password`; the default local
 | `sara.wgm24a@dhbw-loerrach.de` | Student | Gesundheitsmanagement course flow |
 | `emil.gig25a@dhbw-loerrach.de` | Student | Gesundheitsversorgung course flow |
 
-## Seeded In-Memory Areas
+## Seeded SQLite Areas
 
-The development seeder fills the existing in-memory repositories for groups, feed posts with comments and reactions, personal grades, and personal exam entries each time the API starts. Users and courses are stored in SQLite so they are available to the admin screens and auth flow.
+The development seeder upserts demo users, courses, groups, feed posts with comments and reactions, personal grades, and personal exam entries into SQLite each time the API starts. Stable IDs keep the seeded demo records idempotent while user-created records remain persisted in the same database.
 
 Course groups are private and follow the course on each account. The demo social groups include both membership-only groups and public groups for the Entdecken tab; for example `Wohnungssuche Loerrach` starts with only its owner assigned so other demo students can join it through the normal group UI.
 

@@ -102,6 +102,32 @@ describe('FeedPage', () => {
     expect(component).toBeTruthy();
   });
 
+  it('renders DHBW quick access links as external redirects', () => {
+    fixture.detectChanges();
+
+    const links = Array.from(fixture.nativeElement.querySelectorAll('.quick-access__item')) as HTMLAnchorElement[];
+
+    expect(links.map(link => link.querySelector('strong')?.textContent?.trim())).toEqual([
+      'Moodle',
+      'Webmail',
+      'DUALIS',
+      'Bibliothek',
+    ]);
+    expect(links.map(link => link.querySelector('small')?.textContent?.trim())).toEqual([
+      'Kurse und Unterlagen',
+      'E-Mails und Kalender',
+      'Noten und Prüfungen',
+      'Katalog und Recherche',
+    ]);
+    expect(links.map(link => link.href)).toEqual([
+      'https://moodle.loerrach.dhbw.de/',
+      'https://webmail.dhbw-loerrach.de/owa',
+      'https://dualis.dhbw.de/',
+      'https://dhbw-loerrach.de/bibliothek/aktuelle-informationen',
+    ]);
+    expect(links.every(link => link.target === '_blank' && link.rel === 'noopener noreferrer')).toBe(true);
+  });
+
   it('opens the comment composer from the compact comment button', () => {
     fixture.detectChanges();
     (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }]);

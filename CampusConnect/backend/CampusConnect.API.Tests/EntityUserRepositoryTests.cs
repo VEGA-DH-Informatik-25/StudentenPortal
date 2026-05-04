@@ -18,7 +18,7 @@ public sealed class EntityUserRepositoryTests
                 new DbContextOptionsBuilder<CampusConnectDbContext>()
                     .UseSqlite($"Data Source={databasePath}")
                     .Options);
-            await dbContext.Database.EnsureCreatedAsync();
+            await dbContext.Database.MigrateAsync();
 
             var repository = new EntityUserRepository(dbContext);
             var user = new User

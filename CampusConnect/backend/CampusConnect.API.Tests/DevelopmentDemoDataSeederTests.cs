@@ -17,12 +17,12 @@ public sealed class DevelopmentDemoDataSeederTests
         {
             await using (var dbContext = CreateDbContext(databasePath))
             {
-                await dbContext.Database.EnsureCreatedAsync();
+                await dbContext.Database.MigrateAsync();
 
-                var groups = new InMemoryGroupRepository();
-                var feed = new InMemoryFeedRepository();
-                var grades = new InMemoryGradeRepository();
-                var exams = new InMemoryExamRepository();
+                var groups = new EntityGroupRepository(dbContext);
+                var feed = new EntityFeedRepository(dbContext);
+                var grades = new EntityGradeRepository(dbContext);
+                var exams = new EntityExamRepository(dbContext);
                 var seeder = new DevelopmentDemoDataSeeder(
                     dbContext,
                     Options.Create(new DemoDataOptions { Enabled = true, Password = "TestDemoPass123!" }),

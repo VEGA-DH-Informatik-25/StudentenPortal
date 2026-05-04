@@ -16,45 +16,38 @@
     <aside class="quick-access" aria-label="Schnellzugriffe">
       <div class="section-heading">
         <span>Schnellzugriffe</span>
-        <strong>Campus</strong>
+        <strong>DHBW Dienste</strong>
       </div>
 
-      <nav class="quick-access__list" aria-label="Campusbereiche">
-        <button class="quick-access__item" type="button" (click)="navigateTo('/mensa')">
-          <span class="quick-access__marker" aria-hidden="true">ME</span>
+      <nav class="quick-access__list" aria-label="DHBW Dienste">
+        <a class="quick-access__item" href="https://moodle.loerrach.dhbw.de/" target="_blank" rel="noopener noreferrer">
+          <span class="quick-access__marker" aria-hidden="true">MO</span>
           <span>
-            <strong>Mensa</strong>
-            <small>Speiseplan und Preise</small>
+            <strong>Moodle</strong>
+            <small>Kurse und Unterlagen</small>
           </span>
-        </button>
-        <button class="quick-access__item" type="button" (click)="navigateTo('/timetable')">
-          <span class="quick-access__marker" aria-hidden="true">ST</span>
+        </a>
+        <a class="quick-access__item" href="https://webmail.dhbw-loerrach.de/owa" target="_blank" rel="noopener noreferrer">
+          <span class="quick-access__marker" aria-hidden="true">WM</span>
           <span>
-            <strong>Stundenplan</strong>
-            <small>Vorlesungen und Räume</small>
+            <strong>Webmail</strong>
+            <small>E-Mails und Kalender</small>
           </span>
-        </button>
-        <button class="quick-access__item" type="button" (click)="navigateTo('/calendar')">
-          <span class="quick-access__marker" aria-hidden="true">PR</span>
+        </a>
+        <a class="quick-access__item" href="https://dualis.dhbw.de/" target="_blank" rel="noopener noreferrer">
+          <span class="quick-access__marker" aria-hidden="true">DU</span>
           <span>
-            <strong>Prüfungen</strong>
-            <small>Termine und Notizen</small>
+            <strong>DUALIS</strong>
+            <small>Noten und Prüfungen</small>
           </span>
-        </button>
-        <button class="quick-access__item" type="button" (click)="navigateTo('/grades')">
-          <span class="quick-access__marker" aria-hidden="true">NO</span>
+        </a>
+        <a class="quick-access__item" href="https://dhbw-loerrach.de/bibliothek/aktuelle-informationen" target="_blank" rel="noopener noreferrer">
+          <span class="quick-access__marker" aria-hidden="true">BI</span>
           <span>
-            <strong>Noten</strong>
-            <small>Leistungen im Blick</small>
+            <strong>Bibliothek</strong>
+            <small>Katalog und Recherche</small>
           </span>
-        </button>
-        <button class="quick-access__item" type="button" (click)="navigateTo('/groups')">
-          <span class="quick-access__marker" aria-hidden="true">GR</span>
-          <span>
-            <strong>Gruppen</strong>
-            <small>Kurse und Campusgruppen</small>
-          </span>
-        </button>
+        </a>
       </nav>
     </aside>
 

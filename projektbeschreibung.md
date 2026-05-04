@@ -83,13 +83,13 @@ Tabellen oder Notizen verwaltet.
 | Bereich | Technologie |
 |---|---|
 | Frontend | Angular 21, Standalone Components, Signals, zoneless Change Detection, SCSS |
-| Backend | ASP.NET Core 9, Clean Architecture, MediatR, CQRS |
-| Datenbank | PostgreSQL, Entity Framework Core 9 |
-| Authentifizierung | JWT Bearer, Refresh Token (In-Memory) |
+| Backend | ASP.NET Core 10, Clean-Architecture-Projektstruktur, servicebasierte Application-Schicht |
+| Datenbank | SQLite, Entity Framework Core 10 |
+| Authentifizierung | JWT Bearer, Token im Frontend nur im Arbeitsspeicher |
 | Externe API | SWFR Mensa XML-API |
-| Containerisierung | Docker, docker-compose |
-| CI/CD | GitHub Actions |
-| Testing | xUnit, Jasmine/Karma, Cypress |
+| Containerisierung | Docker Compose als Platzhalter |
+| CI/CD | GitHub Actions als Platzhalter |
+| Testing | xUnit, Angular CLI/Vitest-Setup |
 
 ---
 
