@@ -28,6 +28,7 @@ export class FeedPage implements OnInit {
 
   protected readonly _posts = signal<FeedPost[]>([]);
   protected readonly _isLoading = signal(false);
+  protected readonly _isPosting = signal(false);
   protected readonly _error = signal('');
   protected readonly _newContent = signal('');
   protected readonly _commentDrafts = signal<Record<string, string>>({});
@@ -63,15 +64,16 @@ export class FeedPage implements OnInit {
 
   private _loadFeed(): void {
     this._isLoading.set(true);
+    this._error.set('');
     this._feedService.getFeed().subscribe({
-      next: posts => { this._posts.set(posts); this._isLoading.set(false); },
+      next: posts => { this._posts.set(posts); this._error.set(''); this._isLoading.set(false); },
       error: () => { this._error.set('Feed konnte nicht geladen werden.'); this._isLoading.set(false); },
     });
   }
 
   protected onPost(): void {
     const content = this._newContent().trim();
-    if (!content) return;
+    if (!content || this._isPosting()) return;
     const group = this._selectedGroup();
     if (!group) {
       this._error.set('Bitte wähle zuerst eine Gruppe aus.');
@@ -79,9 +81,10 @@ export class FeedPage implements OnInit {
     }
 
     this._error.set('');
+    this._isPosting.set(true);
     this._feedService.createPost({ content, groupId: group.id }).subscribe({
-      next: post => { this._posts.update(posts => [post, ...posts]); this._newContent.set(''); },
-      error: () => this._error.set('Beitrag konnte nicht erstellt werden.'),
+      next: post => { this._posts.update(posts => [post, ...posts]); this._newContent.set(''); this._isPosting.set(false); },
+      error: () => { this._error.set('Beitrag konnte nicht erstellt werden.'); this._isPosting.set(false); },
     });
   }
 

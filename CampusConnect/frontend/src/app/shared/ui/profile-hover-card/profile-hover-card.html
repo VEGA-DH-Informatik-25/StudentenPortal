@@ -1,4 +1,4 @@
-<span class="profile-hover-card" tabindex="0">
+<span class="profile-hover-card" tabindex="0" [attr.aria-describedby]="profile() ? _tooltipId : null">
   <span class="profile-hover-card__trigger">
     @if (showAvatar()) {
       <span class="profile-hover-card__avatar" aria-hidden="true">{{ _initials() }}</span>
@@ -9,7 +9,7 @@
   </span>
 
   @if (profile(); as contact) {
-    <span class="profile-hover-card__panel" role="tooltip">
+    <span class="profile-hover-card__panel" role="tooltip" [id]="_tooltipId">
       <span class="profile-hover-card__header">
         <span class="profile-hover-card__avatar profile-hover-card__avatar--large" aria-hidden="true">{{ _initials() }}</span>
         <span>

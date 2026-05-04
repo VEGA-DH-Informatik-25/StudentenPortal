@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { WritableSignal, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { FeedPage } from './feed-page';
 import { Auth } from '../../../core/services/auth';
@@ -9,6 +9,7 @@ import { Feed } from '../../../core/services/feed';
 import { Groups } from '../../../core/services/groups';
 import { Timetable } from '../../../core/services/timetable';
 import { CampusGroup } from '../../../core/models/group.model';
+import { TimetableResponse } from '../../../core/models/timetable.model';
 
 describe('FeedPage', () => {
   let component: FeedPage;
@@ -21,6 +22,12 @@ describe('FeedPage', () => {
     deleteComment: ReturnType<typeof vi.fn>;
     toggleReaction: ReturnType<typeof vi.fn>;
   };
+  let timetableApi: {
+    getStoredCourse: ReturnType<typeof vi.fn>;
+    normalizeCourse: ReturnType<typeof vi.fn>;
+    getTimetable: ReturnType<typeof vi.fn>;
+  };
+  let userProfile: WritableSignal<{ course: string; role: string } | null>;
 
   const group: CampusGroup = {
     id: 'group-1',
@@ -52,6 +59,12 @@ describe('FeedPage', () => {
       deleteComment: vi.fn(() => of(post)),
       toggleReaction: vi.fn(() => of(post)),
     };
+    userProfile = signal({ course: 'TIF25A', role: 'Student' });
+    timetableApi = {
+      getStoredCourse: vi.fn(() => 'TIF25A'),
+      normalizeCourse: vi.fn((course: string) => course.trim().toUpperCase()),
+      getTimetable: vi.fn(() => of(createTimetable([]))),
+    };
 
     await TestBed.configureTestingModule({
       imports: [FeedPage],
@@ -62,7 +75,7 @@ describe('FeedPage', () => {
           useValue: {
             displayName: signal('Alice'),
             userRole: signal('Student'),
-            userProfile: signal({ course: 'TIF25A', role: 'Student' }),
+            userProfile,
           },
         },
         {
@@ -75,11 +88,7 @@ describe('FeedPage', () => {
         },
         {
           provide: Timetable,
-          useValue: {
-            getStoredCourse: () => 'TIF25A',
-            normalizeCourse: (course: string) => course.trim().toUpperCase(),
-            getTimetable: () => of({ course: 'TIF25A', timezone: 'Europe/Berlin', days: [] }),
-          },
+          useValue: timetableApi,
         },
       ],
     }).compileComponents();
@@ -115,4 +124,75 @@ describe('FeedPage', () => {
 
     expect(feedApi.toggleReaction).toHaveBeenCalledWith('post-1', { emoji: '🚀' });
   });
+
+  it('loads and sorts the current day schedule', () => {
+    const laterEvent = createEvent('later', '2026-04-29T11:00:00+02:00', '2026-04-29T12:00:00+02:00');
+    const earlierEvent = createEvent('earlier', '2026-04-29T09:00:00+02:00', '2026-04-29T10:00:00+02:00');
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-29T08:00:00+02:00'));
+    timetableApi.getTimetable.mockReturnValue(of(createTimetable([laterEvent, earlierEvent])));
+
+    fixture.detectChanges();
+
+    expect(component['_scheduleCourse']()).toBe('TIF25A');
+    expect(component['_scheduleEvents']().map(event => event.id)).toEqual(['earlier', 'later']);
+    expect(component['_scheduleError']()).toBe('');
+
+    vi.useRealTimers();
+  });
+
+  it('shows a course selection action when no schedule course is available', () => {
+    userProfile.set(null);
+    timetableApi.getStoredCourse.mockReturnValue('');
+
+    fixture.detectChanges();
+
+    expect(timetableApi.getTimetable).not.toHaveBeenCalled();
+    expect(component['_scheduleError']()).toBe('Wähle im Stundenplan zuerst deinen Kurs aus.');
+  });
+
+  it('clears schedule events and shows an error when schedule loading fails', () => {
+    timetableApi.getTimetable.mockReturnValue(throwError(() => new Error('network')));
+
+    fixture.detectChanges();
+
+    expect(component['_scheduleEvents']()).toEqual([]);
+    expect(component['_scheduleError']()).toBe('Der Tagesplan konnte nicht geladen werden.');
+  });
+
+  it('clears stale feed errors on a successful reload and prevents duplicate posts', () => {
+    fixture.detectChanges();
+    component['_error'].set('Alter Fehler');
+
+    component['_loadFeed']();
+
+    expect(component['_error']()).toBe('');
+
+    component['updateContent']('Neuer Beitrag');
+    component['_isPosting'].set(true);
+    component['onPost']();
+
+    expect(feedApi.createPost).not.toHaveBeenCalled();
+  });
 });
+
+function createTimetable(events: ReturnType<typeof createEvent>[]): TimetableResponse {
+  return {
+    course: 'TIF25A',
+    timezone: 'Europe/Berlin',
+    days: [{ date: '2026-04-29', events }],
+  };
+}
+
+function createEvent(id: string, start: string, end: string) {
+  return {
+    id,
+    title: 'Software Engineering',
+    start,
+    end,
+    location: 'Aula',
+    description: null,
+    isAllDay: false,
+    isOnline: false,
+  };
+}
