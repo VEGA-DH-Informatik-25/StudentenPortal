@@ -10,10 +10,10 @@ import { errorHandlerInterceptor } from './error-handler-interceptor';
 describe('errorHandlerInterceptor', () => {
   let httpClient: HttpClient;
   let http: HttpTestingController;
-  let auth: { logout: ReturnType<typeof vi.fn> };
+  let auth: { clearSession: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    auth = { logout: vi.fn() };
+    auth = { clearSession: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'login', component: TestLoginComponent }]),
@@ -36,7 +36,7 @@ describe('errorHandlerInterceptor', () => {
     const request = http.expectOne('/api/protected');
     request.flush({ error: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
 
-    expect(auth.logout).toHaveBeenCalled();
+    expect(auth.clearSession).toHaveBeenCalled();
   });
 });
 

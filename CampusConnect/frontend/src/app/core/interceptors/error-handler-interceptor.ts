@@ -9,7 +9,7 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(err => {
       if (err.status === 401) {
-        auth.logout();
+        auth.clearSession();
       }
       return throwError(() => err);
     })

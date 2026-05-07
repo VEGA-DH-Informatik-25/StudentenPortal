@@ -39,12 +39,12 @@ Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erforder
 
 ## Authentifizierungsablauf
 
-CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
+CampusConnect verwendet JWT-basierte API-Authentifizierung und für Browser-Sitzungen ein HttpOnly-Cookie mit 15 Minuten gleitender Inaktivitätszeit:
 
 1. Der Benutzer sendet seine Anmeldedaten an `POST /api/auth/login`.
-2. Das Backend prüft die Anmeldedaten und stellt ein signiertes JWT aus.
-3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage).
-4. Jede folgende Anfrage an einen geschützten Endpunkt enthält den Header `Authorization: Bearer <token>`.
-5. Das Backend prüft Signatur und Ablaufzeit des Tokens bei jeder Anfrage.
+2. Das Backend prüft die Anmeldedaten, stellt ein signiertes JWT aus und setzt zusätzlich ein HttpOnly-Cookie für die Browser-Sitzung.
+3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage); nach einem Reload wird die Sitzung über `GET /api/auth/me` aus dem Cookie wiederhergestellt.
+4. API-Clients können weiterhin den Header `Authorization: Bearer <token>` verwenden. Der Browser sendet stattdessen das HttpOnly-Cookie automatisch mit.
+5. Das Backend prüft die jeweilige Anmeldung bei jeder Anfrage und verlängert die Browser-Sitzung nur bei Aktivität.
 
-Ein Browser-Reload leert diese bewusst flüchtige Sitzung; Nutzer melden sich danach erneut an. Persistente Browser-Sessions oder Refresh Tokens sind in der aktuellen Implementierung nicht enthalten.
+Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.

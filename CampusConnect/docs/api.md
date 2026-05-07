@@ -12,6 +12,7 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 |---|---|---|---|
 | POST | `/api/auth/register` | Registrierung mit Hochschul-E-Mail-Adresse | Nein |
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
+| POST | `/api/auth/logout` | Browser-Sitzung beenden und Auth-Cookie entfernen | Nein |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails des eigenen Profils aktualisieren | Ja |
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
@@ -45,11 +46,11 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | PUT | `/api/groups/{id}/member-permissions` | Berechtigungen (`ReadOnly`, `ReadWrite`, `Manage`) zugewiesener Gruppenmitglieder setzen | Ja |
 | POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
 
-> **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
+> **Hinweis:** Externe API-Clients authentifizieren sich weiterhin mit folgendem HTTP-Header:
 > ```
 > Authorization: Bearer <token>
 > ```
-> Das Token wird über `POST /api/auth/login` bezogen und muss bei jeder Anfrage an eine geschützte Ressource mitgesendet werden.
+> Das Token wird über `POST /api/auth/login` bezogen. Browser-Sitzungen nutzen zusätzlich ein HttpOnly-Cookie, das bei Logout oder nach 15 Minuten Inaktivität ungültig wird.
 
 ## Nutzer, Kurse und Gruppen
 
