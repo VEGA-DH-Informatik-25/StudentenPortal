@@ -121,6 +121,24 @@ describe('GradesPage', () => {
     expect(gradesService.deleteGrade).toHaveBeenCalledWith('grade-1');
     expect(component['grades']()).toEqual([]);
   });
+
+  it('should not select a completed course-plan module when no open modules remain', () => {
+    plan = {
+      ...plan,
+      modules: plan.modules.map(module => ({ ...module, isCompleted: true, grade: 1.7 })),
+    };
+
+    component['_loadPlan']();
+
+    expect(component['openPlanModules']()).toEqual([]);
+    expect(component['selectedModuleCode']).toBe('');
+    expect(component['selectedPlanModule']()).toBeNull();
+
+    component['addGrade']();
+
+    expect(gradesService.addGrade).not.toHaveBeenCalled();
+    expect(component['_error']()).toBe('Alle Module aus deinem Kursplan sind bereits erfasst.');
+  });
 });
 
 function createSummary(grades: Grade[]): GradeSummary {

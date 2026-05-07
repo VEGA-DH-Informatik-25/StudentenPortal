@@ -19,20 +19,24 @@
     <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
       <h2>Neue Note eintragen</h2>
       @if (planModules().length > 0) {
-        <label>
-          Modul aus deinem Kursplan
-          <select name="selectedModuleCode" [(ngModel)]="selectedModuleCode" required>
-            @for (module of openPlanModules(); track module.code) {
-              <option [value]="module.code">{{ module.name }} · {{ module.ects }} ECTS</option>
-            }
-          </select>
-        </label>
-        @if (selectedPlanModule(); as selectedModule) {
-          <div class="selected-module">
-            <strong>{{ selectedModule.code }}</strong>
-            <span>{{ selectedModule.name }}</span>
-            <small>{{ examText(selectedModule) }}</small>
-          </div>
+        @if (hasOpenPlanModules()) {
+          <label>
+            Modul aus deinem Kursplan
+            <select name="selectedModuleCode" [(ngModel)]="selectedModuleCode" required>
+              @for (module of openPlanModules(); track module.code) {
+                <option [value]="module.code">{{ module.name }} · {{ module.ects }} ECTS</option>
+              }
+            </select>
+          </label>
+          @if (selectedPlanModule(); as selectedModule) {
+            <div class="selected-module">
+              <strong>{{ selectedModule.code }}</strong>
+              <span>{{ selectedModule.name }}</span>
+              <small>{{ examText(selectedModule) }}</small>
+            </div>
+          }
+        } @else {
+          <span class="form-note">Alle Module aus deinem Kursplan sind bereits erfasst.</span>
         }
       } @else {
         <label>
@@ -62,7 +66,7 @@
           </label>
         }
       </div>
-      <button type="submit" [disabled]="_isSubmitting()">Note speichern</button>
+      <button type="submit" [disabled]="_isSubmitting() || (planModules().length > 0 && !hasOpenPlanModules())">Note speichern</button>
       @if (_error()) {
         <span class="field-error">{{ _error() }}</span>
       }

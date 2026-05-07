@@ -32,7 +32,7 @@ Use these docs before changing related behavior:
 - `CampusConnect/CONTRIBUTING.md` - branch, commit, PR, and test conventions
 - `CampusConnect/frontend/README.md` - Angular CLI commands
 
-When documentation conflicts with the actual implementation, prefer the live project files for code changes and update the docs if the task touches that behavior. Current known implementation differences: backend projects target `net10.0`; the frontend uses Angular 21; Infrastructure currently wires SQLite and several in-memory repositories, while older docs mention PostgreSQL and .NET 9.
+When documentation conflicts with the actual implementation, prefer the live project files for code changes and update the docs if the task touches that behavior. Current implementation: backend projects target `net10.0`; the frontend uses Angular 21; Infrastructure wires SQLite-backed EF Core repositories for users, courses, groups, feed, grades, and exams.
 
 ## Repository Layout
 
@@ -75,7 +75,7 @@ Backend:
 - Clean Architecture-style solution split into API, Application, Domain, Infrastructure, and test projects
 - JWT Bearer authentication
 - EF Core SQLite in the current implementation
-- Entity-backed users plus in-memory feed, grade, and exam repositories in the current implementation
+- Entity-backed repositories for users, courses, groups, feed, grades, and exams in the current implementation
 - xUnit test projects
 
 External systems:

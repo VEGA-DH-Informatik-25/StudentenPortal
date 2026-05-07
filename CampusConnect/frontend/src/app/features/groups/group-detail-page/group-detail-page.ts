@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -13,7 +14,7 @@ import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-
 @Component({
   selector: 'app-group-detail-page',
   standalone: true,
-  imports: [DatePipe, ProfileHoverCard],
+  imports: [DatePipe, FormsModule, ProfileHoverCard],
   templateUrl: './group-detail-page.html',
   styleUrl: './group-detail-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

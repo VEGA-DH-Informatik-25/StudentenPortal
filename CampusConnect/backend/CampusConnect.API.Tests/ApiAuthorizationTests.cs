@@ -40,6 +40,31 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     [Fact]
+    public async Task AuthCookie_AllowsReloadedBrowserSessionUntilLogout()
+    {
+        var client = factory.CreateClient();
+        var registerResponse = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            Email = $"cookie-session-{Guid.NewGuid():N}@dhbw-loerrach.de",
+            Password = "secret123",
+            DisplayName = "Cookie Session",
+            Course = "ADMIN"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
+
+        var profileResponse = await client.GetAsync("/api/auth/me");
+
+        Assert.Equal(HttpStatusCode.OK, profileResponse.StatusCode);
+
+        var logoutResponse = await client.PostAsync("/api/auth/logout", null);
+        Assert.Equal(HttpStatusCode.NoContent, logoutResponse.StatusCode);
+
+        var loggedOutProfileResponse = await client.GetAsync("/api/auth/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, loggedOutProfileResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task AdminEndpoint_WithStudentToken_ReturnsForbidden()
     {
         var client = factory.CreateClient();

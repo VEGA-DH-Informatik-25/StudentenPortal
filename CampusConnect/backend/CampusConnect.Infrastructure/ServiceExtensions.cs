@@ -32,10 +32,10 @@ public static class ServiceExtensions
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
         services.AddScoped<ICourseRepository, EntityCourseRepository>();
-        services.AddSingleton<IFeedRepository, InMemoryFeedRepository>();
-        services.AddSingleton<IGroupRepository, InMemoryGroupRepository>();
-        services.AddSingleton<IGradeRepository, InMemoryGradeRepository>();
-        services.AddSingleton<IExamRepository, InMemoryExamRepository>();
+        services.AddScoped<IFeedRepository, EntityFeedRepository>();
+        services.AddScoped<IGroupRepository, EntityGroupRepository>();
+        services.AddScoped<IGradeRepository, EntityGradeRepository>();
+        services.AddScoped<IExamRepository, EntityExamRepository>();
 
         services.AddSingleton<IJwtService, JwtService>();
         services.Configure<MensaOptions>(configuration.GetSection(MensaOptions.SectionName));

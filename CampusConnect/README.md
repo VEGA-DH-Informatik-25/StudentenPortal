@@ -26,7 +26,7 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 | Datenbank | SQLite |
 | Authentifizierung | JWT |
 | Containerisierung | Docker Compose *(Platzhalter, noch nicht produktiv eingerichtet)* |
-| CI/CD | GitHub Actions |
+| CI/CD | GitHub Actions *(Platzhalter, noch nicht produktiv eingerichtet)* |
 
 ---
 
@@ -75,15 +75,21 @@ Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und A
 
 Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erfordert einen API-Schlüssel von SWFR. Um CORS-Probleme zu vermeiden und den Schlüssel geheim zu halten, leitet das Backend alle Anfragen an diesen Dienst weiter, bevor die aufbereiteten Daten an das Angular-Frontend übergeben werden.
 
+### Persistenz
+
+Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge werden in SQLite über Entity Framework Core persistiert. Das Schema wird über EF-Migrations verwaltet; lokale Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen und anschließend weiter migriert.
+
 ### Authentifizierungsablauf
 
-CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
+CampusConnect verwendet JWT-basierte API-Authentifizierung und für Browser-Sitzungen ein HttpOnly-Cookie mit 15 Minuten gleitender Inaktivitätszeit:
 
 1. Der Benutzer sendet seine Anmeldedaten an `POST /api/auth/login`.
-2. Das Backend prüft die Anmeldedaten und stellt ein signiertes JWT aus.
-3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage).
-4. Jede folgende Anfrage an einen geschützten Endpunkt enthält den Header `Authorization: Bearer <token>`.
-5. Das Backend prüft Signatur und Ablaufzeit des Tokens bei jeder Anfrage.
+2. Das Backend prüft die Anmeldedaten, stellt ein signiertes JWT aus und setzt zusätzlich ein HttpOnly-Cookie für die Browser-Sitzung.
+3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage); nach einem Reload wird die Sitzung über `GET /api/auth/me` aus dem Cookie wiederhergestellt.
+4. API-Clients können weiterhin den Header `Authorization: Bearer <token>` verwenden. Der Browser sendet stattdessen das HttpOnly-Cookie automatisch mit.
+5. Das Backend prüft die jeweilige Anmeldung bei jeder Anfrage und verlängert die Browser-Sitzung nur bei Aktivität.
+
+Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.
 
 ---
 
@@ -95,6 +101,7 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 |---|---|---|---|
 | POST | `/api/auth/register` | Registrierung mit Hochschul-E-Mail-Adresse | Nein |
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
+| POST | `/api/auth/logout` | Browser-Sitzung beenden und Auth-Cookie entfernen | Nein |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails aktualisieren | Ja |
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
@@ -127,11 +134,11 @@ CampusConnect verwendet zustandslose JWT-basierte Authentifizierung:
 | PUT | `/api/groups/{id}/member-permissions` | Berechtigungen zugewiesener Gruppenmitglieder setzen | Ja |
 | POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
 
-> **Hinweis:** Alle authentifizierungspflichtigen Endpunkte erwarten folgenden HTTP-Header:
+> **Hinweis:** Externe API-Clients authentifizieren sich weiterhin mit folgendem HTTP-Header:
 > ```
 > Authorization: Bearer <token>
 > ```
-> Das Token wird über `POST /api/auth/login` bezogen und muss bei jeder Anfrage an eine geschützte Ressource mitgesendet werden.
+> Das Token wird über `POST /api/auth/login` bezogen. Browser-Sitzungen nutzen zusätzlich ein HttpOnly-Cookie, das bei Logout oder nach 15 Minuten Inaktivität ungültig wird.
 
 ---
 

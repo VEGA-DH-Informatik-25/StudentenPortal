@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router, UrlTree, provideRouter } from '@angular/router';
+import { Observable, firstValueFrom, of } from 'rxjs';
 
 import { Auth } from '../services/auth';
 import { authGuard } from './auth-guard';
@@ -9,14 +10,16 @@ describe('authGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) =>
     TestBed.runInInjectionContext(() => authGuard(...guardParameters));
   const isLoggedIn = signal(false);
+  let restoreSession: ReturnType<typeof vi.fn>;
   let router: Router;
 
   beforeEach(() => {
     isLoggedIn.set(false);
+    restoreSession = vi.fn(() => of(false));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
-        { provide: Auth, useValue: { isLoggedIn } },
+        { provide: Auth, useValue: { isLoggedIn, restoreSession } },
       ],
     });
     router = TestBed.inject(Router);
@@ -28,9 +31,17 @@ describe('authGuard', () => {
     expect(executeGuard({} as never, {} as never)).toBe(true);
   });
 
-  it('should redirect anonymous users to login', () => {
-    const result = executeGuard({} as never, {} as never) as UrlTree;
+  it('should restore cookie sessions before redirecting', async () => {
+    restoreSession.mockReturnValue(of(true));
 
-    expect(router.serializeUrl(result)).toBe('/login');
+    const result = await firstValueFrom(executeGuard({} as never, {} as never) as Observable<boolean | UrlTree>);
+
+    expect(result).toBe(true);
+  });
+
+  it('should redirect anonymous users to login', async () => {
+    const result = await firstValueFrom(executeGuard({} as never, {} as never) as Observable<boolean | UrlTree>);
+
+    expect(router.serializeUrl(result as UrlTree)).toBe('/login');
   });
 });

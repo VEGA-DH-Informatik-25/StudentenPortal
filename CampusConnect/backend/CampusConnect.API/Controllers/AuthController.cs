@@ -2,8 +2,10 @@ using CampusConnect.API.DTOs.Auth;
 using CampusConnect.API.Common;
 using CampusConnect.Application.Common;
 using CampusConnect.Application.Features.Auth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CampusConnect.API.Controllers;
 
@@ -22,6 +24,7 @@ public class AuthController(AuthService authService) : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
+        await SignInBrowserSessionAsync(result.Value!);
         return Ok(ToAuthResponse(result.Value!));
     }
 
@@ -34,7 +37,16 @@ public class AuthController(AuthService authService) : ControllerBase
         if (!result.IsSuccess)
             return Unauthorized(new { error = result.Error });
 
+        await SignInBrowserSessionAsync(result.Value!);
         return Ok(ToAuthResponse(result.Value!));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(AuthSchemes.Browser);
+        return NoContent();
     }
 
     [HttpGet("me")]
@@ -48,6 +60,7 @@ public class AuthController(AuthService authService) : ControllerBase
         if (!result.IsSuccess)
             return ToProfileError(result);
 
+        await SignInBrowserSessionAsync(result.Value!);
         return Ok(ToUserProfileResponse(result.Value!));
     }
 
@@ -68,11 +81,39 @@ public class AuthController(AuthService authService) : ControllerBase
         if (!result.IsSuccess)
             return ToProfileError(result);
 
+        await SignInBrowserSessionAsync(result.Value!);
         return Ok(ToUserProfileResponse(result.Value!));
     }
 
     private Guid? GetCurrentUserId()
         => CurrentUser.GetUserId(User);
+
+    private Task SignInBrowserSessionAsync(AuthResult result) =>
+        SignInBrowserSessionAsync(result.Profile);
+
+    private Task SignInBrowserSessionAsync(UserProfileResult profile) =>
+        HttpContext.SignInAsync(
+            AuthSchemes.Browser,
+            ToClaimsPrincipal(profile),
+            new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.Add(AuthSchemes.IdleTimeout)
+            });
+
+    private static ClaimsPrincipal ToClaimsPrincipal(UserProfileResult profile)
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, profile.Id.ToString()),
+            new Claim(ClaimTypes.Email, profile.Email),
+            new Claim(ClaimTypes.Name, profile.DisplayName),
+            new Claim(ClaimTypes.Role, profile.Role)
+        };
+
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, AuthSchemes.Browser));
+    }
 
     private IActionResult ToProfileError(Result<UserProfileResult> result) =>
         result.Error == AuthService.UserProfileNotFoundError
