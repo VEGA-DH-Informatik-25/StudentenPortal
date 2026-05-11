@@ -60,7 +60,7 @@ Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs exist
 
 ## Stundenplan
 
-`GET /api/timetable` verwendet ohne `course`-Query den Kurscode des angemeldeten Profils. Dadurch können Clients den eigenen Stundenplan kursneutral abrufen. Wird `course` gesetzt, kann derselbe Endpunkt jeden Kurs aus dem Kurskatalog oder einen manuell eingegebenen Kurscode laden. Die externe iCal-URL und optionale Kurs-Aliase werden über `Timetable:CalendarUrlTemplate`, `Timetable:MaxLookaheadDays` und `Timetable:CourseAliases` konfiguriert, damit neue Kurse oder abweichende Kalenderpostfächer ohne Codeänderung ergänzt werden können.
+`GET /api/timetable` verwendet ohne `course`-Query den Kurscode des angemeldeten Profils. Dadurch können Clients den eigenen Stundenplan kursneutral abrufen. Wird `course` gesetzt, kann derselbe Endpunkt jeden Kurs aus dem Kurskatalog oder einen manuell eingegebenen Kurscode laden. `days` steuert die Länge des geladenen Zeitfensters; mit `from` kann ein Startdatum im Format `yyyy-MM-dd` gesetzt werden, damit Kalenderansichten auch vergangene Wochen gezielt nachladen können. Ohne `from` startet das Zeitfenster am Montag der aktuellen Woche. Die externe iCal-URL und optionale Kurs-Aliase werden über `Timetable:CalendarUrlTemplate`, `Timetable:MaxLookaheadDays` und `Timetable:CourseAliases` konfiguriert, damit neue Kurse oder abweichende Kalenderpostfächer ohne Codeänderung ergänzt werden können.
 
 ## Noten und Studienplan
 

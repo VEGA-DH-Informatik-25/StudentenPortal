@@ -12,7 +12,7 @@ namespace CampusConnect.API.Controllers;
 public class TimetableController(ITimetableService timetableService, AuthService authService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetTimetable([FromQuery] string? course = null, [FromQuery] int days = 30, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetTimetable([FromQuery] string? course = null, [FromQuery] int days = 30, [FromQuery] DateOnly? from = null, CancellationToken cancellationToken = default)
     {
         var resolvedCourse = string.IsNullOrWhiteSpace(course)
             ? await ResolveCurrentUserCourseAsync()
@@ -23,7 +23,7 @@ public class TimetableController(ITimetableService timetableService, AuthService
 
         try
         {
-            var timetable = await timetableService.GetTimetableAsync(resolvedCourse, days, cancellationToken);
+            var timetable = await timetableService.GetTimetableAsync(resolvedCourse, days, from, cancellationToken);
             return Ok(timetable);
         }
         catch (InvalidOperationException ex)

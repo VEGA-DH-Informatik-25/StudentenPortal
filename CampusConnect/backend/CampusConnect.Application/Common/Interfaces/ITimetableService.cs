@@ -16,5 +16,5 @@ public record TimetableDto(string Course, string Timezone, IReadOnlyList<Timetab
 
 public interface ITimetableService
 {
-    Task<TimetableDto> GetTimetableAsync(string course, int days, CancellationToken cancellationToken = default);
+    Task<TimetableDto> GetTimetableAsync(string course, int days, DateOnly? from = null, CancellationToken cancellationToken = default);
 }

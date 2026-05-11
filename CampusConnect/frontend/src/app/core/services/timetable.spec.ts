@@ -47,6 +47,19 @@ describe('Timetable', () => {
     request.flush({ course: 'TIF25A', timezone: 'Europe/Berlin', days: [] });
   });
 
+  it('should request an explicit timetable range start', () => {
+    service.getTimetable('tif25a', 6, '2026-05-04').subscribe(response => {
+      expect(response.course).toBe('TIF25A');
+    });
+
+    const request = http.expectOne(req => req.url === '/api/timetable');
+    expect(request.request.params.get('course')).toBe('TIF25A');
+    expect(request.request.params.get('days')).toBe('6');
+    expect(request.request.params.get('from')).toBe('2026-05-04');
+
+    request.flush({ course: 'TIF25A', timezone: 'Europe/Berlin', days: [] });
+  });
+
   it('should build course options from backend courses and stored history only', () => {
     localStorage.setItem('campusconnect.timetable.courseHistory', JSON.stringify(['wwi25a']));
 

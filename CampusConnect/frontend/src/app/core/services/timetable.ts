@@ -11,11 +11,14 @@ const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
 export class Timetable {
   private readonly _http = inject(HttpClient);
 
-  getTimetable(course = '', days = DEFAULT_TIMETABLE_LOOKAHEAD_DAYS): Observable<TimetableResponse> {
+  getTimetable(course = '', days = DEFAULT_TIMETABLE_LOOKAHEAD_DAYS, from = ''): Observable<TimetableResponse> {
     let params = new HttpParams().set('days', days);
     const normalizedCourse = this.normalizeCourse(course);
     if (normalizedCourse) {
       params = params.set('course', normalizedCourse);
+    }
+    if (from) {
+      params = params.set('from', from);
     }
 
     return this._http.get<TimetableResponse>('/api/timetable', { params });

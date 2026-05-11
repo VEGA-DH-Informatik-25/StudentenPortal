@@ -50,13 +50,36 @@ public sealed class TimetableControllerTests
         Assert.Equal("TIF25A", timetableService.RequestedCourse);
     }
 
+    [Fact]
+    public async Task GetTimetable_ForwardsExplicitRangeStart()
+    {
+        var timetableService = new CapturingTimetableService();
+        var authService = new AuthService(
+            new FakeUserRepository(),
+            new FakeJwtService(),
+            new FakeCourseRepository(),
+            new FakeGroupRepository());
+        var controller = new TimetableController(timetableService, authService);
+
+        var response = await controller.GetTimetable("TIF25A", 6, new DateOnly(2026, 5, 4));
+
+        Assert.IsType<OkObjectResult>(response);
+        Assert.Equal("TIF25A", timetableService.RequestedCourse);
+        Assert.Equal(6, timetableService.RequestedDays);
+        Assert.Equal(new DateOnly(2026, 5, 4), timetableService.RequestedFrom);
+    }
+
     private sealed class CapturingTimetableService : ITimetableService
     {
         public string? RequestedCourse { get; private set; }
+        public int? RequestedDays { get; private set; }
+        public DateOnly? RequestedFrom { get; private set; }
 
-        public Task<TimetableDto> GetTimetableAsync(string course, int days, CancellationToken cancellationToken = default)
+        public Task<TimetableDto> GetTimetableAsync(string course, int days, DateOnly? from = null, CancellationToken cancellationToken = default)
         {
             RequestedCourse = course;
+            RequestedDays = days;
+            RequestedFrom = from;
             return Task.FromResult(new TimetableDto(course, "Europe/Berlin", []));
         }
     }

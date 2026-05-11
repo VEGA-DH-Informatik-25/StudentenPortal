@@ -21,6 +21,14 @@ const DEFAULT_TIMELINE_START = 8 * 60;
 const DEFAULT_TIMELINE_END = 18 * 60;
 const TIMELINE_PIXELS_PER_MINUTE = 0.85;
 const COMPACT_EVENT_MAX_HEIGHT = 96;
+const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
+const WEEK_VIEW_DAYS = 6;
+const DAY_VIEW_DAYS = 1;
+
+interface TimetableRange {
+  days: number;
+  from?: string;
+}
 
 @Component({
   selector: 'app-timetable-page',
@@ -147,18 +155,22 @@ export class TimetablePage implements OnInit {
 
   protected selectView(view: TimetableView): void {
     this._activeView.set(view);
+    this._loadVisibleRange();
   }
 
   protected previousRange(): void {
     this._moveAnchor(this._activeView() === 'week' ? -7 : -1);
+    this._loadVisibleRange();
   }
 
   protected nextRange(): void {
     this._moveAnchor(this._activeView() === 'week' ? 7 : 1);
+    this._loadVisibleRange();
   }
 
   protected jumpToToday(): void {
     this._anchorDate.set(this._dateKey(new Date()));
+    this._loadVisibleRange();
   }
 
   protected refresh(): void {
@@ -166,7 +178,7 @@ export class TimetablePage implements OnInit {
       ? this._customCourse()
       : this._courseSelection();
 
-    this._loadCourse(selectedCourse);
+    this._loadVisibleRange(selectedCourse);
   }
 
   private _profileCourse(): string {
@@ -290,12 +302,29 @@ export class TimetablePage implements OnInit {
     this._isLoading.set(true);
     this._error.set(null);
 
-    this._timetableService.getTimetable(normalizedCourse).subscribe({
+    this._anchorDate.set(this._dateKey(new Date()));
+    this._fetchTimetable(normalizedCourse, this._visibleRange(), true);
+  }
+
+  private _loadVisibleRange(course = this._selectedCourse()): void {
+    const normalizedCourse = this._timetableService.normalizeCourse(course);
+    if (!normalizedCourse || !this._course()) {
+      return;
+    }
+
+    const range = this._visibleRange();
+    this._fetchTimetable(normalizedCourse, range, this._activeView() === 'list');
+  }
+
+  private _fetchTimetable(normalizedCourse: string, range: TimetableRange, replaceDays: boolean): void {
+    this._isLoading.set(true);
+    this._error.set(null);
+
+    this._timetableService.getTimetable(normalizedCourse, range.days, range.from ?? '').subscribe({
       next: timetable => {
         this._course.set(timetable.course);
         this._timezone.set(timetable.timezone);
-        this._days.set(timetable.days);
-        this._anchorDate.set(this._dateKey(new Date()));
+        this._days.set(replaceDays ? timetable.days : this._mergeDays(this._days(), timetable.days, range));
         this._timetableService.storeCourse(timetable.course);
         this._courseOptions.set(this._timetableService.getCourseOptions(this._courseOptions()));
         this._setCourseSelection(timetable.course);
@@ -308,6 +337,45 @@ export class TimetablePage implements OnInit {
         this._isLoading.set(false);
       },
     });
+  }
+
+  private _selectedCourse(): string {
+    return this._courseSelection() === 'custom'
+      ? this._customCourse()
+      : this._courseSelection();
+  }
+
+  private _visibleRange(): TimetableRange {
+    if (this._activeView() === 'week') {
+      return { from: this._dateKey(this._weekStart(this._fromDateKey(this._anchorDate()))), days: WEEK_VIEW_DAYS };
+    }
+
+    if (this._activeView() === 'day') {
+      return { from: this._anchorDate(), days: DAY_VIEW_DAYS };
+    }
+
+    return { days: DEFAULT_TIMETABLE_LOOKAHEAD_DAYS };
+  }
+
+  private _mergeDays(currentDays: TimetableDay[], incomingDays: TimetableDay[], range: TimetableRange): TimetableDay[] {
+    const merged = new Map(currentDays.map(day => [day.date, day]));
+
+    if (range.from) {
+      const start = this._fromDateKey(range.from);
+      for (let index = 0; index < range.days; index++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + index);
+        merged.delete(this._dateKey(date));
+      }
+    } else {
+      merged.clear();
+    }
+
+    for (const day of incomingDays) {
+      merged.set(day.date, day);
+    }
+
+    return [...merged.values()].sort((first, second) => first.date.localeCompare(second.date));
   }
 
   private _setCourseSelection(course: string): void {

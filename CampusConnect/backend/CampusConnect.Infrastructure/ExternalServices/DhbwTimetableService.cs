@@ -5,16 +5,26 @@ using Microsoft.Extensions.Options;
 
 namespace CampusConnect.Infrastructure.ExternalServices;
 
-public class DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableOptions> options) : ITimetableService
+public class DhbwTimetableService : ITimetableService
 {
     private const string CalendarTimezoneName = "Europe/Berlin";
 
     private static readonly TimeZoneInfo CalendarTimeZone = ResolveTimeZone("Europe/Berlin");
 
-    private readonly DhbwTimetableOptions _options = options.Value;
-    private readonly IReadOnlyDictionary<string, string> _courseAliases = BuildAliasMap(options.Value.CourseAliases);
+    private readonly HttpClient _httpClient;
+    private readonly DhbwTimetableOptions _options;
+    private readonly IReadOnlyDictionary<string, string> _courseAliases;
+    private readonly TimeProvider _timeProvider;
 
-    public async Task<TimetableDto> GetTimetableAsync(string course, int days, CancellationToken cancellationToken = default)
+    public DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableOptions> options, TimeProvider? timeProvider = null)
+    {
+        _httpClient = httpClient;
+        _options = options.Value;
+        _courseAliases = BuildAliasMap(_options.CourseAliases);
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    public async Task<TimetableDto> GetTimetableAsync(string course, int days, DateOnly? from = null, CancellationToken cancellationToken = default)
     {
         var displayCourse = NormalizeDisplayCourse(course);
         if (string.IsNullOrWhiteSpace(displayCourse))
@@ -22,12 +32,13 @@ public class DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableO
 
         var lookupCourse = NormalizeLookupCourse(displayCourse);
         var boundedDays = Math.Clamp(days, 1, Math.Max(1, _options.MaxLookaheadDays));
-        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, CalendarTimeZone).DateTime);
-        var windowStart = AtCalendarTime(today.AddDays(-1), TimeOnly.MinValue);
-        var windowEndDate = today.AddDays(boundedDays);
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), CalendarTimeZone).DateTime);
+        var windowStartDate = from ?? WeekStart(today);
+        var windowStart = AtCalendarTime(windowStartDate, TimeOnly.MinValue);
+        var windowEndDate = windowStartDate.AddDays(boundedDays);
         var windowEnd = AtCalendarTime(windowEndDate, TimeOnly.MinValue);
 
-        using var response = await httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
+        using var response = await _httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
         if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             throw new InvalidOperationException($"Der Kurs \"{displayCourse}\" konnte nicht gefunden werden.");
 
@@ -43,7 +54,7 @@ public class DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableO
 
         var groupedDays = events
             .GroupBy(evt => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(evt.Start, CalendarTimeZone).DateTime))
-            .Where(group => group.Key >= today && group.Key < windowEndDate)
+            .Where(group => group.Key >= windowStartDate && group.Key < windowEndDate)
             .OrderBy(group => group.Key)
             .Select(group => new TimetableDayDto(group.Key, group.Select(ToDto).ToList()))
             .ToList();
@@ -219,8 +230,13 @@ public class DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableO
 
     private static int WeekStartDayNumber(DateOnly date)
     {
+        return WeekStart(date).DayNumber;
+    }
+
+    private static DateOnly WeekStart(DateOnly date)
+    {
         var daysFromMonday = ((int)date.DayOfWeek + 6) % 7;
-        return date.AddDays(-daysFromMonday).DayNumber;
+        return date.AddDays(-daysFromMonday);
     }
 
     private static string BuildEventId(string uid, DateTimeOffset start) => $"{uid}-{start.UtcTicks}";
