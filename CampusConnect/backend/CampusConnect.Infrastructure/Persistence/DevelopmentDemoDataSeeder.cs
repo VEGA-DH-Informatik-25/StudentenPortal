@@ -24,16 +24,17 @@ public sealed class DevelopmentDemoDataSeeder(
         if (!_options.Enabled)
             return;
 
-        await SeedCoursesAsync(cancellationToken);
-        var users = await SeedUsersAsync(cancellationToken);
-        var groups = await SeedGroupsAsync(users, cancellationToken);
+        var demoCourses = ResolveDemoCourses();
+        await SeedCoursesAsync(demoCourses, cancellationToken);
+        var users = await SeedUsersAsync(demoCourses, cancellationToken);
+        var groups = await SeedGroupsAsync(demoCourses, users, cancellationToken);
         await SeedFeedAsync(users, groups);
         await SeedPersonalDataAsync(users);
     }
 
-    private async Task SeedCoursesAsync(CancellationToken cancellationToken)
+    private async Task SeedCoursesAsync(IReadOnlyList<DemoCourse> demoCourses, CancellationToken cancellationToken)
     {
-        foreach (var seed in DemoCourses)
+        foreach (var seed in demoCourses)
         {
             var course = await dbContext.Courses.FirstOrDefaultAsync(item => item.Code == seed.Code, cancellationToken);
             if (course is null)
@@ -57,13 +58,13 @@ public sealed class DevelopmentDemoDataSeeder(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Dictionary<string, User>> SeedUsersAsync(CancellationToken cancellationToken)
+    private async Task<Dictionary<string, User>> SeedUsersAsync(IReadOnlyList<DemoCourse> demoCourses, CancellationToken cancellationToken)
     {
         var users = new Dictionary<string, User>(StringComparer.OrdinalIgnoreCase);
         foreach (var seed in DemoUsers)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(item => item.Email == seed.Email, cancellationToken);
-            var course = DemoCourses.FirstOrDefault(item => item.Code == seed.Course);
+            var course = demoCourses.FirstOrDefault(item => item.Code == seed.Course);
             var studyProgram = course?.StudyProgram ?? seed.StudyProgram;
             var semester = course?.Semester ?? seed.Semester;
 
@@ -99,7 +100,7 @@ public sealed class DevelopmentDemoDataSeeder(
         return users;
     }
 
-    private async Task<Dictionary<string, CampusGroup>> SeedGroupsAsync(IReadOnlyDictionary<string, User> users, CancellationToken cancellationToken)
+    private async Task<Dictionary<string, CampusGroup>> SeedGroupsAsync(IReadOnlyList<DemoCourse> demoCourses, IReadOnlyDictionary<string, User> users, CancellationToken cancellationToken)
     {
         var groups = new Dictionary<string, CampusGroup>(StringComparer.OrdinalIgnoreCase);
         var allUserIds = users.Values.Select(user => user.Id).ToHashSet();
@@ -202,7 +203,7 @@ public sealed class DevelopmentDemoDataSeeder(
             OwnerLabel = users["lecturer-tech"].DisplayName,
             IconLabel = "TP",
             AccentColor = "#0f766e",
-            AssignedUserIds = users.Values.Where(user => user.Course.StartsWith('T') || user.Course.StartsWith("WWI", StringComparison.OrdinalIgnoreCase)).Select(user => user.Id).ToHashSet(),
+            AssignedUserIds = users.Values.Where(IsTechnicalDemoCourse).Select(user => user.Id).ToHashSet(),
             Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
         });
 
@@ -221,7 +222,7 @@ public sealed class DevelopmentDemoDataSeeder(
             Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
         });
 
-        foreach (var course in DemoCourses)
+        foreach (var course in demoCourses)
         {
             var group = await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
             var assignedIds = users.Values
@@ -245,6 +246,7 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private async Task SeedFeedAsync(IReadOnlyDictionary<string, User> users, IReadOnlyDictionary<string, CampusGroup> groups)
     {
+        var studentWwiGroup = DemoCourseGroupFor("student-wwi", users, groups);
         var posts = new[]
         {
             new FeedPost
@@ -293,8 +295,8 @@ public sealed class DevelopmentDemoDataSeeder(
                 Id = Guid.Parse("40000000-0000-0000-0000-000000000005"),
                 AuthorId = users["student-wwi"].Id,
                 AuthorName = users["student-wwi"].DisplayName,
-                GroupId = groups["WWI25A"].Id,
-                Content = "WWI25A: Lerngruppe für Datenbanken am Donnerstag nach der Vorlesung?",
+                GroupId = studentWwiGroup.Id,
+                Content = $"{users["student-wwi"].Course}: Lerngruppe für Datenbanken am Donnerstag nach der Vorlesung?",
                 CreatedAt = SeedNow.AddHours(-2),
                 Comments =
                 [
@@ -379,28 +381,20 @@ public sealed class DevelopmentDemoDataSeeder(
         return new Guid(hash);
     }
 
-    private static readonly DemoCourse[] DemoCourses =
-    [
-        new("TIF25A", "Informatik", 2),
-        new("TIF24A", "Informatik", 4),
-        new("WWI25A", "Wirtschaftsinformatik", 2),
-        new("TMB25A", "Maschinenbau", 2),
-        new("TMT25A", "Mechatronik Trinational", 2),
-        new("TEI25A", "Elektrotechnik und Informationstechnik", 2),
-        new("TWI25A", "Wirtschaftsingenieurwesen", 2),
-        new("TAR25A", "Architektur", 2),
-        new("WDB25A", "BWL-Digital Business Management", 2),
-        new("WFD25A", "BWL-Finanzdienstleistungen", 2),
-        new("WGM24A", "BWL-Gesundheitsmanagement", 4),
-        new("WHM25A", "BWL-Handelsmanagement", 2),
-        new("WIN25A", "BWL-Industrie (Industrial Management)", 2),
-        new("WIB25A", "BWL-International Business", 2),
-        new("WST25A", "BWL-Spedition, Transport und Logistik", 2),
-        new("WTH25A", "BWL-Tourismus, Hotellerie und Gastronomie", 2),
-        new("WDS25A", "Data Science und Künstliche Intelligenz - Business Management", 2),
-        new("IBM25A", "International Business Management Trinational", 2),
-        new("GIG25A", "Interprofessionelle Gesundheitsversorgung", 2)
-    ];
+    private static CampusGroup DemoCourseGroupFor(string userKey, IReadOnlyDictionary<string, User> users, IReadOnlyDictionary<string, CampusGroup> groups) =>
+        groups.TryGetValue(users[userKey].Course, out var courseGroup) ? courseGroup : groups["stuv-events"];
+
+    private IReadOnlyList<DemoCourse> ResolveDemoCourses() => _options.Courses
+        .Where(course => !string.IsNullOrWhiteSpace(course.Code) && !string.IsNullOrWhiteSpace(course.StudyProgram))
+        .Select(course => new DemoCourse(course.Code.Trim().ToUpperInvariant(), course.StudyProgram.Trim(), Math.Clamp(course.Semester, 1, 6)))
+        .GroupBy(course => course.Code, StringComparer.OrdinalIgnoreCase)
+        .Select(group => group.First())
+        .ToList();
+
+    private bool IsTechnicalDemoCourse(User user) => _options.TechnicalCoursePrefixes
+        .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
+        .Select(prefix => prefix.Trim())
+        .Any(prefix => user.Course.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
     private static readonly DemoUser[] DemoUsers =
     [

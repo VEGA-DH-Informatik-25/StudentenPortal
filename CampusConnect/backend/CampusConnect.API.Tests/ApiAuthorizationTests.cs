@@ -14,7 +14,7 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     [InlineData("/api/grades/plan")]
     [InlineData("/api/calendar")]
     [InlineData("/api/contacts")]
-    [InlineData("/api/timetable?course=TIF25A")]
+    [InlineData("/api/timetable")]
     [InlineData("/api/mensa")]
     [InlineData("/api/admin/users")]
     public async Task ProtectedEndpoints_WithoutToken_ReturnUnauthorized(string path)

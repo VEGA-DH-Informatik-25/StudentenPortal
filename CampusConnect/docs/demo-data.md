@@ -4,6 +4,8 @@ The API seeds development-only demo data when `ASPNETCORE_ENVIRONMENT=Developmen
 
 The data is intended for local UI testing only. It is not loaded in the test host or production startup path.
 
+The demo course catalog is read from `DemoData:Courses` in `appsettings.Development.json`. `DemoData:TechnicalCoursePrefixes` controls which configured course prefixes are assigned to the technical project demo group. This keeps the local sample data adaptable when the portal is tested with a different course catalog.
+
 ## Sources Used
 
 - `https://dhbw-loerrach.de/studieren/studienangebote` lists DHBW Loerrach Bachelor study offers across Wirtschaft, Technik, and Gesundheit. Demo course cohorts use those study program names with illustrative cohort codes such as `TIF25A` and `WDB25A`.
@@ -27,7 +29,7 @@ All seeded accounts use the password from `DemoData:Password`; the default local
 
 ## Seeded SQLite Areas
 
-The development seeder upserts demo users, courses, groups, feed posts with comments and reactions, personal grades, and personal exam entries into SQLite each time the API starts. Stable IDs keep the seeded demo records idempotent while user-created records remain persisted in the same database.
+The development seeder upserts demo users, configured courses, groups, feed posts with comments and reactions, personal grades, and personal exam entries into SQLite each time the API starts. Stable IDs keep the seeded demo records idempotent while user-created records remain persisted in the same database.
 
 Course groups are private and follow the course on each account. The demo social groups include both membership-only groups and public groups for the Entdecken tab; for example `Wohnungssuche Loerrach` starts with only its owner assigned so other demo students can join it through the normal group UI.
 
