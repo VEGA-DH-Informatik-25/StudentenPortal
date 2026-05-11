@@ -1,38 +1,35 @@
 using System.Globalization;
 using System.Net;
 using CampusConnect.Application.Common.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace CampusConnect.Infrastructure.ExternalServices;
 
-public class DhbwTimetableService(HttpClient httpClient) : ITimetableService
+public class DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableOptions> options) : ITimetableService
 {
     private const string CalendarTimezoneName = "Europe/Berlin";
 
     private static readonly TimeZoneInfo CalendarTimeZone = ResolveTimeZone("Europe/Berlin");
 
-    private static readonly IReadOnlyDictionary<string, string> CourseAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-    {
-        ["wwi23a"] = "wwi23a-am",
-        ["wwi23b"] = "wwi23b-am",
-        ["wwi25a"] = "wwi25a-am",
-        ["wwi25b"] = "wwi25b-am"
-    };
+    private readonly DhbwTimetableOptions _options = options.Value;
+    private readonly IReadOnlyDictionary<string, string> _courseAliases = BuildAliasMap(options.Value.CourseAliases);
 
     public async Task<TimetableDto> GetTimetableAsync(string course, int days, CancellationToken cancellationToken = default)
     {
-        var normalizedCourse = NormalizeCourse(course);
-        if (string.IsNullOrWhiteSpace(normalizedCourse))
+        var displayCourse = NormalizeDisplayCourse(course);
+        if (string.IsNullOrWhiteSpace(displayCourse))
             throw new InvalidOperationException("Bitte einen Kurs auswählen.");
 
-        var boundedDays = Math.Clamp(days, 1, 120);
+        var lookupCourse = NormalizeLookupCourse(displayCourse);
+        var boundedDays = Math.Clamp(days, 1, Math.Max(1, _options.MaxLookaheadDays));
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, CalendarTimeZone).DateTime);
         var windowStart = AtCalendarTime(today.AddDays(-1), TimeOnly.MinValue);
         var windowEndDate = today.AddDays(boundedDays);
         var windowEnd = AtCalendarTime(windowEndDate, TimeOnly.MinValue);
 
-        using var response = await httpClient.GetAsync(BuildIcalUrl(normalizedCourse), cancellationToken);
+        using var response = await httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
         if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-            throw new InvalidOperationException($"Der Kurs \"{normalizedCourse.ToUpperInvariant()}\" konnte nicht gefunden werden.");
+            throw new InvalidOperationException($"Der Kurs \"{displayCourse}\" konnte nicht gefunden werden.");
 
         if (!response.IsSuccessStatusCode)
             throw new InvalidOperationException("Der Vorlesungsplan konnte gerade nicht geladen werden.");
@@ -51,20 +48,33 @@ public class DhbwTimetableService(HttpClient httpClient) : ITimetableService
             .Select(group => new TimetableDayDto(group.Key, group.Select(ToDto).ToList()))
             .ToList();
 
-        return new TimetableDto(normalizedCourse.ToUpperInvariant(), CalendarTimezoneName, groupedDays);
+        return new TimetableDto(displayCourse, CalendarTimezoneName, groupedDays);
     }
 
-    private static string NormalizeCourse(string course)
+    private static string NormalizeDisplayCourse(string course) => course.Trim().ToUpperInvariant();
+
+    private string NormalizeLookupCourse(string course)
     {
         var normalized = course.Trim().ToLowerInvariant();
-        return CourseAliases.TryGetValue(normalized, out var alias) ? alias : normalized;
+        return _courseAliases.TryGetValue(normalized, out var alias) ? alias : normalized;
     }
 
-    private static string BuildIcalUrl(string normalizedCourse)
+    private string BuildIcalUrl(string normalizedCourse)
     {
+        if (string.IsNullOrWhiteSpace(_options.CalendarUrlTemplate))
+            throw new InvalidOperationException("Die Stundenplan-Konfiguration ist unvollständig.");
+
         var mailbox = Uri.EscapeDataString(normalizedCourse.ToLowerInvariant());
-        return $"https://webmail.dhbw-loerrach.de/owa/calendar/kal-{mailbox}@dhbw-loerrach.de/Kalender/calendar.ics";
+        return _options.CalendarUrlTemplate.Replace("{course}", mailbox, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static IReadOnlyDictionary<string, string> BuildAliasMap(IReadOnlyDictionary<string, string> aliases) =>
+        aliases
+            .Where(alias => !string.IsNullOrWhiteSpace(alias.Key) && !string.IsNullOrWhiteSpace(alias.Value))
+            .ToDictionary(
+                alias => alias.Key.Trim().ToLowerInvariant(),
+                alias => alias.Value.Trim().ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase);
 
     private static TimetableEventDto ToDto(IcalEvent evt)
     {

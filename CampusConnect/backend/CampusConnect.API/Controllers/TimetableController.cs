@@ -1,4 +1,6 @@
+using CampusConnect.API.Common;
 using CampusConnect.Application.Common.Interfaces;
+using CampusConnect.Application.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,22 +9,36 @@ namespace CampusConnect.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/timetable")]
-public class TimetableController(ITimetableService timetableService) : ControllerBase
+public class TimetableController(ITimetableService timetableService, AuthService authService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetTimetable([FromQuery] string course, [FromQuery] int days = 30, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetTimetable([FromQuery] string? course = null, [FromQuery] int days = 30, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(course))
+        var resolvedCourse = string.IsNullOrWhiteSpace(course)
+            ? await ResolveCurrentUserCourseAsync()
+            : course;
+
+        if (string.IsNullOrWhiteSpace(resolvedCourse))
             return BadRequest(new { error = "Bitte einen Kurs auswählen." });
 
         try
         {
-            var timetable = await timetableService.GetTimetableAsync(course, days, cancellationToken);
+            var timetable = await timetableService.GetTimetableAsync(resolvedCourse, days, cancellationToken);
             return Ok(timetable);
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
         }
+    }
+
+    private async Task<string?> ResolveCurrentUserCourseAsync()
+    {
+        var userId = CurrentUser.GetUserId(User);
+        if (userId is null)
+            return null;
+
+        var profile = await authService.GetProfileAsync(userId.Value);
+        return profile.IsSuccess ? profile.Value!.Course : null;
     }
 }

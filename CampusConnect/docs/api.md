@@ -37,7 +37,7 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 | GET | `/api/grades/plan` | Aus dem zugeordneten Kurs abgeleiteten DHBW-Studienplan mit Modulen und Prüfungsformen abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
-| GET | `/api/timetable` | Stundenplan für einen Kurs abrufen (`course` erforderlich, `days` optional) | Ja |
+| GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen (`course` optional, `days` optional) | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
 | POST | `/api/groups` | Eigene Campusgruppe erstellen (optional mit initialen Einstellungen für Sichtbarkeit, Kommentare und Posting-Rechte) | Ja |
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |
@@ -57,6 +57,10 @@ Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `PO
 Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `semester`, `isActive` und `createdAt`. Registrierung und Profiländerung senden nur den Kurscode; Studiengang und Semester werden serverseitig aus dem Kurskatalog übernommen. Admins können neue aktive Kurse anlegen und Benutzer in der Benutzerverwaltung einem anderen Kurs zuordnen.
 
 Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs existiert eine Kursgruppe mit identischem `courseCode`. Die Zuweisungen dieser Kursgruppen werden aus den Benutzerprofilen abgeleitet; manuelle Kontenzuweisungen in den Gruppeneinstellungen sind deshalb für Kursgruppen gesperrt. Offizielle Gruppen und Campusgruppen behalten ihre manuelle Kontenzuweisung.
+
+## Stundenplan
+
+`GET /api/timetable` verwendet ohne `course`-Query den Kurscode des angemeldeten Profils. Dadurch können Clients den eigenen Stundenplan kursneutral abrufen. Wird `course` gesetzt, kann derselbe Endpunkt jeden Kurs aus dem Kurskatalog oder einen manuell eingegebenen Kurscode laden. Die externe iCal-URL und optionale Kurs-Aliase werden über `Timetable:CalendarUrlTemplate`, `Timetable:MaxLookaheadDays` und `Timetable:CourseAliases` konfiguriert, damit neue Kurse oder abweichende Kalenderpostfächer ohne Codeänderung ergänzt werden können.
 
 ## Noten und Studienplan
 

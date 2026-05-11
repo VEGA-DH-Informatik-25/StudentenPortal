@@ -73,7 +73,7 @@ Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und A
 
 ### Externe APIs
 
-Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erfordert einen API-Schlüssel von SWFR. Um CORS-Probleme zu vermeiden und den Schlüssel geheim zu halten, leitet das Backend alle Anfragen an diesen Dienst weiter, bevor die aufbereiteten Daten an das Angular-Frontend übergeben werden.
+Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erfordert einen API-Schlüssel von SWFR. Um CORS-Probleme zu vermeiden und den Schlüssel geheim zu halten, leitet das Backend alle Anfragen an diesen Dienst weiter, bevor die aufbereiteten Daten an das Angular-Frontend übergeben werden. Der Stundenplan wird ebenfalls serverseitig aus iCal-Quellen geladen; URL-Template, maximale Vorschau und Kurs-Aliase stehen unter `Timetable` in der API-Konfiguration.
 
 ### Persistenz
 
@@ -125,7 +125,7 @@ Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung;
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
-| GET | `/api/timetable` | Stundenplan für einen Kurs abrufen | Ja |
+| GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
 | POST | `/api/groups` | Eigene Campusgruppe erstellen | Ja |
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |

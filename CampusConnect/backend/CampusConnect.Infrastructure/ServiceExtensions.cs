@@ -28,6 +28,7 @@ public static class ServiceExtensions
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
         services.Configure<DemoDataOptions>(configuration.GetSection(DemoDataOptions.SectionName));
         services.Configure<DhbwStudyPlanOptions>(configuration.GetSection(DhbwStudyPlanOptions.SectionName));
+        services.Configure<DhbwTimetableOptions>(configuration.GetSection(DhbwTimetableOptions.SectionName));
         services.AddMemoryCache();
 
         services.AddScoped<IUserRepository, EntityUserRepository>();

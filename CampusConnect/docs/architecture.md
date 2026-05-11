@@ -37,6 +37,8 @@ Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträg
 
 Die SWFR-Mensa-XML-API ist unter `swfr.de/apispeiseplan` verfügbar und erfordert einen API-Schlüssel von SWFR. Um CORS-Probleme zu vermeiden und den Schlüssel geheim zu halten, leitet das Backend alle Anfragen an diesen Dienst weiter, bevor die aufbereiteten Daten an das Angular-Frontend übergeben werden.
 
+Der Stundenplan wird im Backend aus iCal-Kalendern geladen. `Timetable:CalendarUrlTemplate` enthält den Platzhalter `{course}` für den normalisierten Kurscode; `Timetable:CourseAliases` ordnet sichtbare Kurscodes abweichenden Kalenderpostfächern zu. Neue Kurse und Postfachvarianten werden damit über Konfiguration ergänzt, ohne den Endpunkt oder den Parser anzupassen.
+
 ## Authentifizierungsablauf
 
 CampusConnect verwendet JWT-basierte API-Authentifizierung und für Browser-Sitzungen ein HttpOnly-Cookie mit 15 Minuten gleitender Inaktivitätszeit:

@@ -25,7 +25,13 @@ public sealed class DevelopmentDemoDataSeederTests
                 var exams = new EntityExamRepository(dbContext);
                 var seeder = new DevelopmentDemoDataSeeder(
                     dbContext,
-                    Options.Create(new DemoDataOptions { Enabled = true, Password = "TestDemoPass123!" }),
+                    Options.Create(new DemoDataOptions
+                    {
+                        Enabled = true,
+                        Password = "TestDemoPass123!",
+                        TechnicalCoursePrefixes = ["T", "WWI"],
+                        Courses = DemoCourses()
+                    }),
                     groups,
                     feed,
                     grades,
@@ -68,6 +74,16 @@ public sealed class DevelopmentDemoDataSeederTests
             DeleteIfExists($"{databasePath}-shm");
         }
     }
+
+    private static List<DemoCourseOptions> DemoCourses() =>
+    [
+        new() { Code = "TIF25A", StudyProgram = "Informatik", Semester = 2 },
+        new() { Code = "WWI25A", StudyProgram = "Wirtschaftsinformatik", Semester = 2 },
+        new() { Code = "WDB25A", StudyProgram = "BWL-Digital Business Management", Semester = 2 },
+        new() { Code = "TMB25A", StudyProgram = "Maschinenbau", Semester = 2 },
+        new() { Code = "WGM24A", StudyProgram = "BWL-Gesundheitsmanagement", Semester = 4 },
+        new() { Code = "GIG25A", StudyProgram = "Interprofessionelle Gesundheitsversorgung", Semester = 2 }
+    ];
 
     private static CampusConnectDbContext CreateDbContext(string databasePath) => new(
         new DbContextOptionsBuilder<CampusConnectDbContext>()

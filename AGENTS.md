@@ -103,7 +103,7 @@ Data and external systems:
 
 - SQLite database through Entity Framework Core migrations.
 - SWFR Mensa XML API through backend infrastructure only.
-- DHBW timetable service through backend infrastructure only.
+- DHBW timetable service through backend infrastructure only, with iCal URL template and course aliases configured under `Timetable`.
 - DHBW study-plan index/PDF parsing through backend infrastructure only.
 
 Infrastructure status:
@@ -173,7 +173,7 @@ The backend uses `CampusConnectDbContext` with EF Core SQLite:
 - Local runtime database path: `CampusConnect/backend/CampusConnect.API/campusconnect.db` when running the API from `CampusConnect/backend`.
 - EF migrations manage the schema.
 - `DatabaseInitializer` baselines older local SQLite databases that were created before migrations, then runs `MigrateAsync`.
-- `DevelopmentDemoDataSeeder` seeds courses, demo users, groups, feed posts, grades, and exam entries in Development when `DemoData:Enabled` is true.
+- `DevelopmentDemoDataSeeder` seeds configured demo courses, demo users, groups, feed posts, grades, and exam entries in Development when `DemoData:Enabled` is true.
 
 Persisted entities currently include:
 
@@ -349,6 +349,8 @@ Timetable:
 
 - Backend service: `DhbwTimetableService`.
 - Frontend calls only the backend `/api/timetable` endpoint.
+- `GET /api/timetable` can omit `course`; the API then uses the authenticated user's profile course.
+- `Timetable:CalendarUrlTemplate` contains `{course}` for iCal lookup, and `Timetable:CourseAliases` maps visible course codes to calendar mailbox aliases.
 
 Study plan:
 
