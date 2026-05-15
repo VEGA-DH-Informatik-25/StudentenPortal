@@ -8,5 +8,9 @@ public sealed class DhbwTimetableOptions
 
     public int MaxLookaheadDays { get; set; } = 120;
 
+    public int CacheMinutes { get; set; } = 240;
+
+    public int StaleCacheMinutes { get; set; } = 1440;
+
     public Dictionary<string, string> CourseAliases { get; set; } = [];
 }

@@ -3,6 +3,7 @@ using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Infrastructure;
 using CampusConnect.Infrastructure.ExternalServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -22,6 +23,7 @@ public sealed class DhbwTimetableServiceTests
                 Content = new StringContent("BEGIN:VCALENDAR\r\nEND:VCALENDAR")
             };
         }));
+        using var cache = CreateCache();
         var service = new DhbwTimetableService(
             httpClient,
             Options.Create(new DhbwTimetableOptions
@@ -31,7 +33,8 @@ public sealed class DhbwTimetableServiceTests
                 {
                     ["WWI25A"] = "WWI25A-AM"
                 }
-            }));
+            }),
+            cache);
 
         var timetable = await service.GetTimetableAsync("wwi25a", 30);
 
@@ -64,12 +67,14 @@ public sealed class DhbwTimetableServiceTests
                 END:VCALENDAR
                 """)
         }));
+        using var cache = CreateCache();
         var service = new DhbwTimetableService(
             httpClient,
             Options.Create(new DhbwTimetableOptions
             {
                 CalendarUrlTemplate = "https://calendar.example.test/{course}/calendar.ics"
             }),
+            cache,
             new FixedTimeProvider(new DateTimeOffset(2026, 5, 13, 8, 0, 0, TimeSpan.Zero)));
 
         var timetable = await service.GetTimetableAsync("tif25a", 30);
@@ -112,12 +117,14 @@ public sealed class DhbwTimetableServiceTests
                 END:VCALENDAR
                 """)
         }));
+        using var cache = CreateCache();
         var service = new DhbwTimetableService(
             httpClient,
             Options.Create(new DhbwTimetableOptions
             {
                 CalendarUrlTemplate = "https://calendar.example.test/{course}/calendar.ics"
             }),
+            cache,
             new FixedTimeProvider(new DateTimeOffset(2026, 5, 13, 8, 0, 0, TimeSpan.Zero)));
 
         var timetable = await service.GetTimetableAsync("tif25a", 6, new DateOnly(2026, 5, 4));
@@ -125,6 +132,74 @@ public sealed class DhbwTimetableServiceTests
         var day = Assert.Single(timetable.Days);
         Assert.Equal(new DateOnly(2026, 5, 5), day.Date);
         Assert.Equal("Datenbanken", day.Events.Single().Title);
+    }
+
+    [Fact]
+    public async Task GetTimetableAsync_UsesFreshCachedIcalWithoutSecondRequest()
+    {
+        var requestCount = 0;
+        using var httpClient = new HttpClient(new StubHttpHandler(_ =>
+        {
+            requestCount++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(SingleEventIcal("Mathematik"))
+            };
+        }));
+        using var cache = CreateCache();
+        var service = new DhbwTimetableService(
+            httpClient,
+            Options.Create(new DhbwTimetableOptions
+            {
+                CalendarUrlTemplate = "https://calendar.example.test/{course}/calendar.ics",
+                CacheMinutes = 60,
+                StaleCacheMinutes = 120
+            }),
+            cache,
+            new FixedTimeProvider(new DateTimeOffset(2026, 5, 13, 8, 0, 0, TimeSpan.Zero)));
+
+        var first = await service.GetTimetableAsync("tif25a", 30);
+        var second = await service.GetTimetableAsync("tif25a", 30);
+
+        Assert.Equal(1, requestCount);
+        Assert.Equal("Mathematik", first.Days.Single().Events.Single().Title);
+        Assert.Equal("Mathematik", second.Days.Single().Events.Single().Title);
+    }
+
+    [Fact]
+    public async Task GetTimetableAsync_ReturnsStaleCachedIcalWhenUpstreamFails()
+    {
+        var requestCount = 0;
+        using var httpClient = new HttpClient(new StubHttpHandler(_ =>
+        {
+            requestCount++;
+            return requestCount == 1
+                ? new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(SingleEventIcal("Mathematik"))
+                }
+                : new HttpResponseMessage(HttpStatusCode.InternalServerError);
+        }));
+        using var cache = CreateCache();
+        var timeProvider = new MutableTimeProvider(new DateTimeOffset(2026, 5, 13, 8, 0, 0, TimeSpan.Zero));
+        var service = new DhbwTimetableService(
+            httpClient,
+            Options.Create(new DhbwTimetableOptions
+            {
+                CalendarUrlTemplate = "https://calendar.example.test/{course}/calendar.ics",
+                CacheMinutes = 1,
+                StaleCacheMinutes = 60
+            }),
+            cache,
+            timeProvider);
+
+        await service.GetTimetableAsync("tif25a", 30);
+        timeProvider.SetUtcNow(new DateTimeOffset(2026, 5, 13, 8, 2, 0, TimeSpan.Zero));
+
+        var fallback = await service.GetTimetableAsync("tif25a", 30);
+
+        Assert.Equal(2, requestCount);
+        Assert.Equal("Mathematik", fallback.Days.Single().Events.Single().Title);
     }
 
     [Fact]
@@ -151,8 +226,34 @@ public sealed class DhbwTimetableServiceTests
             Task.FromResult(responseFactory(request));
     }
 
+    private static MemoryCache CreateCache() => new(new MemoryCacheOptions());
+
+    private static string SingleEventIcal(string summary) => $$"""
+        BEGIN:VCALENDAR
+        BEGIN:VEVENT
+        UID:cached-event
+        DTSTART;TZID=Europe/Berlin:20260513T090000
+        DTEND;TZID=Europe/Berlin:20260513T103000
+        SUMMARY:{{summary}}
+        LOCATION:R101
+        END:VEVENT
+        END:VCALENDAR
+        """;
+
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        private DateTimeOffset _utcNow = utcNow;
+
+        public void SetUtcNow(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow() => _utcNow;
     }
 }

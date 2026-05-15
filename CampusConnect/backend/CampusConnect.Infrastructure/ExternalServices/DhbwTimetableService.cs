@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using CampusConnect.Application.Common.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace CampusConnect.Infrastructure.ExternalServices;
@@ -14,13 +15,15 @@ public class DhbwTimetableService : ITimetableService
     private readonly HttpClient _httpClient;
     private readonly DhbwTimetableOptions _options;
     private readonly IReadOnlyDictionary<string, string> _courseAliases;
+    private readonly IMemoryCache _cache;
     private readonly TimeProvider _timeProvider;
 
-    public DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableOptions> options, TimeProvider? timeProvider = null)
+    public DhbwTimetableService(HttpClient httpClient, IOptions<DhbwTimetableOptions> options, IMemoryCache cache, TimeProvider? timeProvider = null)
     {
         _httpClient = httpClient;
         _options = options.Value;
         _courseAliases = BuildAliasMap(_options.CourseAliases);
+        _cache = cache;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -38,14 +41,7 @@ public class DhbwTimetableService : ITimetableService
         var windowEndDate = windowStartDate.AddDays(boundedDays);
         var windowEnd = AtCalendarTime(windowEndDate, TimeOnly.MinValue);
 
-        using var response = await _httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
-        if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-            throw new InvalidOperationException($"Der Kurs \"{displayCourse}\" konnte nicht gefunden werden.");
-
-        if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException("Der Vorlesungsplan konnte gerade nicht geladen werden.");
-
-        var icalText = await response.Content.ReadAsStringAsync(cancellationToken);
+        var icalText = await GetIcalTextAsync(lookupCourse, displayCourse, cancellationToken);
         var sourceEvents = IcalParser.Parse(icalText);
         var events = ExpandEvents(sourceEvents, windowStart, windowEnd)
             .Where(evt => evt.End > windowStart && evt.Start < windowEnd)
@@ -61,6 +57,50 @@ public class DhbwTimetableService : ITimetableService
 
         return new TimetableDto(displayCourse, CalendarTimezoneName, groupedDays);
     }
+
+    private async Task<string> GetIcalTextAsync(string lookupCourse, string displayCourse, CancellationToken cancellationToken)
+    {
+        var cacheKey = BuildCacheKey(lookupCourse);
+        var cached = _cache.TryGetValue<CachedIcal>(cacheKey, out var cachedValue) ? cachedValue : null;
+        if (cached is not null && IsFresh(cached))
+            return cached.Text;
+
+        try
+        {
+            using var response = await _httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
+            if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                throw new InvalidOperationException($"Der Kurs \"{displayCourse}\" konnte nicht gefunden werden.");
+
+            if (!response.IsSuccessStatusCode)
+                return cached?.Text ?? throw new InvalidOperationException("Der Vorlesungsplan konnte gerade nicht geladen werden.");
+
+            var icalText = await response.Content.ReadAsStringAsync(cancellationToken);
+            CacheIcal(cacheKey, icalText);
+            return icalText;
+        }
+        catch (HttpRequestException) when (cached is not null)
+        {
+            return cached.Text;
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested && cached is not null)
+        {
+            return cached.Text;
+        }
+    }
+
+    private bool IsFresh(CachedIcal cached)
+    {
+        var age = _timeProvider.GetUtcNow() - cached.FetchedAt;
+        return age <= TimeSpan.FromMinutes(Math.Max(1, _options.CacheMinutes));
+    }
+
+    private void CacheIcal(string cacheKey, string icalText)
+    {
+        var cacheDuration = TimeSpan.FromMinutes(Math.Max(Math.Max(1, _options.CacheMinutes), _options.StaleCacheMinutes));
+        _cache.Set(cacheKey, new CachedIcal(icalText, _timeProvider.GetUtcNow()), cacheDuration);
+    }
+
+    private static string BuildCacheKey(string lookupCourse) => $"dhbw-timetable:ical:{lookupCourse.Trim().ToLowerInvariant()}";
 
     private static string NormalizeDisplayCourse(string course) => course.Trim().ToUpperInvariant();
 
@@ -293,6 +333,8 @@ public class DhbwTimetableService : ITimetableService
         IcalRecurrence? Recurrence,
         IReadOnlySet<string> ExDates,
         DateTimeOffset? RecurrenceId);
+
+    private sealed record CachedIcal(string Text, DateTimeOffset FetchedAt);
 
     private sealed record IcalRecurrence(
         string Frequency,
