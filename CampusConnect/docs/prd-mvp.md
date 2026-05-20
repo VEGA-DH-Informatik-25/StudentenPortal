@@ -49,7 +49,6 @@
 - LMS/Moodle‑Ersatz (kein Lernmaterial‑Upload, keine Kursverwaltung).
 - Echtzeit‑Chat / privates Messaging.
 - Self‑Service Registrierung / offene Registrierung (Accounts nur zentral durch Admin).
-- Schwarzes Brett / Marktplatz (WG‑Suche etc.) im MVP.
 - Prüfungskalender im UI (Backend darf bestehen, aber nicht MVP‑Feature).
 - Studienplan‑Ansicht/Modulauswahl im UI (Backend darf bestehen, aber nicht MVP‑Feature).
 - Reminder/Push‑Benachrichtigungen für Prüfungen im MVP.
