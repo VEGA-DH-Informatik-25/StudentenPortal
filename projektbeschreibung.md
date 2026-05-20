@@ -88,7 +88,7 @@ Tabellen oder Notizen verwaltet.
 | Authentifizierung | JWT Bearer, Token im Frontend nur im Arbeitsspeicher |
 | Externe API | SWFR Mensa XML-API |
 | Containerisierung | Docker Compose als Platzhalter |
-| CI/CD | GitHub Actions als Platzhalter |
+| CI/CD | GitHub Actions für Backend- und Frontend-Validierung |
 | Testing | xUnit, Angular CLI/Vitest-Setup |
 
 ---

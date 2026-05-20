@@ -26,7 +26,7 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 | Datenbank | SQLite |
 | Authentifizierung | JWT |
 | Containerisierung | Docker Compose *(Platzhalter, noch nicht produktiv eingerichtet)* |
-| CI/CD | GitHub Actions *(Platzhalter, noch nicht produktiv eingerichtet)* |
+| CI/CD | GitHub Actions für Backend-Restore/Build/Test und Frontend-Install/Test/Build |
 
 ---
 
@@ -218,5 +218,8 @@ dotnet test
 ## Links
 
 - [GitHub-Projects-Board](#) *(Platzhalter)*
+- [MVP-PRD und MoSCoW-Anforderungen](docs/prd-mvp.md)
+- [UI-Prototyp und Seitenstruktur](docs/ui-prototype.md)
+- [Projektstand, Rollen und erledigte Aufgaben](docs/project-status.md)
 - [API-Dokumentation](docs/api.md)
 - [SWFR-Mensa-API](#) *(Platzhalter – swfr.de/apispeiseplan)*
