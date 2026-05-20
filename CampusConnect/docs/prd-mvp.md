@@ -39,7 +39,7 @@
 | Stundenplan                             | • Nutzer kann Stundenplan für Kurs abrufen und anzeigen (`days` optional)<br>• Bei fehlendem Kurs im Profil wird Nutzer geführt (Kurs auswählen)                                                                                                        |
 | Kontaktbuch                             | • Nutzer kann Personen suchen (Name/E‑Mail/Kurs/Studiengang/Ort) und Kontaktdaten einsehen<br>• Sichtbar: Name, E‑Mail, Kurs, Studiengang, Semester, Telefon, Standort (keine Profilnotiz)                                                             |
 | Admin‑Bereich                           | • Admin kann Nutzer verwalten (Rolle/Kurs ändern, löschen, Passwort zurücksetzen) und Kurse anlegen/listen<br>• Admin‑Zugriff ist geschützt (nur `Admin`)                                                                                               |
-| Onboarding‑Feed/Guided Start            | • Content/Guides sind im MVP verfügbar                                                                                                                                                                                                                  |
+| Onboarding‑Feed/Guided Start            | • Spezifikation siehe onboarding.md             |
 
 <!-- Weitere Features bei Bedarf … -->
 
