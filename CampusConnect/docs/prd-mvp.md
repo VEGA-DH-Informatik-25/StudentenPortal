@@ -28,7 +28,7 @@
 | Feature | Akzeptanzkriterien |
 | -------------- | ---------------------------------------- |
 | Nutzeranlage (Admin) | • Admin kann Nutzerkonten im Admin‑Bereich anlegen (E‑Mail, DisplayName, Kurs, Rolle, Initialpasswort; keine Domain‑Restriktion)<br>• Nutzer kann sich mit Initialpasswort einloggen und wird in den Erstlogin‑Prozess geführt |
-| Auth (Login/Logout) | • Login/Logout funktionieren für durch Admin angelegte Nutzerkonten (keine Self‑Service‑Registrierung im MVP)<br>• Private Bereiche/Endpunkte sind geschützt; Token wird nicht persistent im Browser gespeichert |
+| Auth (Login/Logout) | • Login/Logout funktionieren für durch Admin angelegte Nutzerkonten (keine Self‑Service‑Registrierung im MVP)<br>• Private Bereiche/Endpunkte sind geschützt; Token wird zeitlich begrenzt im Browser gespeichert |
 | Onboarding (Erstlogin) | • Nutzer muss beim ersten Login (oder nach Admin‑Reset) das Initialpasswort ändern (verpflichtend)<br>• Nach Passwortwechsel kann der Nutzer die App normal nutzen |
 | Rollen & Berechtigungen | • Rollen `Student`, `Lecturer`, `Admin`, +Verwaltungsrolle, sind nutzbar und in der UI verständlich benannt<br>• Lecturer: kann in Kursgruppen posten/kommentieren/reagieren, Kursgruppen verwalten, in Official posten und Campusgruppen erstellen |
 
