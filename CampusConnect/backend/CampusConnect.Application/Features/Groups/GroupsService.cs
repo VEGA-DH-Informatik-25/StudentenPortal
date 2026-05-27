@@ -251,7 +251,13 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         Enum.TryParse(value, ignoreCase: true, out type) && Enum.IsDefined(type);
 
     private static bool CanCreateGroupType(UserRole role, GroupType type) =>
-        type == GroupType.Social || role is UserRole.Admin or UserRole.Verwaltung;
+        type switch
+        {
+            GroupType.Social => true,
+            GroupType.Course => role is UserRole.Lecturer or UserRole.Verwaltung or UserRole.Admin,
+            GroupType.Official => role is UserRole.Verwaltung or UserRole.Admin,
+            _ => false
+        };
 
     private static string? NormalizeCourseCode(string? courseCode) =>
         string.IsNullOrWhiteSpace(courseCode) ? null : courseCode.Trim().ToUpperInvariant();
