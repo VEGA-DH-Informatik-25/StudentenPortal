@@ -30,8 +30,8 @@ Gruppen
 
 | Gruppentyp | Zweck | Beispiel | Wer darf erstellen? |
 |---|---|---|---|
-| **Offizielle Gruppe** | Offizielle Kommunikation der Hochschule | Prüfungsamt, Verwaltung, IT, Studiengangsleitung | Nur Admin |
-| **Kursgruppe** | Kommunikation innerhalb eines konkreten Kurses | TIF25A, WWI24B | Nur Admin |
+| **Offizielle Gruppe** | Offizielle Kommunikation der Hochschule | Prüfungsamt, Verwaltung, IT, Studiengangsleitung | Admin und Verwaltung |
+| **Kursgruppe** | Kommunikation innerhalb eines konkreten Kurses | TIF25A, WWI24B | Admin und Verwaltung |
 | **Campus-Gruppe** | Freie Gruppen für Austausch, Lernen, Freizeit oder Organisation | Lerngruppe Mathe, Tennis, Wohnungsbörse | Alle Rollen |
 
 ---
@@ -66,7 +66,7 @@ Darf Gruppe erstellen?
                         Offiziell    Kursgruppe    Campus-Gruppe
 Student                     Nein         Nein            Ja
 Lehrer                      Nein         Nein            Ja
-Verwaltung                  Nein         Nein            Ja
+Verwaltung                   Ja           Ja             Ja
 Admin                        Ja           Ja             Ja
 ```
 
@@ -74,7 +74,7 @@ Admin                        Ja           Ja             Ja
 |---|---:|---:|---:|
 | Student | Nein | Nein | Ja |
 | Lehrer | Nein | Nein | Ja |
-| Verwaltung | Nein | Nein | Ja |
+| Verwaltung | Ja | Ja | Ja |
 | Admin | Ja | Ja | Ja |
 
 ---
@@ -283,8 +283,8 @@ Für die erste Version sollten folgende Funktionen umgesetzt werden:
 
 ### Globale Erstellrechte
 
-- Offizielle Gruppen: nur Admin
-- Kursgruppen: nur Admin
+- Offizielle Gruppen: Admin und Verwaltung
+- Kursgruppen: Admin und Verwaltung
 - Campus-Gruppen: alle Rollen
 
 ### Gruppeneinstellungen

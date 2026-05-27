@@ -24,7 +24,7 @@ export class AdminPage implements OnInit {
   protected readonly _busyUserId = signal<string | null>(null);
   protected readonly _error = signal<string | null>(null);
   protected readonly _success = signal<string | null>(null);
-  protected readonly _roles = ['Student', 'Lecturer', 'Admin'];
+  protected readonly _roles = ['Student', 'Lecturer', 'Verwaltung', 'Admin'];
   protected readonly _courseForm = { code: '', studyProgram: '', semester: 1 };
 
   ngOnInit(): void {

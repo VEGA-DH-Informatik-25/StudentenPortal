@@ -47,7 +47,9 @@ describe('Groups', () => {
     service.createGroup({
       name: 'Lerngruppe Web',
       description: 'Gemeinsam lernen',
+      type: 'Social',
       audience: 'Interessierte',
+      courseCode: null,
       allowStudentPosts: true,
       allowComments: true,
       requiresApproval: false,
@@ -59,7 +61,9 @@ describe('Groups', () => {
     expect(request.request.body).toEqual({
       name: 'Lerngruppe Web',
       description: 'Gemeinsam lernen',
+      type: 'Social',
       audience: 'Interessierte',
+      courseCode: null,
       allowStudentPosts: true,
       allowComments: true,
       requiresApproval: false,

@@ -37,7 +37,9 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
             request.AllowStudentPosts,
             request.AllowComments,
             request.RequiresApproval,
-            request.IsDiscoverable));
+            request.IsDiscoverable,
+            request.Type,
+            request.CourseCode));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 

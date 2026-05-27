@@ -71,6 +71,68 @@ public class GroupsServiceTests
         Assert.Equal(1, result.Value.AssignedUserCount);
     }
 
+    [Theory]
+    [InlineData("Official")]
+    [InlineData("Course")]
+    [InlineData("Social")]
+    public async Task CreateGroupAsync_AllowsVerwaltungToCreateEveryGroupType(string type)
+    {
+        var user = new User
+        {
+            DisplayName = "Vera Verwaltung",
+            Email = "vera@dhbw-loerrach.de",
+            StudyProgram = "Campusverwaltung",
+            Semester = 1,
+            Course = "ADM25A",
+            Role = UserRole.Verwaltung
+        };
+        var groups = new FakeGroupRepository();
+        var service = new GroupsService(groups, new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            $"{type} Gruppe",
+            "Organisatorische Gruppe",
+            "Campus",
+            Type: type,
+            CourseCode: type == "Course" ? "tif25a" : null));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(type, result.Value!.Type);
+        Assert.Equal(user.Id, result.Value.OwnerUserId);
+        Assert.True(result.Value.CanManage);
+        if (type == "Course")
+            Assert.Equal("TIF25A", result.Value.CourseCode);
+    }
+
+    [Theory]
+    [InlineData("Official")]
+    [InlineData("Course")]
+    public async Task CreateGroupAsync_RejectsStudentForManagedGroupTypes(string type)
+    {
+        var user = new User
+        {
+            DisplayName = "Eva",
+            Email = "eva@dhbw-loerrach.de",
+            StudyProgram = "Informatik",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var service = new GroupsService(new FakeGroupRepository(), new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            $"{type} Gruppe",
+            "Organisatorische Gruppe",
+            "Campus",
+            Type: type,
+            CourseCode: type == "Course" ? "TIF25A" : null));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Diese globale Rolle darf diesen Gruppentyp nicht erstellen.", result.Error);
+    }
+
     [Fact]
     public async Task CreateGroupAsync_AppliesInitialSettingsFromCommand()
     {
