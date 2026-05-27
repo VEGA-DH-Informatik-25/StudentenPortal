@@ -35,9 +35,11 @@ export class GroupsPage implements OnInit {
   protected readonly _searchQuery = signal('');
   protected readonly _policyFilter = signal<GroupPolicyFilter>('All');
   protected readonly _joiningGroupIds = signal<string[]>([]);
+  protected readonly _createType = signal<GroupType>('Social');
   protected readonly _createName = signal('');
   protected readonly _createDescription = signal('');
   protected readonly _createAudience = signal('');
+  protected readonly _createCourseCode = signal('');
   protected readonly _createAllowStudentPosts = signal(true);
   protected readonly _createAllowComments = signal(true);
   protected readonly _createRequiresApproval = signal(false);
@@ -70,11 +72,13 @@ export class GroupsPage implements OnInit {
     this._createName().trim().length > 0 &&
     this._createDescription().trim().length > 0 &&
     this._createAudience().trim().length > 0 &&
+    (this._createType() !== 'Course' || this._createCourseCode().trim().length > 0) &&
     !this._isCreating()
   );
 
   protected readonly _createPolicySummary = computed(() => {
     const policies: string[] = [];
+    policies.push(this.groupTypeLabel(this._createType()));
     policies.push(this._createAllowStudentPosts() ? 'Studierende dürfen posten' : 'Nur Hochschulrollen posten');
     policies.push(this._createAllowComments() ? 'Kommentare offen' : 'Kommentare geschlossen');
     policies.push(this._createRequiresApproval() ? 'Beiträge mit Freigabe' : 'Beiträge ohne Freigabe');
@@ -108,6 +112,10 @@ export class GroupsPage implements OnInit {
 
   protected updatePolicyFilter(value: GroupPolicyFilter): void {
     this._policyFilter.set(value);
+  }
+
+  protected updateCreateType(value: GroupType): void {
+    this._createType.set(value);
   }
 
   protected groupTypeLabel(type: GroupType): string {
@@ -169,7 +177,9 @@ export class GroupsPage implements OnInit {
     this._groupsService.createGroup({
       name: this._createName().trim(),
       description: this._createDescription().trim(),
+      type: this._createType(),
       audience: this._createAudience().trim(),
+      courseCode: this._createType() === 'Course' ? this._createCourseCode().trim() : null,
       allowStudentPosts: this._createAllowStudentPosts(),
       allowComments: this._createAllowComments(),
       requiresApproval: this._createRequiresApproval(),
@@ -177,10 +187,12 @@ export class GroupsPage implements OnInit {
     }).subscribe({
       next: group => {
         this._groups.update(groups => [group, ...groups]);
-        this._activeTab.set('Social');
+        this._activeTab.set(group.type);
+        this._createType.set('Social');
         this._createName.set('');
         this._createDescription.set('');
         this._createAudience.set('');
+        this._createCourseCode.set('');
         this._createAllowStudentPosts.set(true);
         this._createAllowComments.set(true);
         this._createRequiresApproval.set(false);
@@ -189,8 +201,9 @@ export class GroupsPage implements OnInit {
         this._success.set('Gruppe wurde erstellt.');
         this._isCreating.set(false);
       },
-      error: () => {
-        this._error.set('Gruppe konnte nicht erstellt werden.');
+      error: error => {
+        const body = error?.error as { error?: string } | null;
+        this._error.set(body?.error ?? 'Gruppe konnte nicht erstellt werden.');
         this._isCreating.set(false);
       },
     });

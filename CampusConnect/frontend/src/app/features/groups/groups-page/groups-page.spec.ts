@@ -9,6 +9,11 @@ import { CampusGroup } from '../../../core/models/group.model';
 describe('GroupsPage', () => {
   let component: GroupsPage;
   let fixture: ComponentFixture<GroupsPage>;
+  let groupsService: {
+    getGroups: ReturnType<typeof vi.fn>;
+    createGroup: ReturnType<typeof vi.fn>;
+    joinGroup: ReturnType<typeof vi.fn>;
+  };
 
   const group: CampusGroup = {
     id: 'group-1',
@@ -31,17 +36,19 @@ describe('GroupsPage', () => {
   };
 
   beforeEach(async () => {
+    groupsService = {
+      getGroups: vi.fn(() => of([group])),
+      createGroup: vi.fn(() => of({ ...group, id: 'group-2', type: 'Social', canManage: true })),
+      joinGroup: vi.fn(() => of({ ...group, isAssigned: true, canJoin: false })),
+    };
+
     await TestBed.configureTestingModule({
       imports: [GroupsPage],
       providers: [
         provideRouter([]),
         {
           provide: Groups,
-          useValue: {
-            getGroups: () => of([group]),
-            createGroup: () => of({ ...group, id: 'group-2', type: 'Social', canManage: true }),
-            joinGroup: () => of({ ...group, isAssigned: true, canJoin: false }),
-          },
+          useValue: groupsService,
         },
       ],
     }).compileComponents();
@@ -70,5 +77,17 @@ describe('GroupsPage', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Beitreten');
+  });
+
+  it('sends selected group type when creating a group', () => {
+    (component as any)._isCreateMenuOpen.set(true);
+    (component as any)._createType.set('Official');
+    (component as any)._createName.set('Prüfungsamt');
+    (component as any)._createDescription.set('Informationen zu Prüfungen');
+    (component as any)._createAudience.set('Alle Studierenden');
+
+    (component as any).createGroup();
+
+    expect(groupsService.createGroup).toHaveBeenCalledWith(expect.objectContaining({ type: 'Official', courseCode: null }));
   });
 });

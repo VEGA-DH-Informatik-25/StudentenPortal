@@ -60,6 +60,18 @@
           <form (ngSubmit)="createGroup()">
             <div class="create-group-menu__grid">
               <label>
+                <span>Gruppentyp</span>
+                <select
+                  name="group-type"
+                  [ngModel]="_createType()"
+                  (ngModelChange)="updateCreateType($any($event))">
+                  <option value="Social">Campusgruppe</option>
+                  <option value="Official">Offizielle Gruppe</option>
+                  <option value="Course">Kursgruppe</option>
+                </select>
+              </label>
+
+              <label>
                 <span>Name</span>
                 <input
                   type="text"
@@ -78,6 +90,18 @@
                   [ngModel]="_createAudience()"
                   (ngModelChange)="_createAudience.set($event)">
               </label>
+
+              @if (_createType() === 'Course') {
+                <label>
+                  <span>Kurscode</span>
+                  <input
+                    type="text"
+                    maxlength="40"
+                    name="group-course-code"
+                    [ngModel]="_createCourseCode()"
+                    (ngModelChange)="_createCourseCode.set($event)">
+                </label>
+              }
             </div>
 
             <label>

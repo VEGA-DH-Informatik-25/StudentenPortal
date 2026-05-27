@@ -7,7 +7,9 @@ public record CreateGroupRequest(
 	bool AllowStudentPosts = true,
 	bool AllowComments = true,
 	bool RequiresApproval = false,
-	bool IsDiscoverable = true);
+	bool IsDiscoverable = true,
+	string Type = "Social",
+	string? CourseCode = null);
 public record UpdateGroupSettingsRequest(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record UpdateGroupAssignmentsRequest(IReadOnlyList<Guid> UserIds);
 public record UpdateGroupMemberPermissionRequest(Guid UserId, string Permission);

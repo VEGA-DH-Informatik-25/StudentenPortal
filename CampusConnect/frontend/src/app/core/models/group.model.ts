@@ -31,7 +31,9 @@ export interface CampusGroup {
 export interface CreateGroupRequest {
   name: string;
   description: string;
+  type: GroupType;
   audience: string;
+  courseCode: string | null;
   allowStudentPosts: boolean;
   allowComments: boolean;
   requiresApproval: boolean;

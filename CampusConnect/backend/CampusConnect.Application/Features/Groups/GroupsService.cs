@@ -7,7 +7,7 @@ namespace CampusConnect.Application.Features.Groups;
 
 public record GroupSettingsDto(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record CampusGroupDto(Guid Id, string Name, string Description, string Type, string Audience, string? CourseCode, Guid? OwnerUserId, string OwnerLabel, string IconLabel, string AccentColor, int AssignedUserCount, bool CanManage, bool IsAssigned, bool CanPost, bool CanJoin, string MemberPermission, GroupSettingsDto Settings);
-public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true);
+public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true, string Type = "Social", string? CourseCode = null);
 public record UpdateGroupSettingsCommand(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record UpdateGroupAssignmentsCommand(IReadOnlyList<Guid> UserIds);
 public record UpdateGroupMemberPermissionCommand(Guid UserId, string Permission);
@@ -43,12 +43,33 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (validationError is not null)
             return Result<CampusGroupDto>.Failure(validationError);
 
+        if (!TryParseGroupType(command.Type, out var groupType))
+            return Result<CampusGroupDto>.Failure("Gruppentyp ist ungültig.");
+
+        if (!CanCreateGroupType(user.Role, groupType))
+            return Result<CampusGroupDto>.Failure("Diese globale Rolle darf diesen Gruppentyp nicht erstellen.");
+
+        var courseCode = NormalizeCourseCode(command.CourseCode);
+        if (groupType == GroupType.Course)
+        {
+            if (courseCode is null)
+                return Result<CampusGroupDto>.Failure("Bitte gib einen Kurscode für die Kursgruppe an.");
+
+            if (courseCode.Length > 40)
+                return Result<CampusGroupDto>.Failure("Der Kurscode darf höchstens 40 Zeichen lang sein.");
+
+            var existingGroups = await groupRepo.GetAllAsync();
+            if (existingGroups.Any(group => group.Type == GroupType.Course && string.Equals(group.CourseCode, courseCode, StringComparison.OrdinalIgnoreCase)))
+                return Result<CampusGroupDto>.Failure("Für diesen Kurs existiert bereits eine Kursgruppe.");
+        }
+
         var group = new CampusGroup
         {
             Name = command.Name.Trim(),
             Description = command.Description.Trim(),
-            Type = GroupType.Social,
+            Type = groupType,
             Audience = command.Audience.Trim(),
+            CourseCode = groupType == GroupType.Course ? courseCode : null,
             OwnerUserId = user.Id,
             OwnerLabel = user.DisplayName,
             IconLabel = Initials(command.Name),
@@ -226,6 +247,15 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
     private static bool TryParsePermission(string value, out GroupMemberPermission permission) =>
         Enum.TryParse(value, ignoreCase: true, out permission) && Enum.IsDefined(permission);
 
+    private static bool TryParseGroupType(string value, out GroupType type) =>
+        Enum.TryParse(value, ignoreCase: true, out type) && Enum.IsDefined(type);
+
+    private static bool CanCreateGroupType(UserRole role, GroupType type) =>
+        type == GroupType.Social || role is UserRole.Admin or UserRole.Verwaltung;
+
+    private static string? NormalizeCourseCode(string? courseCode) =>
+        string.IsNullOrWhiteSpace(courseCode) ? null : courseCode.Trim().ToUpperInvariant();
+
     private static string? ValidateGroup(string name, string description, string audience)
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(audience))
@@ -285,11 +315,11 @@ public static class GroupDtoMapper
 
     public static bool CanView(User? user, CampusGroup group) =>
         user is not null &&
-        (user.Role == UserRole.Admin || IsAssigned(user, group) || group.Settings.IsDiscoverable);
+        (user.Role == UserRole.Admin || IsAssigned(user, group) || group.OwnerUserId == user.Id || group.Settings.IsDiscoverable);
 
     public static bool CanReadPosts(User? user, CampusGroup group) =>
         user is not null &&
-        (user.Role == UserRole.Admin || IsAssigned(user, group));
+        (user.Role == UserRole.Admin || IsAssigned(user, group) || group.OwnerUserId == user.Id);
 
     public static bool CanManage(User user, CampusGroup group) =>
         user.Role == UserRole.Admin ||
@@ -303,6 +333,7 @@ public static class GroupDtoMapper
 
     public static bool CanWrite(User user, CampusGroup group) =>
         user.Role == UserRole.Admin ||
+        group.OwnerUserId == user.Id ||
         (IsAssigned(user, group) &&
          (CurrentUserPermission(user, group) == GroupMemberPermission.ReadWrite ||
           CurrentUserPermission(user, group) == GroupMemberPermission.Manage));
@@ -323,5 +354,5 @@ public static class GroupDtoMapper
         group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite;
 
     private static GroupMemberPermission CurrentUserPermission(User user, CampusGroup group) =>
-        IsAssigned(user, group) || user.Role == UserRole.Admin ? MemberPermissionFor(user.Id, group) : GroupMemberPermission.ReadOnly;
+        IsAssigned(user, group) || user.Role == UserRole.Admin || group.OwnerUserId == user.Id ? MemberPermissionFor(user.Id, group) : GroupMemberPermission.ReadOnly;
 }
