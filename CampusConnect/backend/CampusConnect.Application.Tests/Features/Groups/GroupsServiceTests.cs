@@ -133,6 +133,47 @@ public class GroupsServiceTests
         Assert.Equal("This global role cannot create this group type.", result.Error);
     }
 
+    [Theory]
+    [InlineData(UserRole.Student, "Official", false)]
+    [InlineData(UserRole.Student, "Course", false)]
+    [InlineData(UserRole.Student, "Social", true)]
+    [InlineData(UserRole.Lecturer, "Official", false)]
+    [InlineData(UserRole.Lecturer, "Course", true)]
+    [InlineData(UserRole.Lecturer, "Social", true)]
+    [InlineData(UserRole.Management, "Official", true)]
+    [InlineData(UserRole.Management, "Course", true)]
+    [InlineData(UserRole.Management, "Social", true)]
+    [InlineData(UserRole.Admin, "Official", true)]
+    [InlineData(UserRole.Admin, "Course", true)]
+    [InlineData(UserRole.Admin, "Social", true)]
+    public async Task CreateGroupAsync_UsesGlobalRolePermissionMatrix(UserRole role, string type, bool canCreate)
+    {
+        var user = new User
+        {
+            DisplayName = $"{role} User",
+            Email = $"{role}@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = role
+        };
+        var service = new GroupsService(new FakeGroupRepository(), new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            $"{type} group",
+            "Organizational group",
+            "Campus",
+            Type: type,
+            CourseCode: type == "Course" ? "TIF25A" : null));
+
+        Assert.Equal(canCreate, result.IsSuccess);
+        if (canCreate)
+            Assert.Equal(type, result.Value!.Type);
+        else
+            Assert.Equal("This global role cannot create this group type.", result.Error);
+    }
+
     [Fact]
     public async Task CreateGroupAsync_AppliesInitialSettingsFromCommand()
     {
