@@ -1,20 +1,23 @@
 import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupAccount, GroupMemberPermission, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { CampusGroup, GroupAccount, GroupMemberPermission, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
-type AccountFilter = 'All' | 'Assigned' | 'Unassigned' | 'Student' | 'Lecturer' | 'Admin';
+type AccountFilter = 'All' | 'Assigned' | 'Unassigned' | 'Student' | 'Lecturer' | 'Management' | 'Admin';
 
 @Component({
   selector: 'app-group-settings-page',
   standalone: true,
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './group-settings-page.html',
   styleUrl: './group-settings-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupSettingsPage implements OnInit {
   private readonly _groupsService = inject(Groups);
+  protected readonly _i18n = inject(I18n);
   private readonly _route = inject(ActivatedRoute);
   private readonly _router = inject(Router);
 
@@ -49,7 +52,7 @@ export class GroupSettingsPage implements OnInit {
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
     if (!groupId) {
-      this._error.set('Gruppe wurde nicht gefunden.');
+      this._error.set(this._i18n.translate('groups.detailNotFound'));
       return;
     }
 
@@ -74,7 +77,7 @@ export class GroupSettingsPage implements OnInit {
         this._savingSetting.set('');
       },
       error: () => {
-        this._error.set('Einstellung konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('groups.settingSaveError'));
         this._savingSetting.set('');
       },
     });
@@ -130,6 +133,37 @@ export class GroupSettingsPage implements OnInit {
     this._selectedPermissions.update(permissions => ({ ...permissions, [account.id]: permission }));
   }
 
+  protected roleLabel(role: string): string {
+    return this._i18n.roleLabel(role);
+  }
+
+  protected permissionLabel(permission: GroupMemberPermission): string {
+    switch (permission) {
+      case 'Manage':
+        return this._i18n.translate('groups.permission.manage');
+      case 'ReadOnly':
+        return this._i18n.translate('groups.permission.read');
+      case 'ReadWrite':
+        return this._i18n.translate('groups.permission.write');
+    }
+  }
+
+  protected groupName(group: CampusGroup): string {
+    return this._i18n.groupName(group);
+  }
+
+  protected groupDescription(group: CampusGroup): string {
+    return this._i18n.groupDescription(group);
+  }
+
+  protected groupAudience(group: CampusGroup): string {
+    return this._i18n.groupAudience(group);
+  }
+
+  protected groupOwnerLabel(group: CampusGroup): string {
+    return this._i18n.groupOwnerLabel(group);
+  }
+
   protected saveAssignments(): void {
     const group = this._group();
     if (!group || this._assignmentsLocked() || !this._hasAssignmentChanges() || this._savingAssignments()) {
@@ -144,7 +178,7 @@ export class GroupSettingsPage implements OnInit {
         this._savingAssignments.set(false);
       },
       error: () => {
-        this._error.set('Konten konnten nicht zugewiesen werden.');
+        this._error.set(this._i18n.translate('groups.assignmentsError'));
         this._savingAssignments.set(false);
       },
     });
@@ -169,7 +203,7 @@ export class GroupSettingsPage implements OnInit {
         this._savingPermissions.set(false);
       },
       error: () => {
-        this._error.set('Berechtigungen konnten nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('groups.permissionsError'));
         this._savingPermissions.set(false);
       },
     });
@@ -186,7 +220,7 @@ export class GroupSettingsPage implements OnInit {
       },
       error: () => {
         this._details.set(null);
-        this._error.set('Du kannst diese Gruppeneinstellungen nicht bearbeiten.');
+        this._error.set(this._i18n.translate('groups.settingsError'));
         this._isLoading.set(false);
       },
     });
@@ -216,6 +250,7 @@ export class GroupSettingsPage implements OnInit {
         return !this.isAccountSelected(account);
       case 'Student':
       case 'Lecturer':
+      case 'Management':
       case 'Admin':
         return account.role === this._accountFilter();
       case 'All':

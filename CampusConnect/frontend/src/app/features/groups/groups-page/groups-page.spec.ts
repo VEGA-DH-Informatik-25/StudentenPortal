@@ -17,13 +17,13 @@ describe('GroupsPage', () => {
 
   const group: CampusGroup = {
     id: 'group-1',
-    name: 'Kurs TIF25A',
-    description: 'Kursgruppe',
+    name: 'Course TIF25A',
+    description: 'Course group',
     type: 'Course',
     audience: 'TIF25A',
     courseCode: 'TIF25A',
     ownerUserId: null,
-    ownerLabel: 'Informatik',
+    ownerLabel: 'Computer Science',
     iconLabel: 'TI',
     accentColor: '#e2001a',
     assignedUserCount: 0,
@@ -63,10 +63,10 @@ describe('GroupsPage', () => {
   });
 
   it('filters visible groups by search text', () => {
-    (component as any)._searchQuery.set('bibliothek');
+    (component as any)._searchQuery.set('library');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Für diesen Filter gibt es noch keine Gruppen.');
+    expect(fixture.nativeElement.textContent).toContain('There are no groups for this filter yet.');
   });
 
   it('shows joinable public groups in explore tab', () => {
@@ -76,15 +76,15 @@ describe('GroupsPage', () => {
     (component as any)._activeTab.set('Explore');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Beitreten');
+    expect(fixture.nativeElement.textContent).toContain('Join');
   });
 
   it('sends selected group type when creating a group', () => {
     (component as any)._isCreateMenuOpen.set(true);
     (component as any)._createType.set('Official');
-    (component as any)._createName.set('Prüfungsamt');
-    (component as any)._createDescription.set('Informationen zu Prüfungen');
-    (component as any)._createAudience.set('Alle Studierenden');
+    (component as any)._createName.set('Exam office');
+    (component as any)._createDescription.set('Exam information');
+    (component as any)._createAudience.set('All students');
 
     (component as any).createGroup();
 

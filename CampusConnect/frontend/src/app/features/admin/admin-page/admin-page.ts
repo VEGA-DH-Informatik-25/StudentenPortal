@@ -2,19 +2,22 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { AdminCourse, AdminUser } from '../../../core/models/admin.model';
 import { Admin } from '../../../core/services/admin';
 
 @Component({
   selector: 'app-admin-page',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TranslatePipe],
   templateUrl: './admin-page.html',
   styleUrl: './admin-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminPage implements OnInit {
   private readonly _adminService = inject(Admin);
+  protected readonly _i18n = inject(I18n);
 
   protected readonly _users = signal<AdminUser[]>([]);
   protected readonly _courses = signal<AdminCourse[]>([]);
@@ -24,7 +27,7 @@ export class AdminPage implements OnInit {
   protected readonly _busyUserId = signal<string | null>(null);
   protected readonly _error = signal<string | null>(null);
   protected readonly _success = signal<string | null>(null);
-  protected readonly _roles = ['Student', 'Lecturer', 'Verwaltung', 'Admin'];
+  protected readonly _roles = ['Student', 'Lecturer', 'Management', 'Admin'];
   protected readonly _courseForm = { code: '', studyProgram: '', semester: 1 };
 
   ngOnInit(): void {
@@ -71,12 +74,12 @@ export class AdminPage implements OnInit {
     const semester = Number(this._courseForm.semester);
 
     if (!code || !studyProgram) {
-      this._error.set('Bitte fülle alle Kursfelder aus.');
+      this._error.set(this._i18n.translate('admin.courseFieldsRequired'));
       return;
     }
 
     if (!Number.isInteger(semester) || semester < 1 || semester > 6) {
-      this._error.set('Das Semester muss zwischen 1 und 6 liegen.');
+      this._error.set(this._i18n.translate('admin.semesterRange'));
       return;
     }
 
@@ -89,7 +92,7 @@ export class AdminPage implements OnInit {
         this._courseForm.code = '';
         this._courseForm.studyProgram = '';
         this._courseForm.semester = 1;
-        this._success.set(`Kurs ${course.code} wurde angelegt.`);
+        this._success.set(this._i18n.translate('admin.courseCreated', { code: course.code }));
         this._isCreatingCourse.set(false);
       },
       error: error => {
@@ -110,7 +113,7 @@ export class AdminPage implements OnInit {
     this._adminService.updateUserRole(user.id, role).subscribe({
       next: updatedUser => {
         this._users.update(users => users.map(item => item.id === updatedUser.id ? updatedUser : item));
-        this._success.set(`Rolle für ${updatedUser.displayName} wurde aktualisiert.`);
+        this._success.set(this._i18n.translate('admin.roleUpdated', { name: updatedUser.displayName }));
         this._busyUserId.set(null);
       },
       error: error => {
@@ -131,7 +134,7 @@ export class AdminPage implements OnInit {
     this._adminService.updateUserCourse(user.id, courseCode).subscribe({
       next: updatedUser => {
         this._users.update(users => users.map(item => item.id === updatedUser.id ? updatedUser : item));
-        this._success.set(`Kurs für ${updatedUser.displayName} wurde aktualisiert.`);
+        this._success.set(this._i18n.translate('admin.courseUpdated', { name: updatedUser.displayName }));
         this._busyUserId.set(null);
       },
       error: error => {
@@ -142,7 +145,7 @@ export class AdminPage implements OnInit {
   }
 
   protected deleteUser(user: AdminUser): void {
-    if (!confirm(`${user.displayName} wirklich löschen?`)) {
+    if (!confirm(this._i18n.translate('admin.deleteConfirm', { name: user.displayName }))) {
       return;
     }
 
@@ -152,7 +155,7 @@ export class AdminPage implements OnInit {
     this._adminService.deleteUser(user.id).subscribe({
       next: () => {
         this._users.update(users => users.filter(item => item.id !== user.id));
-        this._success.set(`${user.displayName} wurde gelöscht.`);
+        this._success.set(this._i18n.translate('admin.userDeleted', { name: user.displayName }));
         this._busyUserId.set(null);
       },
       error: error => {
@@ -163,7 +166,11 @@ export class AdminPage implements OnInit {
   }
 
   protected courseLabel(course: AdminCourse): string {
-    return `${course.code} · ${course.studyProgram} · ${course.semester}. Semester`;
+    return `${course.code} · ${course.studyProgram} · ${this._i18n.translate('common.semesterValue', { semester: course.semester })}`;
+  }
+
+  protected roleLabel(role: string): string {
+    return this._i18n.roleLabel(role);
   }
 
   protected courseExists(courseCode: string): boolean {
@@ -173,9 +180,9 @@ export class AdminPage implements OnInit {
   private _readError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const body = error.error as { error?: string } | null;
-      return body?.error ?? 'Admin-Daten konnten nicht geladen werden.';
+      return body?.error ?? this._i18n.translate('admin.courseLoadError');
     }
 
-    return 'Admin-Daten konnten nicht geladen werden.';
+    return this._i18n.translate('admin.courseLoadError');
   }
 }

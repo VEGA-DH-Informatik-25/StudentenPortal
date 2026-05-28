@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Auth } from '../../../core/services/auth';
 import { Course } from '../../../core/models/course.model';
 import { UserProfile } from '../../../core/models/auth.model';
@@ -9,7 +11,7 @@ import { Courses } from '../../../core/services/courses';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +19,7 @@ import { Courses } from '../../../core/services/courses';
 export class ProfilePage implements OnInit {
   private readonly _auth = inject(Auth);
   private readonly _coursesService = inject(Courses);
+  private readonly _i18n = inject(I18n);
 
   protected readonly _profile = signal<UserProfile | null>(null);
   protected readonly _courses = signal<Course[]>([]);
@@ -58,11 +61,11 @@ export class ProfilePage implements OnInit {
     }).subscribe({
       next: profile => {
         this._setProfile(profile);
-        this._success.set('Profil wurde gespeichert.');
+        this._success.set(this._i18n.translate('profile.saved'));
         this._isSaving.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, 'Profil konnte nicht gespeichert werden.'));
+        this._error.set(this._readError(error, this._i18n.translate('profile.saveError')));
         this._isSaving.set(false);
       },
     });
@@ -73,7 +76,11 @@ export class ProfilePage implements OnInit {
   }
 
   protected courseLabel(course: Course): string {
-    return `${course.code} · ${course.studyProgram} · ${course.semester}. Semester`;
+    return `${course.code} · ${course.studyProgram} · ${this._i18n.translate('common.semesterValue', { semester: course.semester })}`;
+  }
+
+  protected roleLabel(role: string): string {
+    return this._i18n.roleLabel(role);
   }
 
   private _loadCourses(): void {
@@ -84,7 +91,7 @@ export class ProfilePage implements OnInit {
         this._coursesLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, 'Kurse konnten nicht geladen werden.'));
+        this._error.set(this._readError(error, this._i18n.translate('admin.courseLoadError')));
         this._coursesLoading.set(false);
       },
     });
@@ -100,7 +107,7 @@ export class ProfilePage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, 'Profil konnte nicht geladen werden.'));
+        this._error.set(this._readError(error, this._i18n.translate('profile.loadError')));
         this._isLoading.set(false);
       },
     });

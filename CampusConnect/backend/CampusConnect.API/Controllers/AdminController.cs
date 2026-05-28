@@ -25,7 +25,7 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     {
         var currentUserId = GetCurrentUserId();
         if (currentUserId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await adminUsersService.UpdateRoleAsync(new UpdateUserRoleCommand(id, request.Role, currentUserId.Value), cancellationToken);
         if (!result.IsSuccess)
@@ -49,7 +49,7 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     {
         var currentUserId = GetCurrentUserId();
         if (currentUserId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await adminUsersService.DeleteUserAsync(id, currentUserId.Value, cancellationToken);
         if (!result.IsSuccess)

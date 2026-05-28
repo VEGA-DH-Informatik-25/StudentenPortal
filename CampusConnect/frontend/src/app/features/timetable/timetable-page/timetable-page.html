@@ -3,34 +3,34 @@
     <section class="course-setup">
       <header class="timetable-hero">
         <div>
-          <p class="timetable-page__eyebrow">DHBW Lörrach</p>
-          <h1>Vorlesungsplan</h1>
-          <p>Wähle deinen Kurs aus und prüfe Vorlesungen, Räume und Tagesansichten.</p>
+          <p class="timetable-page__eyebrow">{{ 'app.campus' | translate }}</p>
+          <h1>{{ 'timetable.header' | translate }}</h1>
+          <p>{{ 'timetable.subtitle' | translate }}</p>
         </div>
       </header>
 
       <div class="course-panel">
         <div class="course-picker">
           <label class="course-field">
-            <span>Kurs</span>
+            <span>{{ 'common.course' | translate }}</span>
             <select [ngModel]="_courseSelection()" (ngModelChange)="onCourseSelectionChange($event)">
-              <option value="">Kurs auswählen</option>
+              <option value="">{{ 'timetable.chooseCourse' | translate }}</option>
               @for (course of _courseOptions(); track course) {
                 <option [value]="course">{{ course }}</option>
               }
-              <option value="custom">Anderen Kurs eingeben</option>
+              <option value="custom">{{ 'timetable.customCourse' | translate }}</option>
             </select>
           </label>
 
           <label class="course-field course-field--manual">
-            <span>Kurscode</span>
-            <input type="text" placeholder="Kursname eingeben" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
+            <span>{{ 'common.courseCode' | translate }}</span>
+            <input type="text" [placeholder]="'timetable.courseInputPlaceholder' | translate" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
           </label>
 
-          <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" aria-label="Kurs anzeigen">⌕</button>
+          <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" [attr.aria-label]="'timetable.showCourse' | translate">⌕</button>
         </div>
 
-        <div class="course-history" aria-label="Kursauswahl">
+        <div class="course-history" [attr.aria-label]="'timetable.courseHistory' | translate">
           @for (course of _courseOptions(); track course) {
             <button type="button" (click)="selectCourse(course)">{{ course }}</button>
           }
@@ -40,39 +40,39 @@
   } @else {
     <header class="timetable-hero timetable-hero--with-actions">
       <div>
-        <p class="timetable-page__eyebrow">Vorlesungsplan</p>
+        <p class="timetable-page__eyebrow">{{ 'timetable.header' | translate }}</p>
         <h1>{{ _course() }}</h1>
-        <p>Vorlesungen, Räume und Tagesansichten für deinen ausgewählten Kurs.</p>
+        <p>{{ 'timetable.subtitleCourse' | translate }}</p>
       </div>
       <div class="schedule-actions">
-        <button type="button" (click)="changeCourse()">Kurs wechseln</button>
-        <button type="button" (click)="refresh()" [disabled]="_isLoading()">Aktualisieren</button>
+        <button type="button" (click)="changeCourse()">{{ 'timetable.changeCourse' | translate }}</button>
+        <button type="button" (click)="refresh()" [disabled]="_isLoading()">{{ 'common.refresh' | translate }}</button>
       </div>
     </header>
 
-    <nav class="view-tabs" aria-label="Stundenplanansicht">
-      <button type="button" [class.active]="_activeView() === 'list'" (click)="selectView('list')">Liste</button>
-      <button type="button" [class.active]="_activeView() === 'week'" (click)="selectView('week')">Woche</button>
-      <button type="button" [class.active]="_activeView() === 'day'" (click)="selectView('day')">Tag</button>
+    <nav class="view-tabs" [attr.aria-label]="'timetable.view' | translate">
+      <button type="button" [class.active]="_activeView() === 'list'" (click)="selectView('list')">{{ 'timetable.list' | translate }}</button>
+      <button type="button" [class.active]="_activeView() === 'week'" (click)="selectView('week')">{{ 'timetable.week' | translate }}</button>
+      <button type="button" [class.active]="_activeView() === 'day'" (click)="selectView('day')">{{ 'timetable.day' | translate }}</button>
     </nav>
   }
 
   @if (_isLoading()) {
-    <p class="timetable-page__state">Vorlesungsplan wird geladen...</p>
+    <p class="timetable-page__state">{{ 'timetable.loading' | translate }}</p>
   } @else if (_error()) {
     <p class="timetable-page__state timetable-page__state--error">{{ _error() }}</p>
   } @else if (!_course()) {
-    <p class="timetable-page__state">Wähle einen Kurs aus, um die nächsten Termine zu sehen.</p>
+    <p class="timetable-page__state">{{ 'timetable.chooseCourseState' | translate }}</p>
   } @else if (_days().length === 0) {
-    <p class="timetable-page__state">Für diesen Kurs sind in den nächsten Tagen keine Termine eingetragen.</p>
+    <p class="timetable-page__state">{{ 'timetable.emptyCourse' | translate }}</p>
   } @else if (_activeView() === 'list') {
     <div class="day-list">
       @for (day of _days(); track day.date) {
         <section class="day-section">
           <header class="day-section__header">
             <div>
-              <span class="day-section__weekday">{{ day.date | date:'EEEE':'':'de' }}</span>
-              <h3>{{ day.date | date:'dd.MM.yyyy':'':'de' }}</h3>
+              <span class="day-section__weekday">{{ day.date | date:'EEEE':'':_i18n.locale() }}</span>
+              <h3>{{ day.date | date:'mediumDate':'':_i18n.locale() }}</h3>
             </div>
             @if (dayBadge(day.date)) {
               <span class="day-section__badge">{{ dayBadge(day.date) }}</span>
@@ -113,10 +113,10 @@
   } @else {
     <section class="calendar-view" [class.calendar-view--day]="_activeView() === 'day'">
       <header class="calendar-nav">
-        <button type="button" (click)="previousRange()" aria-label="Zurück">‹</button>
+        <button type="button" (click)="previousRange()" [attr.aria-label]="'timetable.previous' | translate">‹</button>
         <strong>{{ _rangeTitle() }}</strong>
-        <button type="button" (click)="nextRange()" aria-label="Weiter">›</button>
-        <button type="button" (click)="jumpToToday()">Heute</button>
+        <button type="button" (click)="nextRange()" [attr.aria-label]="'timetable.next' | translate">›</button>
+        <button type="button" (click)="jumpToToday()">{{ 'common.today' | translate }}</button>
       </header>
 
       <div class="calendar-grid">
@@ -132,8 +132,8 @@
         @for (day of _calendarDays(); track day.date) {
           <section class="calendar-day">
             <header>
-              <span>{{ day.date | date:'EEE':'':'de' }}</span>
-              <strong>{{ day.date | date:'dd.MM.':'':'de' }}</strong>
+              <span>{{ day.date | date:'EEE':'':_i18n.locale() }}</span>
+              <strong>{{ day.date | date:'shortDate':'':_i18n.locale() }}</strong>
             </header>
 
             <div class="calendar-day__timeline" [style.min-height.px]="_calendarTimeline().height">
@@ -142,7 +142,7 @@
               }
 
               @if (day.events.length === 0) {
-                <p class="calendar-empty">Keine Termine</p>
+                <p class="calendar-empty">{{ 'timetable.emptySlot' | translate }}</p>
               } @else {
                 @for (event of day.events; track event.id) {
                   <article

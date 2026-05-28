@@ -1,27 +1,26 @@
 <section class="grades-page">
   <header class="hero">
     <div>
-      <p class="eyebrow">Noten System</p>
-      <h1>Noten eintragen, Überblick behalten und Szenarien testen</h1>
+      <p class="eyebrow">{{ 'grades.heroLabel' | translate }}</p>
+      <h1>{{ 'grades.header' | translate }}</h1>
       <p>
-        Erfasse deine Leistungen, sieh gewichtete Durchschnitte nach ECTS und probiere aus,
-        wie sich zusätzliche Noten auf deinen Schnitt auswirken.
+        {{ 'grades.subtitle' | translate }}
       </p>
     </div>
     <div class="hero-card">
-      <span>Aktueller Schnitt</span>
+      <span>{{ 'grades.currentAverage' | translate }}</span>
       <strong>{{ format(weightedAverage()) }}</strong>
-      <small>{{ passedCredits() }} bestandene ECTS · {{ failedCount() }} nicht bestandene Prüfungen</small>
+      <small>{{ 'grades.passedCredits' | translate:{ credits: passedCredits() } }} · {{ 'grades.failedExams' | translate:{ count: failedCount() } }}</small>
     </div>
   </header>
 
   <div class="content-grid">
     <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
-      <h2>Neue Note eintragen</h2>
+      <h2>{{ 'grades.addGrade' | translate }}</h2>
       @if (planModules().length > 0) {
         @if (hasOpenPlanModules()) {
           <label>
-            Modul aus deinem Kursplan
+            {{ 'grades.selectPlanModule' | translate }}
             <select name="selectedModuleCode" [(ngModel)]="selectedModuleCode" required>
               @for (module of openPlanModules(); track module.code) {
                 <option [value]="module.code">{{ module.name }} · {{ module.ects }} ECTS</option>
@@ -36,27 +35,27 @@
             </div>
           }
         } @else {
-          <span class="form-note">Alle Module aus deinem Kursplan sind bereits erfasst.</span>
+          <span class="form-note">{{ 'grades.allModulesRecorded' | translate }}</span>
         }
       } @else {
         <label>
-          Modul / Prüfung
+          {{ 'grades.moduleOrExam' | translate }}
           <input
             name="moduleName"
             [(ngModel)]="moduleName"
             #moduleInput="ngModel"
-            placeholder="z. B. Mathematik I"
+            [placeholder]="'grades.modulePlaceholder' | translate"
             aria-describedby="module-error"
             required
           />
         </label>
         @if (moduleInput.invalid && (moduleInput.touched || gradeForm.submitted)) {
-          <span id="module-error" class="field-error">Bitte gib ein Modul oder eine Prüfung ein.</span>
+          <span id="module-error" class="field-error">{{ 'grades.enterModule' | translate }}</span>
         }
       }
       <div class="form-row">
         <label>
-          Note
+          {{ 'grades.grade' | translate }}
           <input name="grade" type="number" min="1" max="5" step="0.1" [(ngModel)]="grade" />
         </label>
         @if (planModules().length === 0) {
@@ -66,23 +65,23 @@
           </label>
         }
       </div>
-      <button type="submit" [disabled]="_isSubmitting() || (planModules().length > 0 && !hasOpenPlanModules())">Note speichern</button>
+      <button type="submit" [disabled]="_isSubmitting() || (planModules().length > 0 && !hasOpenPlanModules())">{{ 'grades.saveGrade' | translate }}</button>
       @if (_error()) {
         <span class="field-error">{{ _error() }}</span>
       }
       @if (_isPlanLoading()) {
-        <span class="form-note">Kursplan wird geladen.</span>
+        <span class="form-note">{{ 'grades.planLoading' | translate }}</span>
       } @else if (_planNotice()) {
         <span class="form-note">{{ _planNotice() }}</span>
       }
     </form>
 
     <section class="panel simulator">
-      <h2>Was-wäre-wenn-Rechner</h2>
-      <p>Teste eine zusätzliche Leistung, ohne sie in deiner Liste zu speichern.</p>
+      <h2>{{ 'grades.simulator' | translate }}</h2>
+      <p>{{ 'grades.simulatorBody' | translate }}</p>
       <div class="form-row">
         <label>
-          Zusatznote
+          {{ 'grades.additionalGrade' | translate }}
           <input type="number" min="1" max="5" step="0.1" [(ngModel)]="simulationGrade" />
         </label>
         <label>
@@ -91,11 +90,11 @@
         </label>
       </div>
       <div class="simulation-result">
-        <span>Neuer Schnitt</span>
+        <span>{{ 'grades.newAverage' | translate }}</span>
         <strong>{{ format(simulatedAverage()) }}</strong>
       </div>
       <label>
-        Ziel-Schnitt
+        {{ 'grades.targetAverage' | translate }}
         <input type="number" min="1" max="5" step="0.1" [(ngModel)]="targetAverage" />
       </label>
       <p class="target-hint">{{ targetHint() }}</p>
@@ -104,19 +103,19 @@
 
   <section class="stats">
     <article>
-      <span>Erfasste Noten</span>
+      <span>{{ 'grades.gradeCount' | translate }}</span>
       <strong>{{ grades().length }}</strong>
     </article>
     <article>
-      <span>ECTS gesamt</span>
+      <span>{{ 'grades.totalEcts' | translate }}</span>
       <strong>{{ totalEcts() }}</strong>
     </article>
     <article>
-      <span>Beste Note</span>
+      <span>{{ 'grades.bestGrade' | translate }}</span>
       <strong>{{ format(bestGrade()) }}</strong>
     </article>
     <article>
-      <span>Kursplan</span>
+      <span>{{ 'grades.coursePlan' | translate }}</span>
       <strong>{{ completedPlanModules() }}/{{ planModules().length }}</strong>
     </article>
   </section>
@@ -124,7 +123,7 @@
   @if (planModules().length > 0) {
     <section class="panel">
       <div class="section-header">
-        <h2>Kursplan</h2>
+        <h2>{{ 'grades.coursePlan' | translate }}</h2>
         <span>{{ _plan()?.courseCode }} · {{ _plan()?.studyProgram }}</span>
       </div>
       <div class="plan-grid">
@@ -134,10 +133,10 @@
               <span>{{ module.code }}</span>
               <strong>{{ module.name }}</strong>
             </div>
-            <small>{{ module.studyYear ? module.studyYear + '. Studienjahr · ' : '' }}{{ module.ects }} ECTS</small>
+            <small>{{ module.studyYear ? ('grades.studyYear' | translate:{ year: module.studyYear }) + ' · ' : '' }}{{ module.ects }} ECTS</small>
             <small>{{ examText(module) }}</small>
             @if (module.isCompleted) {
-              <span class="plan-status">Note {{ format(module.grade ?? 0) }}</span>
+              <span class="plan-status">{{ 'grades.gradeValue' | translate:{ grade: format(module.grade ?? 0) } }}</span>
             }
           </article>
         }
@@ -147,18 +146,18 @@
 
   <section class="panel">
     <div class="section-header">
-      <h2>Notenübersicht</h2>
-      <span>{{ moduleSummaries().length }} Module</span>
+      <h2>{{ 'grades.overview' | translate }}</h2>
+      <span>{{ 'grades.modules' | translate:{ count: moduleSummaries().length } }}</span>
     </div>
 
     @if (_isLoading()) {
       <div class="empty-state">
-        <strong>Noten werden geladen.</strong>
+        <strong>{{ 'grades.loading' | translate }}</strong>
       </div>
     } @else if (grades().length === 0) {
       <div class="empty-state">
-        <strong>Noch keine Noten eingetragen.</strong>
-        <span>Füge deine erste Prüfung hinzu, um Übersichten und Simulationen zu sehen.</span>
+        <strong>{{ 'grades.empty' | translate }}</strong>
+        <span>{{ 'grades.addFirst' | translate }}</span>
       </div>
     } @else {
       <div class="table-wrapper">
@@ -166,11 +165,11 @@
           <thead>
             <tr>
               <th>Code</th>
-              <th>Modul</th>
-              <th>Note</th>
+              <th>{{ 'grades.module' | translate }}</th>
+              <th>{{ 'grades.grade' | translate }}</th>
               <th>ECTS</th>
-              <th>Erfasst am</th>
-              <th>Aktion</th>
+              <th>{{ 'admin.createdAt' | translate }}</th>
+              <th>{{ 'common.action' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -182,8 +181,8 @@
                   <span class="grade-badge" [class.failed]="entry.value > 4">{{ format(entry.value) }}</span>
                 </td>
                 <td>{{ entry.ects }}</td>
-                <td>{{ entry.createdAt | date:'dd.MM.yyyy' }}</td>
-                <td><button class="ghost-button" type="button" (click)="removeGrade(entry.id)">Löschen</button></td>
+                <td>{{ entry.createdAt | date:'mediumDate':'':_i18n.locale() }}</td>
+                <td><button class="ghost-button" type="button" (click)="removeGrade(entry.id)">{{ 'common.delete' | translate }}</button></td>
               </tr>
             }
           </tbody>
@@ -194,15 +193,15 @@
 
   <section class="panel">
     <div class="section-header">
-      <h2>Modulübersicht</h2>
-      <span>Gewichtete Durchschnittsnoten pro Modul</span>
+      <h2>{{ 'grades.moduleOverview' | translate }}</h2>
+      <span>{{ 'grades.moduleAverage' | translate }}</span>
     </div>
     <div class="module-grid">
       @for (summary of moduleSummaries(); track summary.module) {
         <article class="module-card">
           <span>{{ summary.module }}</span>
           <strong>{{ format(summary.average) }}</strong>
-          <small>{{ summary.count }} Leistung(en) · {{ summary.credits }} ECTS bestanden</small>
+          <small>{{ 'grades.performanceCount' | translate:{ count: summary.count } }} · {{ 'grades.completedCredits' | translate:{ credits: summary.credits } }}</small>
         </article>
       }
     </div>

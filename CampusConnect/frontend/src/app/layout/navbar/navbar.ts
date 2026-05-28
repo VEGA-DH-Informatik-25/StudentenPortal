@@ -1,17 +1,20 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { I18n } from '../../core/i18n/i18n';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { Auth } from '../../core/services/auth';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, TranslatePipe],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar {
   protected readonly _auth = inject(Auth);
+  protected readonly _i18n = inject(I18n);
 
   protected readonly _profileInitials = computed(() => {
     const displayName = this._auth.displayName().trim();
@@ -31,5 +34,13 @@ export class Navbar {
       .map(part => part[0].toUpperCase())
       .join('');
   });
+
+  protected setLanguage(language: string): void {
+    this._i18n.setLanguage(language);
+  }
+
+  protected roleLabel(role: string): string {
+    return this._i18n.roleLabel(role);
+  }
 }
 

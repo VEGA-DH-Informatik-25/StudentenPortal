@@ -15,14 +15,14 @@ public record AuthResult(string Token, UserProfileResult Profile);
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
 {
-    public const string UserProfileNotFoundError = "Benutzerprofil wurde nicht gefunden.";
-    private const string InvalidCourseError = "Bitte wähle einen gültigen Kurs aus.";
+    public const string UserProfileNotFoundError = "User profile was not found.";
+    private const string InvalidCourseError = "Choose a valid course.";
 
     public async Task<Result<AuthResult>> RegisterAsync(RegisterCommand cmd)
     {
         var email = cmd.Email.Trim().ToLowerInvariant();
         if (!email.EndsWith("@dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
-            return Result<AuthResult>.Failure("Nur @dhbw-loerrach.de E-Mail-Adressen sind erlaubt.");
+            return Result<AuthResult>.Failure("Only @dhbw-loerrach.de email addresses are allowed.");
 
         var validationError = ValidateDisplayName(cmd.DisplayName);
         if (validationError is not null)
@@ -33,7 +33,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
             return Result<AuthResult>.Failure(InvalidCourseError);
 
         if (await userRepo.FindByEmailAsync(email) is not null)
-            return Result<AuthResult>.Failure("Diese E-Mail-Adresse ist bereits registriert.");
+            return Result<AuthResult>.Failure("This email address is already registered.");
 
         var user = new User
         {
@@ -56,7 +56,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         var email = cmd.Email.Trim().ToLowerInvariant();
         var user = await userRepo.FindByEmailAsync(email);
         if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
-            return Result<AuthResult>.Failure("Ungültige E-Mail-Adresse oder Passwort.");
+            return Result<AuthResult>.Failure("Invalid email address or password.");
 
         await SyncProfileMetadataFromCourseAsync(user);
         var token = jwtService.GenerateToken(user);
@@ -161,10 +161,10 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     private static string? ValidateDisplayName(string displayName)
     {
         if (string.IsNullOrWhiteSpace(displayName))
-            return "Bitte fülle alle Profilfelder aus.";
+            return "Fill in all profile fields.";
 
         if (displayName.Trim().Length > 120)
-            return "Der Anzeigename darf höchstens 120 Zeichen lang sein.";
+            return "Display name must be at most 120 characters long.";
 
         return null;
     }
@@ -172,13 +172,13 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     private static string? ValidateContactFields(string? phoneNumber, string? location, string? profileNote)
     {
         if (NormalizeOptional(phoneNumber).Length > 40)
-            return "Die Telefonnummer darf höchstens 40 Zeichen lang sein.";
+            return "Phone number must be at most 40 characters long.";
 
         if (NormalizeOptional(location).Length > 120)
-            return "Der Ort darf höchstens 120 Zeichen lang sein.";
+            return "Location must be at most 120 characters long.";
 
         if (NormalizeOptional(profileNote).Length > 280)
-            return "Die Profilnotiz darf höchstens 280 Zeichen lang sein.";
+            return "Profile note must be at most 280 characters long.";
 
         return null;
     }

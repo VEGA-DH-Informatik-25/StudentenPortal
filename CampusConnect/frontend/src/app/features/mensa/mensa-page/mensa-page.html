@@ -1,25 +1,25 @@
 <section class="mensa-page">
   <header class="mensa-hero">
     <div>
-      <p class="mensa-hero__eyebrow">DHBW Lörrach</p>
+      <p class="mensa-hero__eyebrow">{{ 'app.campus' | translate }}</p>
       <h1>Mensa</h1>
-      <p>Aktuelle Gerichte, Preise und Kennzeichnungen der Mensa Lörrach.</p>
+      <p>{{ 'mensa.currentDishes' | translate }}</p>
     </div>
   </header>
 
   @if (_isLoading()) {
-    <p class="mensa-page__state">Speiseplan wird geladen...</p>
+    <p class="mensa-page__state">{{ 'mensa.loading' | translate }}</p>
   } @else if (_error()) {
     <p class="mensa-page__state mensa-page__state--error">{{ _error() }}</p>
   } @else if (_menu().length > 0) {
     <div class="mensa-layout">
-      <aside class="mensa-days" aria-label="Speiseplan-Tage">
+      <aside class="mensa-days" [attr.aria-label]="'mensa.days' | translate">
         <div class="section-heading">
-          <span>Woche</span>
-          <strong>Tage</strong>
+          <span>{{ 'mensa.week' | translate }}</span>
+          <strong>{{ 'mensa.days' | translate }}</strong>
         </div>
 
-        <div class="mensa-days__list" aria-label="Speiseplan-Tage">
+        <div class="mensa-days__list" [attr.aria-label]="'mensa.days' | translate">
           @for (day of _menu(); track day.date; let index = $index) {
             <button
               class="mensa-days__item"
@@ -27,9 +27,9 @@
               [class.active]="_selectedDay() === index"
               [attr.aria-current]="_selectedDay() === index ? 'date' : null"
               (click)="selectDay(index)">
-              <span class="mensa-days__weekday">{{ day.date | date:'EEE':'':'de' }}</span>
+              <span class="mensa-days__weekday">{{ day.date | date:'EEE':'':_i18n.locale() }}</span>
               <span>
-                <strong>{{ day.date | date:'dd.MM.':'':'de' }}</strong>
+                <strong>{{ day.date | date:'shortDate':'':_i18n.locale() }}</strong>
               </span>
             </button>
           }
@@ -37,18 +37,18 @@
       </aside>
 
       @if (_currentDay(); as currentDay) {
-        <section class="mensa-menu" aria-label="Speiseplan für den ausgewählten Tag">
+        <section class="mensa-menu" [attr.aria-label]="'mensa.selectedDayMenu' | translate">
           <div class="mensa-menu__toolbar">
             <div class="section-heading">
-              <span>{{ currentDay.date | date:'EEEE':'':'de' }}</span>
-              <strong>{{ currentDay.date | date:'dd. MMMM yyyy':'':'de' }}</strong>
+              <span>{{ currentDay.date | date:'EEEE':'':_i18n.locale() }}</span>
+              <strong>{{ currentDay.date | date:'longDate':'':_i18n.locale() }}</strong>
             </div>
           </div>
 
           @if (currentDay.dishes.length === 0) {
             <div class="mensa-page__empty">
-              <strong>Keine Gerichte eingetragen.</strong>
-              <span>Für diesen Tag liegen aktuell keine Mensa-Daten vor.</span>
+              <strong>{{ 'mensa.emptyDayTitle' | translate }}</strong>
+              <span>{{ 'mensa.emptyDayBody' | translate }}</span>
             </div>
           } @else {
             <div class="mensa-page__dishes">
@@ -68,18 +68,18 @@
                           }
                         </h2>
                       </div>
-                      <strong class="dish-card__price">{{ dish.priceStudent | number:'1.2-2' }} €</strong>
+                      <strong class="dish-card__price">{{ dish.priceStudent | number:'1.2-2':_i18n.locale() }} €</strong>
                     </header>
 
                     @if (dish.isVegan || dish.isVegetarian || dish.allergens) {
                       <div class="dish-card__footer">
                         @if (dish.isVegan || dish.isVegetarian) {
-                          <div class="dish-card__badges" aria-label="Kennzeichnungen">
+                          <div class="dish-card__badges" [attr.aria-label]="'mensa.allergens' | translate">
                             @if (dish.isVegan) {
-                              <span class="badge badge--vegan">vegan</span>
+                              <span class="badge badge--vegan">{{ 'mensa.vegan' | translate }}</span>
                             }
                             @if (dish.isVegetarian && !dish.isVegan) {
-                              <span class="badge badge--veg">vegetarisch</span>
+                              <span class="badge badge--veg">{{ 'mensa.vegetarian' | translate }}</span>
                             }
                           </div>
                         }
@@ -98,8 +98,8 @@
     </div>
   } @else {
     <div class="mensa-page__empty">
-      <strong>Kein Speiseplan verfügbar.</strong>
-      <span>Für die Mensa liegen aktuell keine Einträge vor.</span>
+      <strong>{{ 'mensa.emptyMenuTitle' | translate }}</strong>
+      <span>{{ 'mensa.emptyMenuBody' | translate }}</span>
     </div>
   }
 </section>

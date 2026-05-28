@@ -19,30 +19,30 @@
       </span>
       <span class="profile-hover-card__details">
         <span>
-          <small>E-Mail</small>
+          <small>{{ 'common.email' | translate }}</small>
           <strong>{{ contact.email }}</strong>
         </span>
         <span>
-          <small>Kurs</small>
-          <strong>{{ contact.course || 'Kein Kurs' }}</strong>
+          <small>{{ 'common.course' | translate }}</small>
+          <strong>{{ contact.course || ('common.noCourse' | translate) }}</strong>
         </span>
         <span>
-          <small>Studiengang</small>
-          <strong>{{ contact.studyProgram || 'Nicht angegeben' }}</strong>
+          <small>{{ 'common.studyProgram' | translate }}</small>
+          <strong>{{ contact.studyProgram || ('common.notSpecified' | translate) }}</strong>
         </span>
         <span>
-          <small>Semester</small>
-          <strong>{{ contact.semester }}. Semester</strong>
+          <small>{{ 'common.semester' | translate }}</small>
+          <strong>{{ 'common.semesterValue' | translate:{ semester: contact.semester } }}</strong>
         </span>
         @if (contact.phoneNumber) {
           <span>
-            <small>Telefon</small>
+            <small>{{ 'common.phone' | translate }}</small>
             <strong>{{ contact.phoneNumber }}</strong>
           </span>
         }
         @if (contact.location) {
           <span>
-            <small>Ort</small>
+            <small>{{ 'common.location' | translate }}</small>
             <strong>{{ contact.location }}</strong>
           </span>
         }

@@ -21,7 +21,7 @@ Gruppen
 │   └── Für einzelne Studiengänge/Kurse, z. B. TIF25A
 │
 └── Campus-Gruppen
-    └── Freie Gruppen für Studierende, Lehrende und Verwaltung
+    └── Freie Gruppen für Studierende, Lehrende und Management
 ```
 
 ---
@@ -30,8 +30,8 @@ Gruppen
 
 | Gruppentyp | Zweck | Beispiel | Wer darf erstellen? |
 |---|---|---|---|
-| **Offizielle Gruppe** | Offizielle Kommunikation der Hochschule | Prüfungsamt, Verwaltung, IT, Studiengangsleitung | Admin und Verwaltung |
-| **Kursgruppe** | Kommunikation innerhalb eines konkreten Kurses | TIF25A, WWI24B | Admin und Verwaltung |
+| **Offizielle Gruppe** | Offizielle Kommunikation der Hochschule | Prüfungsamt, Management, IT, Studiengangsleitung | Admin und Management |
+| **Kursgruppe** | Kommunikation innerhalb eines konkreten Kurses | TIF25A, WWI24B | Admin und Management |
 | **Campus-Gruppe** | Freie Gruppen für Austausch, Lernen, Freizeit oder Organisation | Lerngruppe Mathe, Tennis, Wohnungsbörse | Alle Rollen |
 
 ---
@@ -44,7 +44,7 @@ Diese Rollen existieren unabhängig von einzelnen Gruppen:
 |---|---|
 | **Student** | Normale Studierende |
 | **Lehrer** | Dozenten und Lehrpersonen |
-| **Verwaltung** | Sekretariat, Hochschulverwaltung, organisatorische Rollen |
+| **Management** | Sekretariat, Hochschulverwaltung, organisatorische Rollen |
 | **Admin** | Systemweite Administration |
 
 Wichtig: Die globale Rolle ist nicht dasselbe wie die Rolle innerhalb einer Gruppe.
@@ -66,7 +66,7 @@ Darf Gruppe erstellen?
                         Offiziell    Kursgruppe    Campus-Gruppe
 Student                     Nein         Nein            Ja
 Lehrer                      Nein         Nein            Ja
-Verwaltung                   Ja           Ja             Ja
+Management                   Ja           Ja             Ja
 Admin                        Ja           Ja             Ja
 ```
 
@@ -74,7 +74,7 @@ Admin                        Ja           Ja             Ja
 |---|---:|---:|---:|
 | Student | Nein | Nein | Ja |
 | Lehrer | Nein | Nein | Ja |
-| Verwaltung | Ja | Ja | Ja |
+| Management | Ja | Ja | Ja |
 | Admin | Ja | Ja | Ja |
 
 ---
@@ -106,7 +106,7 @@ Beim Erstellen einer Gruppe werden je nach Gruppentyp unterschiedliche Felder be
 
 | Feld | Beschreibung | Beispiel |
 |---|---|---|
-| **Offizielle Kategorie** | Fachliche Einordnung der Gruppe | Prüfungsamt, Verwaltung, IT |
+| **Offizielle Kategorie** | Fachliche Einordnung der Gruppe | Prüfungsamt, Management, IT |
 
 ---
 
@@ -225,7 +225,7 @@ Nutzer
 ├── Globale Rolle
 │   ├── Student
 │   ├── Lehrer
-│   ├── Verwaltung
+│   ├── Management
 │   └── Admin
 │
 └── Gruppenrolle pro Gruppe
@@ -239,7 +239,7 @@ Beispiele:
 | Nutzer | Globale Rolle | Gruppe | Gruppenrolle |
 |---|---|---|---|
 | Max | Student | Lerngruppe Mathe | Besitzer |
-| Frau Müller | Verwaltung | Prüfungsamt Infos | Moderator |
+| Frau Mueller | Management | Exam office info | Moderator |
 | Herr Schmidt | Lehrer | TIF25A | Moderator |
 | Admin | Admin | Alle Gruppen | Systemweiter Zugriff |
 
@@ -283,8 +283,8 @@ Für die erste Version sollten folgende Funktionen umgesetzt werden:
 
 ### Globale Erstellrechte
 
-- Offizielle Gruppen: Admin und Verwaltung
-- Kursgruppen: Admin und Verwaltung
+- Offizielle Gruppen: Admin und Management
+- Kursgruppen: Admin und Management
 - Campus-Gruppen: alle Rollen
 
 ### Gruppeneinstellungen

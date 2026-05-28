@@ -26,10 +26,10 @@ describe('Calendar', () => {
 
   it('should create exam entries through the API', () => {
     const requestBody = {
-      moduleName: 'Mathematik',
+      moduleName: 'Mathematics',
       examDate: '2026-05-10T08:00:00.000Z',
-      location: 'Aula',
-      notes: 'Taschenrechner',
+      location: 'Auditorium',
+      notes: 'Calculator',
     };
 
     service.addExam(requestBody).subscribe();

@@ -35,15 +35,15 @@ public class GradesService(
     {
         var user = await userRepo.FindByIdAsync(userId, cancellationToken);
         if (user is null)
-            return Result<GradePlanDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<GradePlanDto>.Failure("User profile was not found.");
 
         var course = await courseRepo.FindByCodeAsync(user.Course, cancellationToken);
         if (course is null)
-            return Result<GradePlanDto>.Failure("Für dein Profil ist kein gültiger Kurs hinterlegt.");
+            return Result<GradePlanDto>.Failure("No valid course is assigned to your profile.");
 
         var plan = await studyPlanProvider.GetPlanForCourseAsync(course, cancellationToken);
         if (plan is null)
-            return Result<GradePlanDto>.Failure("Für deinen Kurs wurde kein DHBW-Studienplan gefunden.");
+            return Result<GradePlanDto>.Failure("No DHBW study plan was found for your course.");
 
         var grades = await gradeRepo.GetByUserAsync(userId);
         var gradesByModule = grades
@@ -77,7 +77,7 @@ public class GradesService(
     public async Task<Result<GradeDto>> AddGradeAsync(AddGradeCommand cmd, CancellationToken cancellationToken = default)
     {
         if (cmd.Value < 1.0m || cmd.Value > 5.0m)
-            return Result<GradeDto>.Failure("Note muss zwischen 1,0 und 5,0 liegen.");
+            return Result<GradeDto>.Failure("Grade must be between 1.0 and 5.0.");
 
         var resolvedModule = string.IsNullOrWhiteSpace(cmd.ModuleCode)
             ? ResolveManualModule(cmd.ModuleName, cmd.Ects)
@@ -88,7 +88,7 @@ public class GradesService(
 
         var module = resolvedModule.Value!;
         if (module.Ects <= 0)
-            return Result<GradeDto>.Failure("ECTS-Punkte müssen größer als 0 sein.");
+            return Result<GradeDto>.Failure("ECTS points must be greater than 0.");
 
         var grade = new Grade
         {
@@ -117,7 +117,7 @@ public class GradesService(
         var normalizedCode = moduleCode.Trim();
         var module = planResult.Value!.Modules.FirstOrDefault(item => item.Code.Equals(normalizedCode, StringComparison.OrdinalIgnoreCase));
         if (module is null)
-            return Result<ResolvedGradeModule>.Failure("Dieses Modul gehört nicht zum hinterlegten Kursplan.");
+            return Result<ResolvedGradeModule>.Failure("This module does not belong to the assigned course plan.");
 
         return Result<ResolvedGradeModule>.Success(new ResolvedGradeModule(module.Code, module.Name, module.Ects));
     }
@@ -125,7 +125,7 @@ public class GradesService(
     private static Result<ResolvedGradeModule> ResolveManualModule(string? moduleName, int? ects)
     {
         if (string.IsNullOrWhiteSpace(moduleName))
-            return Result<ResolvedGradeModule>.Failure("Modulname darf nicht leer sein.");
+            return Result<ResolvedGradeModule>.Failure("Module name cannot be empty.");
 
         return Result<ResolvedGradeModule>.Success(new ResolvedGradeModule(string.Empty, moduleName.Trim(), ects ?? 0));
     }

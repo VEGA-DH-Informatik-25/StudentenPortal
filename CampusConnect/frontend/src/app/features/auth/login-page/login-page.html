@@ -2,13 +2,13 @@
   <div class="login-card">
     <div class="login-card__header">
       <span class="login-card__logo">🎓</span>
-      <h1>CampusConnect</h1>
-      <p>DHBW Lörrach</p>
+      <h1>{{ 'app.name' | translate }}</h1>
+      <p>{{ 'app.campus' | translate }}</p>
     </div>
 
     <div class="login-card__tabs">
-      <button [class.active]="_mode() === 'login'" (click)="switchMode('login')">Anmelden</button>
-      <button [class.active]="_mode() === 'register'" (click)="switchMode('register')">Registrieren</button>
+      <button [class.active]="_mode() === 'login'" (click)="switchMode('login')">{{ 'login.login' | translate }}</button>
+      <button [class.active]="_mode() === 'register'" (click)="switchMode('register')">{{ 'login.register' | translate }}</button>
     </div>
 
     @if (_mode() === 'login') {
@@ -18,14 +18,14 @@
           <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
         </label>
         <label>
-          Passwort
+          {{ 'common.password' | translate }}
           <input type="password" [(ngModel)]="_loginForm.password" name="password" required />
         </label>
         @if (_error()) {
           <p class="login-card__error">{{ _error() }}</p>
         }
         <button type="submit" [disabled]="_isLoading()">
-          {{ _isLoading() ? 'Bitte warten…' : 'Anmelden' }}
+          {{ _isLoading() ? ('common.wait' | translate) : ('login.login' | translate) }}
         </button>
       </form>
     }
@@ -37,15 +37,15 @@
           <input type="email" [(ngModel)]="_registerForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
         </label>
         <label>
-          Passwort
+          {{ 'common.password' | translate }}
           <input type="password" [(ngModel)]="_registerForm.password" name="password" required />
         </label>
         <label>
-          Anzeigename
+          {{ 'common.displayName' | translate }}
           <input type="text" [(ngModel)]="_registerForm.displayName" name="displayName" required />
         </label>
         <label>
-          Kurs
+          {{ 'common.course' | translate }}
           <select [(ngModel)]="_registerForm.course" name="course" [disabled]="_coursesLoading()" required>
             @for (course of _courses(); track course.code) {
               <option [value]="course.code">{{ courseLabel(course) }}</option>
@@ -56,7 +56,7 @@
           <p class="login-card__error">{{ _error() }}</p>
         }
         <button type="submit" [disabled]="_isLoading() || _coursesLoading() || !_registerForm.course">
-          {{ _isLoading() ? 'Bitte warten…' : 'Konto erstellen' }}
+          {{ _isLoading() ? ('common.wait' | translate) : ('login.registerSubmit' | translate) }}
         </button>
       </form>
     }

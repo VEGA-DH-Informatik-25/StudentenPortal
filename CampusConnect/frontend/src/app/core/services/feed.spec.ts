@@ -25,11 +25,11 @@ describe('Feed', () => {
   });
 
   it('should send the selected group when creating a post', () => {
-    service.createPost({ content: 'Hallo Kurs', groupId: 'group-1' }).subscribe();
+    service.createPost({ content: 'Hello course', groupId: 'group-1' }).subscribe();
 
     const request = http.expectOne('/api/feed');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ content: 'Hallo Kurs', groupId: 'group-1' });
+    expect(request.request.body).toEqual({ content: 'Hello course', groupId: 'group-1' });
     request.flush({});
   });
 });

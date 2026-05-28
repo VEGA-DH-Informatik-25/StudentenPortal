@@ -28,7 +28,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
                 ["Admin:Password"] = string.Empty,
                 ["Mensa:ApiKey"] = "test-key",
                 ["Mensa:BaseUrl"] = "https://example.invalid",
-                ["Mensa:OrtId"] = "677",
+                ["Mensa:LocationId"] = "677",
                 ["Mensa:Days"] = "5"
             });
         });
@@ -58,7 +58,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Admin__Password", string.Empty);
         Environment.SetEnvironmentVariable("Mensa__ApiKey", "test-key");
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", "https://example.invalid");
-        Environment.SetEnvironmentVariable("Mensa__OrtId", "677");
+        Environment.SetEnvironmentVariable("Mensa__LocationId", "677");
         Environment.SetEnvironmentVariable("Mensa__Days", "5");
     }
 
@@ -72,7 +72,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Admin__Password", null);
         Environment.SetEnvironmentVariable("Mensa__ApiKey", null);
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", null);
-        Environment.SetEnvironmentVariable("Mensa__OrtId", null);
+        Environment.SetEnvironmentVariable("Mensa__LocationId", null);
         Environment.SetEnvironmentVariable("Mensa__Days", null);
     }
 }

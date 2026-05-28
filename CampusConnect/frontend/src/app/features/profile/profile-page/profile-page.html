@@ -1,8 +1,8 @@
 <div class="profile-page">
   <header class="profile-page__header">
     <div>
-      <p class="profile-page__eyebrow">Konto</p>
-      <h1>Mein Profil</h1>
+      <p class="profile-page__eyebrow">{{ 'common.account' | translate }}</p>
+      <h1>{{ 'profile.header' | translate }}</h1>
       @if (_profile(); as profile) {
         <p>{{ profile.email }}</p>
       }
@@ -18,25 +18,25 @@
   }
 
   @if (_isLoading() && !_profile()) {
-    <p class="profile-page__loading">Lade Profil…</p>
+    <p class="profile-page__loading">{{ 'profile.loading' | translate }}</p>
   }
 
   @if (_profile(); as profile) {
-    <section class="profile-summary" aria-label="Profilübersicht">
+    <section class="profile-summary" [attr.aria-label]="'profile.overview' | translate">
       <div>
-        <span>Rolle</span>
-        <strong>{{ profile.role }}</strong>
+        <span>{{ 'common.role' | translate }}</span>
+        <strong>{{ roleLabel(profile.role) }}</strong>
       </div>
       <div>
-        <span>Studiengang</span>
+        <span>{{ 'common.studyProgram' | translate }}</span>
         <strong>{{ profile.studyProgram }}</strong>
       </div>
       <div>
-        <span>Semester</span>
+        <span>{{ 'common.semester' | translate }}</span>
         <strong>{{ profile.semester }}</strong>
       </div>
       <div>
-        <span>Kurs</span>
+        <span>{{ 'common.course' | translate }}</span>
         <strong>{{ profile.course }}</strong>
       </div>
     </section>
@@ -44,7 +44,7 @@
     <form class="profile-form" (ngSubmit)="onSave()">
       <div class="profile-form__grid">
         <label>
-          Anzeigename
+          {{ 'common.displayName' | translate }}
           <input type="text" name="displayName" [(ngModel)]="_form.displayName" maxlength="120" required />
         </label>
 
@@ -54,10 +54,10 @@
         </label>
 
         <label>
-          Kurs
+          {{ 'common.course' | translate }}
           <select name="course" [(ngModel)]="_form.course" [disabled]="_coursesLoading()" required>
             @if (_form.course && !selectedCourse()) {
-              <option [value]="_form.course">{{ _form.course }} · nicht im Kurskatalog</option>
+              <option [value]="_form.course">{{ _form.course }} · {{ 'common.notSet' | translate }}</option>
             }
             @for (course of _courses(); track course.code) {
               <option [value]="course.code">{{ courseLabel(course) }}</option>
@@ -66,34 +66,34 @@
         </label>
 
         <label>
-          Studiengang
+          {{ 'common.studyProgram' | translate }}
           <input type="text" [value]="selectedCourse()?.studyProgram ?? profile.studyProgram" readonly />
         </label>
 
         <label>
-          Semester
-          <input type="text" [value]="(selectedCourse()?.semester ?? profile.semester) + '. Semester'" readonly />
+          {{ 'common.semester' | translate }}
+          <input type="text" [value]="'common.semesterValue' | translate:{ semester: selectedCourse()?.semester ?? profile.semester }" readonly />
         </label>
 
         <label>
-          Telefon
+          {{ 'common.phone' | translate }}
           <input type="tel" name="phoneNumber" [(ngModel)]="_form.phoneNumber" maxlength="40" autocomplete="tel" />
         </label>
 
         <label>
-          Ort
-          <input type="text" name="location" [(ngModel)]="_form.location" maxlength="120" placeholder="z. B. Bibliothek, Campus, Raum" />
+          {{ 'common.location' | translate }}
+          <input type="text" name="location" [(ngModel)]="_form.location" maxlength="120" [placeholder]="'profile.locationPlaceholder' | translate" />
         </label>
 
         <label class="profile-form__wide">
-          Profilnotiz
-          <textarea name="profileNote" [(ngModel)]="_form.profileNote" maxlength="280" rows="4" placeholder="Kurzinfo für Kommilitonen und Lehrende"></textarea>
+          {{ 'common.profileNote' | translate }}
+          <textarea name="profileNote" [(ngModel)]="_form.profileNote" maxlength="280" rows="4" [placeholder]="'profile.notePlaceholder' | translate"></textarea>
         </label>
       </div>
 
       <div class="profile-form__actions">
         <button type="submit" [disabled]="_isSaving() || _coursesLoading() || !_form.course">
-          {{ _isSaving() ? 'Speichere…' : 'Änderungen speichern' }}
+          {{ _isSaving() ? ('profile.saving' | translate) : ('profile.save' | translate) }}
         </button>
       </div>
     </form>

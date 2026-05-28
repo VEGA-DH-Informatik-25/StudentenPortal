@@ -8,7 +8,7 @@ namespace CampusConnect.Application.Tests.Features.Admin;
 public class AdminUsersServiceTests
 {
     [Fact]
-    public async Task UpdateRoleAsync_AllowsAssigningVerwaltungRole()
+    public async Task UpdateRoleAsync_AllowsAssigningManagementRole()
     {
         var admin = new User
         {
@@ -25,11 +25,11 @@ public class AdminUsersServiceTests
         var users = new FakeUserRepository(admin, user);
         var service = new AdminUsersService(users, new FakeCourseRepository(), new FakeGroupRepository());
 
-        var result = await service.UpdateRoleAsync(new UpdateUserRoleCommand(user.Id, "Verwaltung", admin.Id));
+        var result = await service.UpdateRoleAsync(new UpdateUserRoleCommand(user.Id, "Management", admin.Id));
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("Verwaltung", result.Value!.Role);
-        Assert.Equal(UserRole.Verwaltung, user.Role);
+        Assert.Equal("Management", result.Value!.Role);
+        Assert.Equal(UserRole.Management, user.Role);
     }
 
     private sealed class FakeUserRepository(params User[] users) : IUserRepository

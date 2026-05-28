@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "CampusConnect API",
         Version = "v1",
-        Description = "HTTP API fuer das CampusConnect Studentenportal."
+        Description = "HTTP API for the CampusConnect student portal."
     });
 
     options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        Description = "JWT aus POST /api/auth/login als Bearer-Token verwenden."
+        Description = "Use the JWT from POST /api/auth/login as a bearer token."
     });
 
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement

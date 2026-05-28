@@ -1,12 +1,12 @@
-# API-Referenz
+# API Reference
 
-## Swagger und OpenAPI
+## Swagger And OpenAPI
 
-In der Development-Umgebung stellt die API eine interaktive Swagger-Oberfläche unter `/swagger` bereit. Das von Swagger verwendete OpenAPI-Dokument ist unter `/swagger/v1/swagger.json` abrufbar; zusätzlich bleibt der von ASP.NET Core generierte OpenAPI-Endpunkt unter `/openapi/v1.json` verfügbar.
+In the development environment, the API exposes an interactive Swagger UI at `/swagger`. The OpenAPI document used by Swagger is available at `/swagger/v1/swagger.json`; the ASP.NET Core generated OpenAPI endpoint remains available at `/openapi/v1.json`.
 
-Geschützte Endpunkte können in Swagger über **Authorize** mit dem JWT aus `POST /api/auth/login` getestet werden. Das Token wird als Bearer-Token gesendet.
+Protected endpoints can be tested in Swagger through **Authorize** with the JWT from `POST /api/auth/login`. The token is sent as a bearer token.
 
-## Implementierte Endpunkte
+## Implemented Endpoints
 
 | Methode | Endpunkt | Beschreibung | Authentifizierung |
 |---|---|---|---|
@@ -85,4 +85,4 @@ Gruppeneinstellungen enthalten aktuell:
 | `requiresApproval` | Neue Beiträge benötigen Moderation/Freigabe |
 | `isDiscoverable` | Gruppe ist öffentlich und kann unter Entdecken gefunden werden; `false` macht sie privat |
 
-Globale Rollen sind von Gruppenrollen getrennt: `Student`, `Lecturer` (Lehrer), `Verwaltung` und `Admin` beschreiben systemweite Rechte; `ReadOnly`, `ReadWrite` und `Manage` beschreiben Rechte innerhalb einer konkreten Gruppe. Studierende und Lehrende können öffentliche Gruppen entdecken, Beiträge zugewiesener Gruppen lesen, in zugewiesenen und freigegebenen Gruppen mit `ReadWrite` oder `Manage` posten, öffentlichen Campusgruppen über `POST /api/groups/{id}/join` beitreten und eigene Campusgruppen erstellen. Die globale Rolle `Verwaltung` kann wie `Admin` Campusgruppen, offizielle Gruppen und Kursgruppen erstellen; Kursgruppen benötigen dabei ein `courseCode` und werden bei Benutzer-Kurszuordnungen weiterhin synchronisiert. Die Erstellerin oder der Ersteller einer Gruppe kann deren Einstellungen öffnen, Konten zuweisen und über `PUT /api/groups/{id}/member-permissions` zugewiesene Konten auf `ReadOnly`, `ReadWrite` oder `Manage` setzen. `Manage` erlaubt zusätzlich das Bearbeiten der Gruppeneinstellungen und Mitgliederverwaltung. Admins können alle Gruppeneinstellungen ändern; Lehrende können Kursgruppen verwalten, wenn sie der Kursgruppe zugewiesen sind. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings`, `PUT /api/groups/{id}/assignments` und `PUT /api/groups/{id}/member-permissions` liefern für nicht berechtigte Nutzer `403 Forbidden`; bei Kursgruppen lehnt `PUT /api/groups/{id}/assignments` manuelle Zuweisungen ab, damit die Kursmitgliedschaft konsistent bleibt.
+Global roles are separate from group roles: `Student`, `Lecturer`, `Management`, and `Admin` describe system-wide permissions; `ReadOnly`, `ReadWrite`, and `Manage` describe permissions inside a specific group. Students and lecturers can discover public groups, read posts from assigned groups, post in assigned and enabled groups with `ReadWrite` or `Manage`, join public campus groups through `POST /api/groups/{id}/join`, and create their own campus groups. The global `Management` role can create campus groups, official groups, and course groups like `Admin`; course groups require a `courseCode` and continue to be synchronized when user-course assignments change. The creator of a group can open its settings, assign accounts, and set assigned accounts to `ReadOnly`, `ReadWrite`, or `Manage` through `PUT /api/groups/{id}/member-permissions`. `Manage` additionally allows editing group settings and member administration. Admins can edit all group settings; lecturers can manage course groups when they are assigned to that course group. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings`, `PUT /api/groups/{id}/assignments`, and `PUT /api/groups/{id}/member-permissions` return `403 Forbidden` for unauthorized users; for course groups, `PUT /api/groups/{id}/assignments` rejects manual assignments so course membership stays consistent.

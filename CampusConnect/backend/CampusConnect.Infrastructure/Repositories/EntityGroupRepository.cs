@@ -29,7 +29,15 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
             group.Type == GroupType.Course && group.CourseCode == normalizedCourse);
 
         if (existing is not null)
+        {
+            existing.Name = $"Course {normalizedCourse}";
+            existing.Description = "Course-internal posts, study organization, and student-life notices.";
+            existing.Audience = normalizedCourse;
+            existing.OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Course group" : studyProgram.Trim();
+            existing.IconLabel = Initials(normalizedCourse);
+            await dbContext.SaveChangesAsync();
             return Clone(existing);
+        }
 
         var group = CreateCourseGroup(normalizedCourse, studyProgram);
         dbContext.CampusGroups.Add(group);
@@ -102,12 +110,12 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
 
     private static CampusGroup CreateCourseGroup(string courseCode, string? studyProgram) => new()
     {
-        Name = $"Kurs {courseCode}",
-        Description = "Kursinterne Beiträge, Lernorganisation und Hinweise für deinen Studienalltag.",
+        Name = $"Course {courseCode}",
+        Description = "Course-internal posts, study organization, and student-life notices.",
         Type = GroupType.Course,
         Audience = courseCode,
         CourseCode = courseCode,
-        OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Kursgruppe" : studyProgram.Trim(),
+        OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Course group" : studyProgram.Trim(),
         IconLabel = Initials(courseCode),
         AccentColor = "#e2001a",
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }

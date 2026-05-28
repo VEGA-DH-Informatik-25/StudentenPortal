@@ -1,6 +1,8 @@
 import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
@@ -16,13 +18,14 @@ interface GroupTabItem {
 @Component({
   selector: 'app-groups-page',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './groups-page.html',
   styleUrl: './groups-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupsPage implements OnInit {
   private readonly _groupsService = inject(Groups);
+  protected readonly _i18n = inject(I18n);
   private readonly _router = inject(Router);
 
   protected readonly _groups = signal<CampusGroup[]>([]);
@@ -52,11 +55,11 @@ export class GroupsPage implements OnInit {
   protected readonly _directoryFilteredGroups = computed(() => this._directoryGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
   protected readonly _exploreFilteredGroups = computed(() => this._exploreGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
   protected readonly _tabs = computed<GroupTabItem[]>(() => [
-    { id: 'All', label: 'Alle', count: this._directoryFilteredGroups().length },
-    { id: 'Official', label: 'Offiziell', count: this._directoryFilteredGroups().filter(group => group.type === 'Official').length },
-    { id: 'Course', label: 'Kurse', count: this._directoryFilteredGroups().filter(group => group.type === 'Course').length },
-    { id: 'Social', label: 'Campus', count: this._directoryFilteredGroups().filter(group => group.type === 'Social').length },
-    { id: 'Explore', label: 'Entdecken', count: this._exploreFilteredGroups().length },
+    { id: 'All', label: this._i18n.translate('groups.tab.all'), count: this._directoryFilteredGroups().length },
+    { id: 'Official', label: this._i18n.translate('groups.tab.official'), count: this._directoryFilteredGroups().filter(group => group.type === 'Official').length },
+    { id: 'Course', label: this._i18n.translate('groups.tab.courses'), count: this._directoryFilteredGroups().filter(group => group.type === 'Course').length },
+    { id: 'Social', label: this._i18n.translate('groups.tab.campus'), count: this._directoryFilteredGroups().filter(group => group.type === 'Social').length },
+    { id: 'Explore', label: this._i18n.translate('groups.tab.discover'), count: this._exploreFilteredGroups().length },
   ]);
   protected readonly _filteredGroups = computed(() => {
     const activeTab = this._activeTab();
@@ -79,10 +82,10 @@ export class GroupsPage implements OnInit {
   protected readonly _createPolicySummary = computed(() => {
     const policies: string[] = [];
     policies.push(this.groupTypeLabel(this._createType()));
-    policies.push(this._createAllowStudentPosts() ? 'Studierende dürfen posten' : 'Nur Hochschulrollen posten');
-    policies.push(this._createAllowComments() ? 'Kommentare offen' : 'Kommentare geschlossen');
-    policies.push(this._createRequiresApproval() ? 'Beiträge mit Freigabe' : 'Beiträge ohne Freigabe');
-    policies.push(this._createIsDiscoverable() ? 'Öffentlich sichtbar' : 'Privat');
+    policies.push(this._createAllowStudentPosts() ? this._i18n.translate('groups.policy.studentPosts') : this._i18n.translate('groups.policy.universityPosts'));
+    policies.push(this._createAllowComments() ? this._i18n.translate('groups.commentPolicy.open') : this._i18n.translate('groups.commentPolicy.closed'));
+    policies.push(this._createRequiresApproval() ? this._i18n.translate('groups.policy.approval') : this._i18n.translate('groups.policy.noApproval'));
+    policies.push(this._createIsDiscoverable() ? this._i18n.translate('groups.policy.visibility') : this._i18n.translate('groups.policy.private'));
     return policies.join(' · ');
   });
 
@@ -121,12 +124,20 @@ export class GroupsPage implements OnInit {
   protected groupTypeLabel(type: GroupType): string {
     switch (type) {
       case 'Course':
-        return 'Kursgruppe';
+        return this._i18n.translate('groups.type.course');
       case 'Official':
-        return 'Offizielle Gruppe';
+        return this._i18n.translate('groups.type.official');
       case 'Social':
-        return 'Campusgruppe';
+        return this._i18n.translate('groups.type.social');
     }
+  }
+
+  protected groupName(group: CampusGroup): string {
+    return this._i18n.groupName(group);
+  }
+
+  protected groupDescription(group: CampusGroup): string {
+    return this._i18n.groupDescription(group);
   }
 
   protected openSettings(group: CampusGroup): void {
@@ -153,10 +164,10 @@ export class GroupsPage implements OnInit {
       next: updatedGroup => {
         this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
         this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
-        this._success.set('Du bist der Gruppe beigetreten.');
+        this._success.set(this._i18n.translate('groups.joinSuccess'));
       },
       error: () => {
-        this._error.set('Beitritt konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('groups.joinError'));
         this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
       },
     });
@@ -198,12 +209,12 @@ export class GroupsPage implements OnInit {
         this._createRequiresApproval.set(false);
         this._createIsDiscoverable.set(true);
         this._isCreateMenuOpen.set(false);
-        this._success.set('Gruppe wurde erstellt.');
+        this._success.set(this._i18n.translate('groups.createSuccess'));
         this._isCreating.set(false);
       },
       error: error => {
         const body = error?.error as { error?: string } | null;
-        this._error.set(body?.error ?? 'Gruppe konnte nicht erstellt werden.');
+        this._error.set(body?.error ?? this._i18n.translate('groups.createError'));
         this._isCreating.set(false);
       },
     });
@@ -220,7 +231,7 @@ export class GroupsPage implements OnInit {
       },
       error: () => {
         this._groups.set([]);
-        this._error.set('Gruppen konnten nicht geladen werden.');
+        this._error.set(this._i18n.translate('groups.loadError'));
         this._isLoading.set(false);
       },
     });
@@ -232,7 +243,17 @@ export class GroupsPage implements OnInit {
       return true;
     }
 
-    return [group.name, group.description, group.audience, group.courseCode ?? '', group.ownerLabel]
+    return [
+      group.name,
+      this.groupName(group),
+      group.description,
+      this.groupDescription(group),
+      group.audience,
+      this._i18n.groupAudience(group),
+      group.courseCode ?? '',
+      group.ownerLabel,
+      this._i18n.groupOwnerLabel(group),
+    ]
       .some(value => value.toLowerCase().includes(query));
   }
 

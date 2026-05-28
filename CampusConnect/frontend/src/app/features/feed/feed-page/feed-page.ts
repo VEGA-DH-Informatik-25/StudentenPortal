@@ -2,6 +2,8 @@ import { Component, ChangeDetectionStrategy, computed, inject, signal, OnInit } 
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Auth } from '../../../core/services/auth';
 import { Feed } from '../../../core/services/feed';
 import { FeedPost } from '../../../core/models/feed.model';
@@ -14,7 +16,7 @@ import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-
 @Component({
   selector: 'app-feed-page',
   standalone: true,
-  imports: [FormsModule, DatePipe, ProfileHoverCard],
+  imports: [FormsModule, DatePipe, ProfileHoverCard, TranslatePipe],
   templateUrl: './feed-page.html',
   styleUrl: './feed-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +25,7 @@ export class FeedPage implements OnInit {
   private readonly _auth = inject(Auth);
   private readonly _feedService = inject(Feed);
   private readonly _groupsService = inject(Groups);
+  protected readonly _i18n = inject(I18n);
   private readonly _router = inject(Router);
   private readonly _timetableService = inject(Timetable);
 
@@ -45,7 +48,7 @@ export class FeedPage implements OnInit {
     const selectedId = this._selectedGroupId();
     return this._postableGroups().find(group => group.id === selectedId) ?? this._postableGroups()[0] ?? null;
   });
-  protected readonly _displayName = computed(() => this._auth.displayName() || 'Studierende');
+  protected readonly _displayName = computed(() => this._auth.displayName() || this._i18n.roleLabel('Student'));
   protected readonly _profileInitials = computed(() => this._initialsFor(this._displayName()));
   protected readonly _scheduleEvents = signal<TimetableEvent[]>([]);
   protected readonly _scheduleCourse = signal('');
@@ -67,7 +70,7 @@ export class FeedPage implements OnInit {
     this._error.set('');
     this._feedService.getFeed().subscribe({
       next: posts => { this._posts.set(posts); this._error.set(''); this._isLoading.set(false); },
-      error: () => { this._error.set('Feed konnte nicht geladen werden.'); this._isLoading.set(false); },
+      error: () => { this._error.set(this._i18n.translate('feed.loadError')); this._isLoading.set(false); },
     });
   }
 
@@ -76,7 +79,7 @@ export class FeedPage implements OnInit {
     if (!content || this._isPosting()) return;
     const group = this._selectedGroup();
     if (!group) {
-      this._error.set('Bitte wähle zuerst eine Gruppe aus.');
+      this._error.set(this._i18n.translate('feed.selectGroupFirst'));
       return;
     }
 
@@ -84,7 +87,7 @@ export class FeedPage implements OnInit {
     this._isPosting.set(true);
     this._feedService.createPost({ content, groupId: group.id }).subscribe({
       next: post => { this._posts.update(posts => [post, ...posts]); this._newContent.set(''); this._isPosting.set(false); },
-      error: () => { this._error.set('Beitrag konnte nicht erstellt werden.'); this._isPosting.set(false); },
+      error: () => { this._error.set(this._i18n.translate('feed.createPostError')); this._isPosting.set(false); },
     });
   }
 
@@ -110,7 +113,7 @@ export class FeedPage implements OnInit {
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
       error: () => {
-        this._error.set('Kommentar konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('feed.createCommentError'));
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
     });
@@ -119,7 +122,7 @@ export class FeedPage implements OnInit {
   protected onDeleteComment(postId: string, commentId: string): void {
     this._feedService.deleteComment(postId, commentId).subscribe({
       next: updatedPost => this._replacePost(updatedPost),
-      error: () => this._error.set('Kommentar konnte nicht gelöscht werden.'),
+      error: () => this._error.set(this._i18n.translate('feed.deleteCommentError')),
     });
   }
 
@@ -145,7 +148,7 @@ export class FeedPage implements OnInit {
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
       error: () => {
-        this._error.set('Reaktion konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('feed.saveReactionError'));
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
     });
@@ -224,16 +227,22 @@ export class FeedPage implements OnInit {
   protected groupTypeLabel(type: GroupType): string {
     switch (type) {
       case 'Course':
-        return 'Kurs';
+        return this._i18n.translate('common.course');
       case 'Official':
-        return 'Offiziell';
+        return this._i18n.translate('groups.tab.official');
       case 'Social':
-        return 'Campus';
+        return this._i18n.translate('groups.tab.campus');
     }
   }
 
   protected commentPolicyLabel(group: CampusGroup): string {
-    return group.settings.allowComments ? 'Kommentare offen' : 'Kommentare geschlossen';
+    return group.settings.allowComments
+      ? this._i18n.translate('groups.commentPolicy.open')
+      : this._i18n.translate('groups.commentPolicy.closed');
+  }
+
+  protected groupName(group: CampusGroup): string {
+    return this._i18n.groupName(group);
   }
 
   protected canPostToGroup(group: CampusGroup): boolean {
@@ -246,7 +255,7 @@ export class FeedPage implements OnInit {
 
   protected scheduleTime(event: TimetableEvent): string {
     if (event.isAllDay) {
-      return 'Ganzer Tag';
+      return this._i18n.translate('common.allDay');
     }
 
     return `${this._formatTime(event.start)}-${this._formatTime(event.end)}`;
@@ -264,7 +273,8 @@ export class FeedPage implements OnInit {
 
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
-    return minutes === 0 ? `${hours} Std.` : `${hours} Std. ${minutes} min`;
+    const hourLabel = this._i18n.translate('common.hourShort');
+    return minutes === 0 ? `${hours} ${hourLabel}` : `${hours} ${hourLabel} ${minutes} min`;
   }
 
   protected scheduleMeta(event: TimetableEvent): string | null {
@@ -291,7 +301,7 @@ export class FeedPage implements OnInit {
   private _loadTodaySchedule(): void {
     const course = this._resolveScheduleCourse();
     if (!course) {
-      this._scheduleError.set('Wähle im Stundenplan zuerst deinen Kurs aus.');
+      this._scheduleError.set(this._i18n.translate('timetable.chooseCourseState'));
       return;
     }
 
@@ -313,7 +323,7 @@ export class FeedPage implements OnInit {
       },
       error: () => {
         this._scheduleEvents.set([]);
-        this._scheduleError.set('Der Tagesplan konnte nicht geladen werden.');
+        this._scheduleError.set(this._i18n.translate('feed.dailyScheduleError'));
         this._scheduleIsLoading.set(false);
       },
     });
@@ -331,7 +341,7 @@ export class FeedPage implements OnInit {
       },
       error: () => {
         this._groups.set([]);
-        this._groupsError.set('Gruppen konnten nicht geladen werden.');
+        this._groupsError.set(this._i18n.translate('feed.groupsError'));
         this._groupsLoading.set(false);
       },
     });
@@ -388,7 +398,7 @@ export class FeedPage implements OnInit {
   }
 
   private _formatTime(value: string): string {
-    return new Intl.DateTimeFormat('de-DE', {
+    return new Intl.DateTimeFormat(this._i18n.locale(), {
       hour: '2-digit',
       minute: '2-digit',
       timeZone: this._scheduleTimezone(),
@@ -404,7 +414,7 @@ export class FeedPage implements OnInit {
 
   private _formatDateLong(value: string): string {
     const [year, month, day] = value.split('-').map(Number);
-    return new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: '2-digit', month: 'long' })
+    return new Intl.DateTimeFormat(this._i18n.locale(), { weekday: 'long', day: '2-digit', month: 'long' })
       .format(new Date(year, month - 1, day));
   }
 }

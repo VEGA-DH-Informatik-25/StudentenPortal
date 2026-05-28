@@ -109,11 +109,11 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "official-announcements", new CampusGroup
         {
             Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
-            Name = "Offizielle Mitteilungen",
-            Description = "Zentrale Hinweise von Verwaltung, Studiengangsleitung und Hochschulleitung.",
+            Name = "Official announcements",
+            Description = "Central notices from management, program leadership, and university leadership.",
             Type = GroupType.Official,
-            Audience = "Alle Studierenden",
-            OwnerLabel = "DHBW Lörrach",
+            Audience = "All students",
+            OwnerLabel = "DHBW Loerrach",
             IconLabel = "OF",
             AccentColor = "#a00014",
             AssignedUserIds = allUserIds,
@@ -123,11 +123,11 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "exam-office", new CampusGroup
         {
             Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
-            Name = "Prüfungsamt und Fristen",
-            Description = "Prüfungsordnungen, Anerkennungen, Abgaben, Fristen und organisatorische Hinweise.",
+            Name = "Exam office and deadlines",
+            Description = "Exam regulations, recognition requests, submissions, deadlines, and organizational notices.",
             Type = GroupType.Official,
-            Audience = "Studienbereichsübergreifend",
-            OwnerLabel = "Prüfungsamt",
+            Audience = "Across study programs",
+            OwnerLabel = "Exam office",
             IconLabel = "PF",
             AccentColor = "#6b1f2a",
             AssignedUserIds = allUserIds,
@@ -137,10 +137,10 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "mensa-campus", new CampusGroup
         {
             Id = Guid.Parse("10000000-0000-0000-0000-000000000003"),
-            Name = "Mensa und Campus Hangstraße",
-            Description = "Speiseplan, Campusservice und Hinweise rund um den Standort Hangstraße.",
+            Name = "Mensa and Hangstrasse campus",
+            Description = "Menu, campus service, and notices for the Hangstrasse site.",
             Type = GroupType.Official,
-            Audience = "Campus Hangstraße",
+            Audience = "Hangstrasse campus",
             OwnerLabel = "Campusservice",
             IconLabel = "ME",
             AccentColor = "#047857",
@@ -151,11 +151,11 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "library-learning", new CampusGroup
         {
             Id = Guid.Parse("10000000-0000-0000-0000-000000000004"),
-            Name = "Bibliothek und Recherche",
-            Description = "Bibliotheksangebote, Datenbanken, E-Books und Recherchetipps für Studienarbeiten.",
+            Name = "Library and research",
+            Description = "Library services, databases, e-books, and research tips for academic work.",
             Type = GroupType.Official,
-            Audience = "Alle Studiengänge",
-            OwnerLabel = "Bibliothek",
+            Audience = "All study programs",
+            OwnerLabel = "Library",
             IconLabel = "BI",
             AccentColor = "#315f72",
             AssignedUserIds = allUserIds,
@@ -165,10 +165,10 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "stuv-events", new CampusGroup
         {
             Id = Guid.Parse("30000000-0000-0000-0000-000000000001"),
-            Name = "StuV, Events und Hochschulaktivitäten",
-            Description = "Engagement, Hochschulsport, Freizeit und Veranstaltungen für das Campusleben in Lörrach.",
+            Name = "StuV, events, and university activities",
+            Description = "Engagement, university sports, leisure, and events for campus life in Loerrach.",
             Type = GroupType.Social,
-            Audience = "Alle Studierenden",
+            Audience = "All students",
             OwnerUserId = users["student-tif"].Id,
             OwnerLabel = users["student-tif"].DisplayName,
             IconLabel = "SV",
@@ -180,10 +180,10 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "housing", new CampusGroup
         {
             Id = Guid.Parse("30000000-0000-0000-0000-000000000002"),
-            Name = "Wohnungssuche Lörrach",
-            Description = "Austausch zu Zimmern, WGs, Pendeln und Wohnen in der Region Lörrach.",
+            Name = "Housing in Loerrach",
+            Description = "Exchange about rooms, shared flats, commuting, and living in the Loerrach region.",
             Type = GroupType.Social,
-            Audience = "Studierende in und um Lörrach",
+            Audience = "Students in and around Loerrach",
             OwnerUserId = users["student-wwi"].Id,
             OwnerLabel = users["student-wwi"].DisplayName,
             IconLabel = "WG",
@@ -195,10 +195,10 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "tech-projects", new CampusGroup
         {
             Id = Guid.Parse("30000000-0000-0000-0000-000000000003"),
-            Name = "Tech-Projekte und Labore",
-            Description = "Projektideen, Laborzeiten, Tooling und Praxisfragen für technische Studiengänge.",
+            Name = "Tech projects and labs",
+            Description = "Project ideas, lab hours, tooling, and practical questions for technical study programs.",
             Type = GroupType.Social,
-            Audience = "Technik und Informatik",
+            Audience = "Technology and computer science",
             OwnerUserId = users["lecturer-tech"].Id,
             OwnerLabel = users["lecturer-tech"].DisplayName,
             IconLabel = "TP",
@@ -210,10 +210,10 @@ public sealed class DevelopmentDemoDataSeeder(
         await AddGroupAsync(groups, "moodle-help", new CampusGroup
         {
             Id = Guid.Parse("30000000-0000-0000-0000-000000000004"),
-            Name = "Moodle, Webmail und Campus App Hilfe",
-            Description = "Peer-Support für digitale Werkzeuge, Stundenplan, Mail und Lernplattform.",
+            Name = "Moodle, webmail, and campus app help",
+            Description = "Peer support for digital tools, timetable, email, and learning platforms.",
             Type = GroupType.Social,
-            Audience = "Alle Accounts",
+            Audience = "All accounts",
             OwnerUserId = users["lecturer-business"].Id,
             OwnerLabel = users["lecturer-business"].DisplayName,
             IconLabel = "IT",
@@ -255,7 +255,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["admin"].Id,
                 AuthorName = users["admin"].DisplayName,
                 GroupId = groups["official-announcements"].Id,
-                Content = "Willkommen im CampusConnect-Demobereich. Hier laufen offizielle Hinweise, Kursgruppen und Campusgruppen an einem Ort zusammen.",
+                Content = "Welcome to the CampusConnect demo area. Official notices, course groups, and campus groups come together here.",
                 CreatedAt = SeedNow.AddHours(-6),
                 Reactions =
                 [
@@ -269,7 +269,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["admin"].Id,
                 AuthorName = users["admin"].DisplayName,
                 GroupId = groups["exam-office"].Id,
-                Content = "Reminder: Prüft eure persönlichen Prüfungstermine und hinterlegt Abgaben mit ausreichend Vorlauf im Kalender.",
+                Content = "Reminder: Check your personal exam dates and add submissions to the calendar early enough.",
                 CreatedAt = SeedNow.AddHours(-5)
             },
             new FeedPost
@@ -278,7 +278,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["student-tif"].Id,
                 AuthorName = users["student-tif"].DisplayName,
                 GroupId = groups["stuv-events"].Id,
-                Content = "Heute Abend treffen wir uns zur StuV-Planung. Themen: Hochschulsport, Erstsemesterfragen und Eventkalender.",
+                Content = "Tonight we meet for StuV planning. Topics: university sports, first-year questions, and the event calendar.",
                 CreatedAt = SeedNow.AddHours(-4)
             },
             new FeedPost
@@ -287,7 +287,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["lecturer-tech"].Id,
                 AuthorName = users["lecturer-tech"].DisplayName,
                 GroupId = groups["tech-projects"].Id,
-                Content = "Für die nächsten Projektarbeiten sind Laborplätze reserviert. Bitte stimmt euch kursübergreifend in der Gruppe ab.",
+                Content = "Lab spaces are reserved for the next project assignments. Please coordinate across courses in the group.",
                 CreatedAt = SeedNow.AddHours(-3)
             },
             new FeedPost
@@ -296,7 +296,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["student-wwi"].Id,
                 AuthorName = users["student-wwi"].DisplayName,
                 GroupId = studentWwiGroup.Id,
-                Content = $"{users["student-wwi"].Course}: Lerngruppe für Datenbanken am Donnerstag nach der Vorlesung?",
+                Content = $"{users["student-wwi"].Course}: Study group for databases after lecture on Thursday?",
                 CreatedAt = SeedNow.AddHours(-2),
                 Comments =
                 [
@@ -305,7 +305,7 @@ public sealed class DevelopmentDemoDataSeeder(
                         Id = Guid.Parse("41000000-0000-0000-0000-000000000002"),
                         AuthorId = users["student-wdb"].Id,
                         AuthorName = users["student-wdb"].DisplayName,
-                        Content = "Ich kann nach 16 Uhr dazukommen.",
+                        Content = "I can join after 4 p.m.",
                         CreatedAt = SeedNow.AddHours(-1).AddMinutes(-35)
                     }
                 ],
@@ -320,7 +320,7 @@ public sealed class DevelopmentDemoDataSeeder(
                 AuthorId = users["student-wwi"].Id,
                 AuthorName = users["student-wwi"].DisplayName,
                 GroupId = groups["housing"].Id,
-                Content = "Falls jemand ab Juni ein WG-Zimmer in Campusnähe sucht: In unserer WG wird ein Platz frei.",
+                Content = "If anyone is looking for a room near campus from June: one spot in our shared flat is opening up.",
                 CreatedAt = SeedNow.AddHours(-1)
             }
         };
@@ -331,9 +331,9 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private async Task SeedPersonalDataAsync(IReadOnlyDictionary<string, User> users)
     {
-        await SeedGradesAsync(users["student-tif"].Id, "Programmieren I", "Mathematik I");
-        await SeedGradesAsync(users["student-wwi"].Id, "Datenbanken", "BWL Grundlagen");
-        await SeedGradesAsync(users["student-wdb"].Id, "Digital Business Models", "Projektmanagement");
+        await SeedGradesAsync(users["student-tif"].Id, "Programming I", "Mathematics I");
+        await SeedGradesAsync(users["student-wwi"].Id, "Databases", "Business administration basics");
+        await SeedGradesAsync(users["student-wdb"].Id, "Digital Business Models", "Project management");
 
         foreach (var user in users.Values.Where(user => user.Role == UserRole.Student))
         {
@@ -341,10 +341,10 @@ public sealed class DevelopmentDemoDataSeeder(
             {
                 Id = StableGuid("exam", user.Id, 1),
                 UserId = user.Id,
-                ModuleName = "Klausurphase Modulprüfung",
+                ModuleName = "Exam phase module assessment",
                 ExamDate = new DateTime(2026, 6, 18, 9, 0, 0, DateTimeKind.Utc),
-                Location = "Campus Hangstraße",
-                Notes = "Demo-Termin für Kalender- und Erinnerungsfunktionen.",
+                Location = "Hangstrasse campus",
+                Notes = "Demo date for calendar and reminder features.",
                 CreatedAt = SeedNow.AddDays(-2)
             });
         }
@@ -398,15 +398,15 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private static readonly DemoUser[] DemoUsers =
     [
-        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "TIF25A", "Campusverwaltung", 2, UserRole.Admin),
-        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technik Demo", "TIF25A", "Informatik", 2, UserRole.Lecturer),
-        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Wirtschaft Demo", "WDB25A", "BWL-Digital Business Management", 2, UserRole.Lecturer),
-        new("student-tif", Guid.Parse("50000000-0000-0000-0000-000000000011"), "lena.tif25a@dhbw-loerrach.de", "Lena Informatik", "TIF25A", "Informatik", 2, UserRole.Student),
-        new("student-wwi", Guid.Parse("50000000-0000-0000-0000-000000000012"), "noah.wwi25a@dhbw-loerrach.de", "Noah Wirtschaftsinformatik", "WWI25A", "Wirtschaftsinformatik", 2, UserRole.Student),
-        new("student-wdb", Guid.Parse("50000000-0000-0000-0000-000000000013"), "mia.wdb25a@dhbw-loerrach.de", "Mia Digital Business", "WDB25A", "BWL-Digital Business Management", 2, UserRole.Student),
-        new("student-tmb", Guid.Parse("50000000-0000-0000-0000-000000000014"), "jonas.tmb25a@dhbw-loerrach.de", "Jonas Maschinenbau", "TMB25A", "Maschinenbau", 2, UserRole.Student),
-        new("student-wgm", Guid.Parse("50000000-0000-0000-0000-000000000015"), "sara.wgm24a@dhbw-loerrach.de", "Sara Gesundheitsmanagement", "WGM24A", "BWL-Gesundheitsmanagement", 4, UserRole.Student),
-        new("student-gig", Guid.Parse("50000000-0000-0000-0000-000000000016"), "emil.gig25a@dhbw-loerrach.de", "Emil Gesundheitsversorgung", "GIG25A", "Interprofessionelle Gesundheitsversorgung", 2, UserRole.Student)
+        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "TIF25A", "Campus Administration", 2, UserRole.Admin),
+        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technology Demo", "TIF25A", "Computer Science", 2, UserRole.Lecturer),
+        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Business Demo", "WDB25A", "Business Digital Management", 2, UserRole.Lecturer),
+        new("student-tif", Guid.Parse("50000000-0000-0000-0000-000000000011"), "lena.tif25a@dhbw-loerrach.de", "Lena Computer Science", "TIF25A", "Computer Science", 2, UserRole.Student),
+        new("student-wwi", Guid.Parse("50000000-0000-0000-0000-000000000012"), "noah.wwi25a@dhbw-loerrach.de", "Noah Business Informatics", "WWI25A", "Business Informatics", 2, UserRole.Student),
+        new("student-wdb", Guid.Parse("50000000-0000-0000-0000-000000000013"), "mia.wdb25a@dhbw-loerrach.de", "Mia Digital Business", "WDB25A", "Business Administration - Digital Business Management", 2, UserRole.Student),
+        new("student-tmb", Guid.Parse("50000000-0000-0000-0000-000000000014"), "jonas.tmb25a@dhbw-loerrach.de", "Jonas Mechanical Engineering", "TMB25A", "Mechanical Engineering", 2, UserRole.Student),
+        new("student-wgm", Guid.Parse("50000000-0000-0000-0000-000000000015"), "sara.wgm24a@dhbw-loerrach.de", "Sara Health Management", "WGM24A", "Business Health Management", 4, UserRole.Student),
+        new("student-gig", Guid.Parse("50000000-0000-0000-0000-000000000016"), "emil.gig25a@dhbw-loerrach.de", "Emil Health Care", "GIG25A", "Interprofessional Health Care", 2, UserRole.Student)
     ];
 
     private sealed record DemoCourse(string Code, string StudyProgram, int Semester);

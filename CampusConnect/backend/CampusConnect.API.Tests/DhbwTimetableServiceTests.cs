@@ -54,7 +54,7 @@ public sealed class DhbwTimetableServiceTests
                 UID:past-day
                 DTSTART;TZID=Europe/Berlin:20260511T090000
                 DTEND;TZID=Europe/Berlin:20260511T103000
-                SUMMARY:Mathematik
+                SUMMARY:Mathematics
                 LOCATION:R101
                 END:VEVENT
                 BEGIN:VEVENT
@@ -84,7 +84,7 @@ public sealed class DhbwTimetableServiceTests
             day =>
             {
                 Assert.Equal(new DateOnly(2026, 5, 11), day.Date);
-                Assert.Equal("Mathematik", day.Events.Single().Title);
+                Assert.Equal("Mathematics", day.Events.Single().Title);
             },
             day =>
             {
@@ -104,14 +104,14 @@ public sealed class DhbwTimetableServiceTests
                 UID:previous-week
                 DTSTART;TZID=Europe/Berlin:20260505T090000
                 DTEND;TZID=Europe/Berlin:20260505T103000
-                SUMMARY:Datenbanken
+                SUMMARY:Databases
                 LOCATION:R201
                 END:VEVENT
                 BEGIN:VEVENT
                 UID:current-week
                 DTSTART;TZID=Europe/Berlin:20260511T090000
                 DTEND;TZID=Europe/Berlin:20260511T103000
-                SUMMARY:Mathematik
+                SUMMARY:Mathematics
                 LOCATION:R101
                 END:VEVENT
                 END:VCALENDAR
@@ -131,7 +131,7 @@ public sealed class DhbwTimetableServiceTests
 
         var day = Assert.Single(timetable.Days);
         Assert.Equal(new DateOnly(2026, 5, 5), day.Date);
-        Assert.Equal("Datenbanken", day.Events.Single().Title);
+        Assert.Equal("Databases", day.Events.Single().Title);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class DhbwTimetableServiceTests
             requestCount++;
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(SingleEventIcal("Mathematik"))
+                Content = new StringContent(SingleEventIcal("Mathematics"))
             };
         }));
         using var cache = CreateCache();
@@ -162,8 +162,8 @@ public sealed class DhbwTimetableServiceTests
         var second = await service.GetTimetableAsync("tif25a", 30);
 
         Assert.Equal(1, requestCount);
-        Assert.Equal("Mathematik", first.Days.Single().Events.Single().Title);
-        Assert.Equal("Mathematik", second.Days.Single().Events.Single().Title);
+        Assert.Equal("Mathematics", first.Days.Single().Events.Single().Title);
+        Assert.Equal("Mathematics", second.Days.Single().Events.Single().Title);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public sealed class DhbwTimetableServiceTests
             return requestCount == 1
                 ? new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent(SingleEventIcal("Mathematik"))
+                    Content = new StringContent(SingleEventIcal("Mathematics"))
                 }
                 : new HttpResponseMessage(HttpStatusCode.InternalServerError);
         }));
@@ -199,7 +199,7 @@ public sealed class DhbwTimetableServiceTests
         var fallback = await service.GetTimetableAsync("tif25a", 30);
 
         Assert.Equal(2, requestCount);
-        Assert.Equal("Mathematik", fallback.Days.Single().Events.Single().Title);
+        Assert.Equal("Mathematics", fallback.Days.Single().Events.Single().Title);
     }
 
     [Fact]

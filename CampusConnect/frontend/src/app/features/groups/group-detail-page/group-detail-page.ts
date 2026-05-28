@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { FeedPost } from '../../../core/models/feed.model';
 import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Auth } from '../../../core/services/auth';
@@ -14,7 +16,7 @@ import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-
 @Component({
   selector: 'app-group-detail-page',
   standalone: true,
-  imports: [DatePipe, FormsModule, ProfileHoverCard],
+  imports: [DatePipe, FormsModule, ProfileHoverCard, TranslatePipe],
   templateUrl: './group-detail-page.html',
   styleUrl: './group-detail-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +25,7 @@ export class GroupDetailPage implements OnInit {
   private readonly _auth = inject(Auth);
   private readonly _feedService = inject(Feed);
   private readonly _groupsService = inject(Groups);
+  protected readonly _i18n = inject(I18n);
   private readonly _route = inject(ActivatedRoute);
   private readonly _router = inject(Router);
 
@@ -37,15 +40,17 @@ export class GroupDetailPage implements OnInit {
   protected readonly _commentingPostIds = signal<string[]>([]);
   protected readonly _openReactionPostId = signal<string | null>(null);
   protected readonly _reactingKeys = signal<string[]>([]);
-  protected readonly _postCountLabel = computed(() => this._posts().length === 1 ? '1 Beitrag' : `${this._posts().length} Beiträge`);
-  protected readonly _displayName = computed(() => this._auth.displayName() || 'Studierende');
+  protected readonly _postCountLabel = computed(() => this._posts().length === 1
+    ? this._i18n.translate('groups.postCountOne')
+    : this._i18n.translate('groups.postCount', { count: this._posts().length }));
+  protected readonly _displayName = computed(() => this._auth.displayName() || this._i18n.roleLabel('Student'));
   protected readonly _profileInitials = computed(() => this.initialsFor(this._displayName()));
   protected readonly _emojiOptions = ['👍', '❤️', '🙌', '👏', '🎉', '🔥', '💡', '✅', '🚀', '👀', '🙂', '😂', '😮', '🤔', '🙏', '💪', '📌', '⭐', '☕', '🍀'];
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
     if (!groupId) {
-      this._error.set('Gruppe wurde nicht gefunden.');
+      this._error.set(this._i18n.translate('groups.detailNotFound'));
       return;
     }
 
@@ -78,7 +83,7 @@ export class GroupDetailPage implements OnInit {
         this._loadGroup(updatedGroup.id);
       },
       error: () => {
-        this._error.set('Beitritt konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('groups.joinError'));
         this._isJoining.set(false);
       },
     });
@@ -99,14 +104,14 @@ export class GroupDetailPage implements OnInit {
         }
         this._newContent.set('');
       },
-      error: () => this._error.set('Beitrag konnte nicht erstellt werden.'),
+      error: () => this._error.set(this._i18n.translate('feed.createPostError')),
     });
   }
 
   protected onDelete(id: string): void {
     this._feedService.deletePost(id).subscribe({
       next: () => this._posts.update(posts => posts.filter(post => post.id !== id)),
-      error: () => this._error.set('Beitrag konnte nicht gelöscht werden.'),
+      error: () => this._error.set(this._i18n.translate('feed.deletePostError')),
     });
   }
 
@@ -126,7 +131,7 @@ export class GroupDetailPage implements OnInit {
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
       error: () => {
-        this._error.set('Kommentar konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('feed.createCommentError'));
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
     });
@@ -135,7 +140,7 @@ export class GroupDetailPage implements OnInit {
   protected onDeleteComment(postId: string, commentId: string): void {
     this._feedService.deleteComment(postId, commentId).subscribe({
       next: updatedPost => this._replacePost(updatedPost),
-      error: () => this._error.set('Kommentar konnte nicht gelöscht werden.'),
+      error: () => this._error.set(this._i18n.translate('feed.deleteCommentError')),
     });
   }
 
@@ -161,7 +166,7 @@ export class GroupDetailPage implements OnInit {
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
       error: () => {
-        this._error.set('Reaktion konnte nicht gespeichert werden.');
+        this._error.set(this._i18n.translate('feed.saveReactionError'));
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
     });
@@ -236,28 +241,36 @@ export class GroupDetailPage implements OnInit {
   protected groupTypeLabel(type: GroupType): string {
     switch (type) {
       case 'Course':
-        return 'Kursgruppe';
+        return this._i18n.translate('groups.type.course');
       case 'Official':
-        return 'Offizielle Gruppe';
+        return this._i18n.translate('groups.type.official');
       case 'Social':
-        return 'Campusgruppe';
+        return this._i18n.translate('groups.type.social');
     }
   }
 
   protected permissionLabel(group: CampusGroup): string {
     if (!group.isAssigned && !group.canManage) {
-      return group.canJoin ? 'Öffentlich auffindbar' : 'Nicht zugewiesen';
+      return group.canJoin ? this._i18n.translate('groups.permission.public') : this._i18n.translate('groups.permission.none');
     }
 
     if (group.memberPermission === 'Manage' || group.canManage) {
-      return 'Verwalten';
+      return this._i18n.translate('groups.permission.manage');
     }
 
-    return group.memberPermission === 'ReadWrite' ? 'Lesen & Schreiben' : 'Nur lesen';
+    return group.memberPermission === 'ReadWrite' ? this._i18n.translate('groups.permission.write') : this._i18n.translate('groups.permission.read');
   }
 
   protected commentPolicyLabel(group: CampusGroup): string {
-    return group.settings.allowComments ? 'Kommentare offen' : 'Kommentare geschlossen';
+    return group.settings.allowComments ? this._i18n.translate('groups.commentPolicy.open') : this._i18n.translate('groups.commentPolicy.closed');
+  }
+
+  protected groupName(group: CampusGroup): string {
+    return this._i18n.groupName(group);
+  }
+
+  protected groupDescription(group: CampusGroup): string {
+    return this._i18n.groupDescription(group);
   }
 
   protected initialsFor(value: string): string {
@@ -280,13 +293,13 @@ export class GroupDetailPage implements OnInit {
         this._posts.set(group ? posts.filter(post => post.group.id === group.id) : []);
         this._openReactionPostId.set(null);
         this._openCommentPostIds.set([]);
-        this._error.set(group ? '' : 'Gruppe wurde nicht gefunden oder ist für dich nicht sichtbar.');
+        this._error.set(group ? '' : this._i18n.translate('groups.detailNotVisible'));
         this._isLoading.set(false);
       },
       error: () => {
         this._group.set(null);
         this._posts.set([]);
-        this._error.set('Gruppenbeiträge konnten nicht geladen werden.');
+        this._error.set(this._i18n.translate('groups.loadError'));
         this._isLoading.set(false);
       },
     });

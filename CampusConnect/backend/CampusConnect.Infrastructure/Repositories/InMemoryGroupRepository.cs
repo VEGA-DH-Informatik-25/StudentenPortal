@@ -132,12 +132,12 @@ public class InMemoryGroupRepository : IGroupRepository
 
     private static CampusGroup CreateCourseGroup(string courseCode, string? studyProgram) => new()
     {
-        Name = $"Kurs {courseCode}",
-        Description = "Kursinterne Beiträge, Lernorganisation und Hinweise für deinen Studienalltag.",
+        Name = $"Course {courseCode}",
+        Description = "Course-internal posts, study organization, and student-life notices.",
         Type = GroupType.Course,
         Audience = courseCode,
         CourseCode = courseCode,
-        OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Kursgruppe" : studyProgram.Trim(),
+        OwnerLabel = string.IsNullOrWhiteSpace(studyProgram) ? "Course group" : studyProgram.Trim(),
         IconLabel = Initials(courseCode),
         AccentColor = "#e2001a",
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }

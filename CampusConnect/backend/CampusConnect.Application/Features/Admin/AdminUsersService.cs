@@ -33,14 +33,14 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
     public async Task<Result<AdminUserDto>> UpdateRoleAsync(UpdateUserRoleCommand command, CancellationToken cancellationToken = default)
     {
         if (!Enum.TryParse<UserRole>(command.Role, ignoreCase: true, out var role))
-            return Result<AdminUserDto>.Failure("Diese Rolle ist nicht gültig.");
+            return Result<AdminUserDto>.Failure("This role is invalid.");
 
         var user = await userRepository.FindByIdAsync(command.UserId, cancellationToken);
         if (user is null)
-            return Result<AdminUserDto>.Failure("Benutzer wurde nicht gefunden.");
+            return Result<AdminUserDto>.Failure("User was not found.");
 
         if (user.Id == command.CurrentAdminId && role != UserRole.Admin)
-            return Result<AdminUserDto>.Failure("Du kannst deine eigene Admin-Rolle nicht entfernen.");
+            return Result<AdminUserDto>.Failure("You cannot remove your own admin role.");
 
         user.Role = role;
         await userRepository.UpdateAsync(user, cancellationToken);
@@ -53,11 +53,11 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         var courseCode = CoursesService.NormalizeCourseCode(command.CourseCode);
         var course = await courseRepository.FindByCodeAsync(courseCode, cancellationToken);
         if (course is null || !course.IsActive)
-            return Result<AdminUserDto>.Failure("Bitte wähle einen gültigen Kurs aus.");
+            return Result<AdminUserDto>.Failure("Choose a valid course.");
 
         var user = await userRepository.FindByIdAsync(command.UserId, cancellationToken);
         if (user is null)
-            return Result<AdminUserDto>.Failure("Benutzer wurde nicht gefunden.");
+            return Result<AdminUserDto>.Failure("User was not found.");
 
         var previousCourse = user.Course;
         user.Course = course.Code;
@@ -73,11 +73,11 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
     public async Task<Result<bool>> DeleteUserAsync(Guid userId, Guid currentAdminId, CancellationToken cancellationToken = default)
     {
         if (userId == currentAdminId)
-            return Result<bool>.Failure("Du kannst dein eigenes Admin-Konto nicht löschen.");
+            return Result<bool>.Failure("You cannot delete your own admin account.");
 
         var user = await userRepository.FindByIdAsync(userId, cancellationToken);
         if (user is null)
-            return Result<bool>.Failure("Benutzer wurde nicht gefunden.");
+            return Result<bool>.Failure("User was not found.");
 
         var previousCourse = user.Course;
         await userRepository.DeleteAsync(userId, cancellationToken);

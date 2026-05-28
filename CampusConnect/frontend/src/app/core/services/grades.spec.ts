@@ -36,7 +36,7 @@ describe('Grades', () => {
     const request = http.expectOne('/api/grades');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ moduleCode: 'T4INF1001', value: 1.7 });
-    request.flush({ id: 'grade-1', moduleCode: 'T4INF1001', moduleName: 'Mathematik I', value: 1.7, ects: 5, createdAt: '2026-04-28T10:00:00Z' });
+    request.flush({ id: 'grade-1', moduleCode: 'T4INF1001', moduleName: 'Mathematics I', value: 1.7, ects: 5, createdAt: '2026-04-28T10:00:00Z' });
   });
 
   it('should load the current course grade plan', () => {
@@ -49,10 +49,10 @@ describe('Grades', () => {
     expect(request.request.method).toBe('GET');
     request.flush({
       courseCode: 'TIF25A',
-      studyProgram: 'Informatik',
-      sourceUrl: 'https://example.invalid/Informatik.pdf',
+      studyProgram: 'Computer Science',
+      sourceUrl: 'https://example.invalid/computer-science.pdf',
       retrievedAt: '2026-04-29T10:00:00Z',
-      modules: [{ code: 'T4INF1001', name: 'Mathematik I', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] }],
+      modules: [{ code: 'T4INF1001', name: 'Mathematics I', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] }],
     });
   });
 

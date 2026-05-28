@@ -54,7 +54,7 @@ public class AuthController(AuthService authService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await authService.GetProfileAsync(userId.Value);
         if (!result.IsSuccess)
@@ -69,7 +69,7 @@ public class AuthController(AuthService authService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await authService.UpdateProfileAsync(userId.Value, new UpdateUserProfileCommand(
             request.DisplayName,

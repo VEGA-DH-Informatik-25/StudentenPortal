@@ -21,12 +21,12 @@ describe('GradesPage', () => {
     summary = { grades: [], weightedAverage: 0, totalEcts: 0 };
     plan = {
       courseCode: 'TIF25A',
-      studyProgram: 'Informatik',
-      sourceUrl: 'https://example.invalid/Informatik.pdf',
+      studyProgram: 'Computer Science',
+      sourceUrl: 'https://example.invalid/computer-science.pdf',
       retrievedAt: '2026-04-29T10:00:00Z',
       modules: [
-        { code: 'T4INF1001', name: 'Mathematik I', studyYear: 1, ects: 10, isRequired: true, isCompleted: false, grade: null, exams: [{ name: 'Klausur', scope: 'Siehe Pruefungsordnung', isGraded: true }] },
-        { code: 'T4INF1004', name: 'Programmieren', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] },
+        { code: 'T4INF1001', name: 'Mathematics I', studyYear: 1, ects: 10, isRequired: true, isCompleted: false, grade: null, exams: [{ name: 'Written exam', scope: 'See exam regulations', isGraded: true }] },
+        { code: 'T4INF1004', name: 'Programming', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] },
       ],
     };
     gradesService = {
@@ -137,7 +137,7 @@ describe('GradesPage', () => {
     component['addGrade']();
 
     expect(gradesService.addGrade).not.toHaveBeenCalled();
-    expect(component['_error']()).toBe('Alle Module aus deinem Kursplan sind bereits erfasst.');
+    expect(component['_error']()).toBe('All modules from your course plan have already been recorded.');
   });
 });
 

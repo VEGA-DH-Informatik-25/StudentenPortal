@@ -1,32 +1,32 @@
 <div class="group-settings-page">
-  <button type="button" class="group-settings-page__back" (click)="backToGroups()">Zurück zu Gruppen</button>
+  <button type="button" class="group-settings-page__back" (click)="backToGroups()">{{ 'groups.back' | translate }}</button>
 
   @if (_error()) {
     <p class="group-settings-page__state group-settings-page__state--error">{{ _error() }}</p>
   }
 
   @if (_isLoading()) {
-    <p class="group-settings-page__state">Gruppeneinstellungen werden geladen...</p>
+    <p class="group-settings-page__state">{{ 'groups.settingsLoad' | translate }}</p>
   } @else if (_group(); as group) {
     <header class="group-settings-page__header" [style.border-left-color]="group.accentColor">
       <span class="group-settings-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
       <div>
-        <p>Gruppeneinstellungen</p>
-        <h2>{{ group.name }}</h2>
-        <span>{{ group.description }}</span>
+        <p>{{ 'groups.settingsHeader' | translate }}</p>
+        <h2>{{ groupName(group) }}</h2>
+        <span>{{ groupDescription(group) }}</span>
       </div>
     </header>
 
     <div class="group-settings-layout">
-      <section class="settings-block" aria-label="Verhalten der Gruppe">
+      <section class="settings-block" [attr.aria-label]="'groups.settingsBehavior' | translate">
         <header>
-          <h3>Regeln</h3>
-          <p>{{ group.ownerLabel }} · {{ group.audience }}</p>
+          <h3>{{ 'groups.rules' | translate }}</h3>
+          <p>{{ groupOwnerLabel(group) }} · {{ groupAudience(group) }}</p>
         </header>
 
         <div class="settings-block__controls">
           <label>
-            <span>Studierende dürfen posten</span>
+            <span>{{ 'groups.policy.studentPosts' | translate }}</span>
             <input
               type="checkbox"
               [checked]="group.settings.allowStudentPosts"
@@ -35,7 +35,7 @@
           </label>
 
           <label>
-            <span>Kommentare erlaubt</span>
+            <span>{{ 'groups.policy.comments' | translate }}</span>
             <input
               type="checkbox"
               [checked]="group.settings.allowComments"
@@ -44,7 +44,7 @@
           </label>
 
           <label>
-            <span>Freigabe erforderlich</span>
+            <span>{{ 'groups.policy.approval' | translate }}</span>
             <input
               type="checkbox"
               [checked]="group.settings.requiresApproval"
@@ -53,7 +53,7 @@
           </label>
 
           <label>
-            <span>Öffentlich unter Entdecken</span>
+            <span>{{ 'groups.discoverable' | translate }}</span>
             <input
               type="checkbox"
               [checked]="group.settings.isDiscoverable"
@@ -63,50 +63,51 @@
         </div>
 
         @if (_savingSetting()) {
-          <p class="settings-block__hint">Einstellung wird gespeichert...</p>
+          <p class="settings-block__hint">{{ 'groups.settingSaving' | translate }}</p>
         }
       </section>
 
-      <section class="settings-block" aria-label="Konten zuweisen">
+      <section class="settings-block" [attr.aria-label]="'groups.accountAssignments' | translate">
         <header>
-          <h3>Konten</h3>
-          <p>{{ _selectedAccountCount() }} zugewiesen · {{ _filteredAccounts().length }} sichtbar</p>
+          <h3>{{ 'groups.accounts' | translate }}</h3>
+          <p>{{ 'groups.accountsVisible' | translate:{ assigned: _selectedAccountCount(), visible: _filteredAccounts().length } }}</p>
         </header>
 
         @if (_assignmentsLocked()) {
-          <p class="settings-block__hint">Kursgruppen folgen der Kurszuordnung in der Benutzerverwaltung. Schreibrechte kannst du hier steuern.</p>
+          <p class="settings-block__hint">{{ 'groups.assignmentLocked' | translate }}</p>
         }
 
-        <div class="account-toolbar" aria-label="Konten suchen und filtern">
+        <div class="account-toolbar" [attr.aria-label]="'groups.accountSearch' | translate">
           <label>
-            <span>Suche</span>
+            <span>{{ 'common.search' | translate }}</span>
             <input
               type="search"
-              placeholder="Name, E-Mail, Rolle, Kurs"
+              [placeholder]="'groups.accountSearchPlaceholder' | translate"
               [value]="_accountSearch()"
               (input)="updateAccountSearch($any($event.target).value)">
           </label>
 
           <label>
-            <span>Filter</span>
+            <span>{{ 'common.filter' | translate }}</span>
             <select [value]="_accountFilter()" (change)="updateAccountFilter($any($event.target).value)">
-              <option value="All">Alle Konten</option>
-              <option value="Assigned">Zugewiesen</option>
-              <option value="Unassigned">Nicht zugewiesen</option>
-              <option value="Student">Studierende</option>
-              <option value="Lecturer">Lehrende</option>
-              <option value="Admin">Admins</option>
+              <option value="All">{{ 'groups.accountFilter.all' | translate }}</option>
+              <option value="Assigned">{{ 'groups.accountFilter.assigned' | translate }}</option>
+              <option value="Unassigned">{{ 'groups.accountFilter.unassigned' | translate }}</option>
+              <option value="Student">{{ roleLabel('Student') }}</option>
+              <option value="Lecturer">{{ roleLabel('Lecturer') }}</option>
+              <option value="Management">{{ roleLabel('Management') }}</option>
+              <option value="Admin">{{ roleLabel('Admin') }}</option>
             </select>
           </label>
         </div>
 
-        <div class="account-table" aria-label="Zuweisbare Konten">
+        <div class="account-table" [attr.aria-label]="'groups.accountAssignments' | translate">
           <div class="account-table__head">
-            <span>Status</span>
-            <span>Name</span>
-            <span>Rolle</span>
-            <span>Kurs</span>
-            <span>Rechte</span>
+            <span>{{ 'common.status' | translate }}</span>
+            <span>{{ 'common.name' | translate }}</span>
+            <span>{{ 'common.role' | translate }}</span>
+            <span>{{ 'common.course' | translate }}</span>
+            <span>{{ 'groups.rights' | translate }}</span>
           </div>
 
           @for (account of _filteredAccounts(); track account.id) {
@@ -115,44 +116,44 @@
                 type="checkbox"
                 [checked]="isAccountSelected(account)"
                 [disabled]="isOwner(account) || _savingAssignments() || _assignmentsLocked()"
-                title="Konto zuweisen"
-                [attr.aria-label]="account.displayName + ' zuweisen'"
+                [title]="'groups.accountAssignments' | translate"
+                [attr.aria-label]="'groups.accountAssignments' | translate"
                 (change)="toggleAccount(account, $any($event.target).checked)">
               <span>
                 <strong>{{ account.displayName }}</strong>
-                <small>{{ account.email }}{{ isOwner(account) ? ' · Besitzer' : '' }}</small>
+                <small>{{ account.email }}{{ isOwner(account) ? ' · ' + ('groups.ownerSuffix' | translate) : '' }}</small>
               </span>
-              <em>{{ account.role }}</em>
-              <em>{{ account.course || 'Kein Kurs' }}</em>
+              <em>{{ roleLabel(account.role) }}</em>
+              <em>{{ account.course || ('common.noCourse' | translate) }}</em>
               <label class="account-row__permission">
-                <span class="visually-hidden">Rechte für {{ account.displayName }}</span>
+                <span class="visually-hidden">{{ 'groups.rights' | translate }} {{ account.displayName }}</span>
                 <select
                   [value]="permissionFor(account)"
                   [disabled]="!isAccountSelected(account) || isOwner(account) || _savingPermissions()"
                   (change)="updateMemberPermission(account, $any($event.target).value)">
-                  <option value="ReadOnly">Nur lesen</option>
-                  <option value="ReadWrite">Lesen & Schreiben</option>
-                  <option value="Manage">Verwalten</option>
+                  <option value="ReadOnly">{{ permissionLabel('ReadOnly') }}</option>
+                  <option value="ReadWrite">{{ permissionLabel('ReadWrite') }}</option>
+                  <option value="Manage">{{ permissionLabel('Manage') }}</option>
                 </select>
               </label>
             </div>
           } @empty {
-            <p class="account-table__empty">Keine Konten passen zu Suche und Filter.</p>
+            <p class="account-table__empty">{{ 'groups.accountsEmpty' | translate }}</p>
           }
         </div>
 
         <button type="button" class="settings-block__save" [disabled]="_assignmentsLocked() || !_hasAssignmentChanges() || _savingAssignments()" (click)="saveAssignments()">
           @if (_savingAssignments()) {
-            Speichert...
+            {{ 'common.saving' | translate }}
           } @else {
-            Zuweisungen speichern
+            {{ 'groups.assignmentsSave' | translate }}
           }
         </button>
         <button class="settings-block__save" type="button" [disabled]="!_hasPermissionChanges() || _hasAssignmentChanges() || _savingPermissions()" (click)="savePermissions()">
           @if (_savingPermissions()) {
-            Rechte werden gespeichert...
+            {{ 'groups.permissionsSaving' | translate }}
           } @else {
-            Rechte speichern
+            {{ 'groups.permissionsSave' | translate }}
           }
         </button>
       </section>

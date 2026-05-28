@@ -1,19 +1,22 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Mensa } from '../../../core/services/mensa';
 import { MensaDay, MensaDish } from '../../../core/models/mensa.model';
 
 @Component({
   selector: 'app-mensa-page',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, TranslatePipe],
   templateUrl: './mensa-page.html',
   styleUrl: './mensa-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MensaPage implements OnInit {
   private readonly _mensaService = inject(Mensa);
+  protected readonly _i18n = inject(I18n);
 
   protected readonly _menu = signal<MensaDay[]>([]);
   protected readonly _isLoading = signal(false);
@@ -68,10 +71,10 @@ export class MensaPage implements OnInit {
   private _readError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const body = error.error as { error?: string } | null;
-      return body?.error ?? 'Der Speiseplan konnte nicht geladen werden.';
+      return body?.error ?? this._i18n.translate('mensa.loadError');
     }
 
-    return 'Der Speiseplan konnte nicht geladen werden.';
+    return this._i18n.translate('mensa.loadError');
   }
 }
 

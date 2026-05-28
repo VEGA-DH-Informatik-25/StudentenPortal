@@ -30,8 +30,8 @@ public sealed class EntityFeatureRepositoryTests
                 await groups.AddAsync(new CampusGroup
                 {
                     Id = groupId,
-                    Name = "Lerngruppe Datenbanken",
-                    Description = "Gemeinsame Vorbereitung auf die Datenbankklausur.",
+                    Name = "Database study group",
+                    Description = "Shared preparation for the database exam.",
                     Type = GroupType.Social,
                     Audience = "TIF25A",
                     OwnerUserId = userId,
@@ -48,10 +48,10 @@ public sealed class EntityFeatureRepositoryTests
                     AuthorId = userId,
                     AuthorName = "Alice",
                     GroupId = groupId,
-                    Content = "Erstes Treffen am Donnerstag.",
+                    Content = "First meeting on Thursday.",
                     Comments =
                     [
-                        new FeedComment { AuthorId = userId, AuthorName = "Alice", Content = "Raum folgt." }
+                        new FeedComment { AuthorId = userId, AuthorName = "Alice", Content = "Room follows." }
                     ],
                     Reactions =
                     [
@@ -62,7 +62,7 @@ public sealed class EntityFeatureRepositoryTests
                 await grades.AddAsync(new Grade
                 {
                     UserId = userId,
-                    ModuleName = "Datenbanken",
+                    ModuleName = "Databases",
                     ModuleCode = "T3INF2001",
                     Value = 1.7m,
                     Ects = 5
@@ -71,10 +71,10 @@ public sealed class EntityFeatureRepositoryTests
                 await exams.AddAsync(new ExamEntry
                 {
                     UserId = userId,
-                    ModuleName = "Datenbanken",
+                    ModuleName = "Databases",
                     ExamDate = new DateTime(2026, 7, 2, 9, 0, 0, DateTimeKind.Utc),
-                    Location = "Aula",
-                    Notes = "Taschenrechner erlaubt"
+                    Location = "Auditorium",
+                    Notes = "Calculator allowed"
                 });
             }
 
@@ -92,19 +92,19 @@ public sealed class EntityFeatureRepositoryTests
 
                 var persistedPost = await feed.FindByIdAsync(postId);
                 Assert.NotNull(persistedPost);
-                Assert.Equal("Erstes Treffen am Donnerstag.", persistedPost!.Content);
+                Assert.Equal("First meeting on Thursday.", persistedPost!.Content);
                 Assert.Single(persistedPost.Comments);
                 Assert.Contains(userId, persistedPost.Reactions.Single().UserIds);
 
                 var persistedGrades = await grades.GetByUserAsync(userId);
                 var persistedGrade = Assert.Single(persistedGrades);
-                Assert.Equal("Datenbanken", persistedGrade.ModuleName);
+                Assert.Equal("Databases", persistedGrade.ModuleName);
                 Assert.Equal(1.7m, persistedGrade.Value);
 
                 var persistedExams = await exams.GetByUserAsync(userId);
                 var persistedExam = Assert.Single(persistedExams);
-                Assert.Equal("Aula", persistedExam.Location);
-                Assert.Equal("Taschenrechner erlaubt", persistedExam.Notes);
+                Assert.Equal("Auditorium", persistedExam.Location);
+                Assert.Equal("Calculator allowed", persistedExam.Notes);
             }
         }
         finally

@@ -19,12 +19,12 @@ public sealed class TimetableControllerTests
         {
             Email = "student@dhbw-loerrach.de",
             DisplayName = "Student",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
-        var course = new Course { Code = "TIF25A", StudyProgram = "Informatik", Semester = 2, IsActive = true };
+        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2, IsActive = true };
         var timetableService = new CapturingTimetableService();
         var authService = new AuthService(
             new FakeUserRepository(user),
@@ -159,7 +159,7 @@ public sealed class TimetableControllerTests
         public Task<CampusGroup?> FindByIdAsync(Guid id) => Task.FromResult<CampusGroup?>(null);
 
         public Task<CampusGroup> EnsureCourseGroupAsync(string courseCode, string? studyProgram = null) =>
-            Task.FromResult(new CampusGroup { CourseCode = courseCode, Name = $"Kurs {courseCode}" });
+            Task.FromResult(new CampusGroup { CourseCode = courseCode, Name = $"Course {courseCode}" });
 
         public Task AddAsync(CampusGroup group) => Task.CompletedTask;
 

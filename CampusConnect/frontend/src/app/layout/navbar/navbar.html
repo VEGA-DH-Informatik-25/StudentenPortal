@@ -1,5 +1,5 @@
-<nav class="navbar" aria-label="Hauptnavigation">
-  <a class="navbar__brand" routerLink="/feed" routerLinkActive="navbar__brand--active" [routerLinkActiveOptions]="{ exact: true }" aria-label="CampusConnect Feed öffnen">
+<nav class="navbar" [attr.aria-label]="'nav.main' | translate">
+  <a class="navbar__brand" routerLink="/feed" routerLinkActive="navbar__brand--active" [routerLinkActiveOptions]="{ exact: true }" [attr.aria-label]="'nav.feedOpen' | translate">
     <span class="navbar__mark" aria-hidden="true"></span>
     <span class="navbar__brand-copy">
       <span class="navbar__overline">DHBW</span>
@@ -7,22 +7,30 @@
     </span>
   </a>
   <ul class="navbar__links">
-    <li><a routerLink="/mensa" routerLinkActive="active">Mensa</a></li>
-    <li><a routerLink="/timetable" routerLinkActive="active">Stundenplan</a></li>
-    <li><a routerLink="/calendar" routerLinkActive="active">Prüfungen</a></li>
-    <li><a routerLink="/grades" routerLinkActive="active">Noten</a></li>
-    <li><a routerLink="/groups" routerLinkActive="active">Gruppen</a></li>
-    <li><a routerLink="/contacts" routerLinkActive="active">Kontakte</a></li>
-    <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">Admin</a></li>
+    <li><a routerLink="/mensa" routerLinkActive="active">{{ 'nav.mensa' | translate }}</a></li>
+    <li><a routerLink="/timetable" routerLinkActive="active">{{ 'nav.timetable' | translate }}</a></li>
+    <li><a routerLink="/calendar" routerLinkActive="active">{{ 'nav.calendar' | translate }}</a></li>
+    <li><a routerLink="/grades" routerLinkActive="active">{{ 'nav.grades' | translate }}</a></li>
+    <li><a routerLink="/groups" routerLinkActive="active">{{ 'nav.groups' | translate }}</a></li>
+    <li><a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | translate }}</a></li>
+    <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active">{{ 'nav.admin' | translate }}</a></li>
   </ul>
   <div class="navbar__user">
+    <label class="navbar__language">
+      <span>{{ 'language.label' | translate }}</span>
+      <select [value]="_i18n.language()" (change)="setLanguage($any($event.target).value)" [attr.aria-label]="'language.label' | translate">
+        @for (language of _i18n.languages; track language.code) {
+          <option [value]="language.code">{{ language.shortLabel }}</option>
+        }
+      </select>
+    </label>
     <details class="navbar__profile-menu">
-      <summary class="navbar__profile-trigger" aria-label="Benutzermenü öffnen">
+      <summary class="navbar__profile-trigger" [attr.aria-label]="'nav.profileMenu' | translate">
         <span class="navbar__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
         <span class="navbar__identity">
           <span class="navbar__name">{{ _auth.displayName() }}</span>
           @if (_auth.userProfile(); as profile) {
-            <span class="navbar__context">{{ profile.course }} · {{ profile.semester }}. Semester</span>
+            <span class="navbar__context">{{ profile.course }} · {{ 'common.semesterValue' | translate:{ semester: profile.semester } }}</span>
           }
         </span>
       </summary>
@@ -38,26 +46,26 @@
           </div>
           <dl class="navbar__profile-details">
             <div>
-              <dt>Studiengang</dt>
+              <dt>{{ 'common.studyProgram' | translate }}</dt>
               <dd>{{ profile.studyProgram }}</dd>
             </div>
             <div>
-              <dt>Kurs</dt>
+              <dt>{{ 'common.course' | translate }}</dt>
               <dd>{{ profile.course }}</dd>
             </div>
             <div>
-              <dt>Rolle</dt>
-              <dd>{{ profile.role }}</dd>
+              <dt>{{ 'common.role' | translate }}</dt>
+              <dd>{{ roleLabel(profile.role) }}</dd>
             </div>
             @if (profile.phoneNumber) {
               <div>
-                <dt>Telefon</dt>
+                <dt>{{ 'common.phone' | translate }}</dt>
                 <dd>{{ profile.phoneNumber }}</dd>
               </div>
             }
             @if (profile.location) {
               <div>
-                <dt>Ort</dt>
+                <dt>{{ 'common.location' | translate }}</dt>
                 <dd>{{ profile.location }}</dd>
               </div>
             }
@@ -67,8 +75,8 @@
           }
         }
 
-        <a class="navbar__profile-action" routerLink="/profile">Profil bearbeiten</a>
-        <button class="navbar__logout" type="button" (click)="_auth.logout()">Abmelden</button>
+        <a class="navbar__profile-action" routerLink="/profile">{{ 'nav.editProfile' | translate }}</a>
+        <button class="navbar__logout" type="button" (click)="_auth.logout()">{{ 'nav.logout' | translate }}</button>
       </div>
     </details>
   </div>

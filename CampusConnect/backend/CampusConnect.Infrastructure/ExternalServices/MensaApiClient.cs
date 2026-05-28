@@ -15,14 +15,14 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
     {
         var mensaOptions = options.Value;
         if (string.IsNullOrWhiteSpace(mensaOptions.ApiKey))
-            throw new InvalidOperationException("Der Mensa-API-Key ist nicht konfiguriert.");
+            throw new InvalidOperationException("The Mensa API key is not configured.");
 
         using var response = await httpClient.GetAsync(BuildRequestUri(mensaOptions), cancellationToken);
         if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-            throw new InvalidOperationException("Der Mensa-API-Key wurde abgelehnt.");
+            throw new InvalidOperationException("The Mensa API key was rejected.");
 
         if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException("Der Speiseplan konnte gerade nicht geladen werden.");
+            throw new InvalidOperationException("The menu could not be loaded right now.");
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         var document = await XDocument.LoadAsync(stream, LoadOptions.None, cancellationToken);
@@ -40,7 +40,7 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
         {
             ["type"] = "98",
             ["tx_speiseplan_pi1[apiKey]"] = options.ApiKey.Trim(),
-            ["tx_speiseplan_pi1[ort]"] = string.IsNullOrWhiteSpace(options.OrtId) ? "677" : options.OrtId.Trim(),
+            ["tx_speiseplan_pi1[ort]"] = string.IsNullOrWhiteSpace(options.LocationId) ? "677" : options.LocationId.Trim(),
             ["tx_speiseplan_pi1[tage]"] = Math.Clamp(options.Days, 1, 14).ToString(CultureInfo.InvariantCulture)
         };
 
@@ -95,7 +95,7 @@ public sealed class MensaApiClient(HttpClient httpClient, IOptions<MensaOptions>
             return false;
 
         var nameLines = ReadNameLines(element, name);
-        var category = FindText(element, "kategorie", "category", "art", "menulinie", "linie", "typ", "type") ?? "Speise";
+        var category = FindText(element, "kategorie", "category", "art", "menulinie", "linie", "typ", "type") ?? "Dish";
         var allergens = FindText(element, "kennzeichnung", "kennzeichnungen", "zusatzstoffe", "hinweise");
         var tags = string.Join(' ', category, allergens, string.Join(' ', element.Attributes().Select(attribute => CleanText(attribute.Value))), string.Join(' ', element.Descendants().Select(node => CleanText(node.Value))));
         var isVegan = ContainsFoodTag(tags, "vegan") || ContainsFoodTag(tags, "pflanzlich") || ContainsFoodTag(tags, "plant-based") || ContainsFoodTag(tags, "plant based");

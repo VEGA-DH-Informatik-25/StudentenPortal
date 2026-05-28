@@ -1,20 +1,20 @@
 <div class="calendar-page">
   <header class="calendar-page__header">
     <div>
-      <p class="calendar-page__eyebrow">DHBW Lörrach</p>
-      <h1>Prüfungskalender</h1>
-      <p>Plane Prüfungstermine, Orte und persönliche Notizen an einem Ort.</p>
+      <p class="calendar-page__eyebrow">{{ 'app.campus' | translate }}</p>
+      <h1>{{ 'calendar.header' | translate }}</h1>
+      <p>{{ 'calendar.subtitle' | translate }}</p>
     </div>
-    <button (click)="_showForm.set(!_showForm())">+ Prüfung hinzufügen</button>
+    <button (click)="_showForm.set(!_showForm())">{{ 'calendar.addExam' | translate }}</button>
   </header>
 
   @if (_showForm()) {
     <form class="calendar-page__form" (ngSubmit)="onAdd()">
-      <label>Modul <input type="text" [(ngModel)]="_form.moduleName" name="moduleName" required /></label>
-      <label>Datum <input type="datetime-local" [(ngModel)]="_form.examDate" name="examDate" required /></label>
-      <label>Ort <input type="text" [(ngModel)]="_form.location" name="location" /></label>
-      <label>Notizen <input type="text" [(ngModel)]="_form.notes" name="notes" /></label>
-      <button type="submit" [disabled]="_isSubmitting()">{{ _isSubmitting() ? 'Speichert...' : 'Speichern' }}</button>
+      <label>{{ 'grades.module' | translate }} <input type="text" [(ngModel)]="_form.moduleName" name="moduleName" required /></label>
+      <label>{{ 'timetable.day' | translate }} <input type="datetime-local" [(ngModel)]="_form.examDate" name="examDate" required /></label>
+      <label>{{ 'common.location' | translate }} <input type="text" [(ngModel)]="_form.location" name="location" /></label>
+      <label>{{ 'common.notes' | translate }} <input type="text" [(ngModel)]="_form.notes" name="notes" /></label>
+      <button type="submit" [disabled]="_isSubmitting()">{{ _isSubmitting() ? ('common.saving' | translate) : ('common.save' | translate) }}</button>
     </form>
   }
 
@@ -23,13 +23,13 @@
   }
 
   @if (_exams().length === 0) {
-    <p class="calendar-page__empty">Keine Prüfungen eingetragen.</p>
+    <p class="calendar-page__empty">{{ 'calendar.empty' | translate }}</p>
   }
 
   <div class="calendar-page__list">
     @for (exam of _exams(); track exam.id) {
       <div class="exam-card">
-        <div class="exam-card__date">{{ exam.examDate | date:'dd.MM.yyyy HH:mm' }}</div>
+        <div class="exam-card__date">{{ exam.examDate | date:'short':'':_i18n.locale() }}</div>
         <div class="exam-card__body">
           <strong>{{ exam.moduleName }}</strong>
           @if (exam.location) { <span>📍 {{ exam.location }}</span> }

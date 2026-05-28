@@ -16,7 +16,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var posts = await feedService.GetFeedAsync(userId.Value, page, pageSize);
         return Ok(posts);
@@ -27,7 +27,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await feedService.CreatePostAsync(new CreatePostCommand(userId.Value, request.GroupId, request.Content));
         if (!result.IsSuccess)
@@ -41,7 +41,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await feedService.DeletePostAsync(id, userId.Value);
         if (!result.IsSuccess)
@@ -55,7 +55,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await feedService.AddCommentAsync(new CreateCommentCommand(id, userId.Value, request.Content));
         if (!result.IsSuccess)
@@ -69,7 +69,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await feedService.DeleteCommentAsync(postId, commentId, userId.Value);
         if (!result.IsSuccess)
@@ -83,7 +83,7 @@ public class FeedController(FeedService feedService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await feedService.ToggleReactionAsync(new ToggleReactionCommand(id, userId.Value, request.Emoji));
         if (!result.IsSuccess)

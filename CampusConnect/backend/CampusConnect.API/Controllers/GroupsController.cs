@@ -16,7 +16,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var groups = await groupsService.GetGroupsForUserAsync(userId.Value);
         return Ok(groups);
@@ -27,7 +27,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.CreateGroupAsync(new CreateGroupCommand(
             userId.Value,
@@ -51,7 +51,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.GetSettingsDetailsAsync(id, userId.Value);
         if (!result.IsSuccess)
@@ -65,7 +65,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.UpdateSettingsAsync(
             id,
@@ -83,7 +83,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.UpdateAssignmentsAsync(id, userId.Value, new UpdateGroupAssignmentsCommand(request.UserIds));
         if (!result.IsSuccess)
@@ -97,7 +97,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var permissions = request.Permissions
             .Select(item => new UpdateGroupMemberPermissionCommand(item.UserId, item.Permission))
@@ -114,7 +114,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.JoinGroupAsync(id, userId.Value);
         if (!result.IsSuccess)

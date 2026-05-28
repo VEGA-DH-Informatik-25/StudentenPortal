@@ -17,7 +17,7 @@ public class GradesController(GradesService gradesService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var summary = await gradesService.GetGradesAsync(userId.Value);
         return Ok(summary);
@@ -28,7 +28,7 @@ public class GradesController(GradesService gradesService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         Result<GradePlanDto> result;
         try
@@ -37,7 +37,7 @@ public class GradesController(GradesService gradesService) : ControllerBase
         }
         catch (Exception) when (!cancellationToken.IsCancellationRequested)
         {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Der DHBW-Studienplan konnte aktuell nicht geladen werden." });
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "The DHBW study plan could not be loaded right now." });
         }
 
         if (!result.IsSuccess)
@@ -51,7 +51,7 @@ public class GradesController(GradesService gradesService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await gradesService.AddGradeAsync(new AddGradeCommand(userId.Value, request.ModuleName, request.Value, request.Ects, request.ModuleCode), cancellationToken);
         if (!result.IsSuccess)
@@ -65,7 +65,7 @@ public class GradesController(GradesService gradesService) : ControllerBase
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         await gradesService.DeleteGradeAsync(id, userId.Value);
         return NoContent();
@@ -75,9 +75,9 @@ public class GradesController(GradesService gradesService) : ControllerBase
 
     private IActionResult PlanFailure(string? error) => error switch
     {
-        "Benutzerprofil wurde nicht gefunden." => BadRequest(new { error }),
-        "Für dein Profil ist kein gültiger Kurs hinterlegt." => BadRequest(new { error }),
-        "Für deinen Kurs wurde kein DHBW-Studienplan gefunden." => NotFound(new { error }),
-        _ => BadRequest(new { error = error ?? "Der Studienplan konnte nicht geladen werden." })
+        "User profile was not found." => BadRequest(new { error }),
+        "No valid course is assigned to your profile." => BadRequest(new { error }),
+        "No DHBW study plan was found for your course." => NotFound(new { error }),
+        _ => BadRequest(new { error = error ?? "The study plan could not be loaded." })
     };
 }

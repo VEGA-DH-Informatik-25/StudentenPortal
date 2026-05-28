@@ -4,6 +4,6 @@ public enum UserRole
 {
     Student,
     Lecturer,
-    Verwaltung,
+    Management,
     Admin
 }

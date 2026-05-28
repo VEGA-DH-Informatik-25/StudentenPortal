@@ -2,6 +2,8 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { TimetableEvent, TimetableDay } from '../../../core/models/timetable.model';
 import { Auth } from '../../../core/services/auth';
 import { Courses } from '../../../core/services/courses';
@@ -33,7 +35,7 @@ interface TimetableRange {
 @Component({
   selector: 'app-timetable-page',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TranslatePipe],
   templateUrl: './timetable-page.html',
   styleUrl: './timetable-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +43,7 @@ interface TimetableRange {
 export class TimetablePage implements OnInit {
   private readonly _auth = inject(Auth);
   private readonly _coursesService = inject(Courses);
+  protected readonly _i18n = inject(I18n);
   private readonly _timetableService = inject(Timetable);
 
   protected readonly _courseOptions = signal<string[]>([]);
@@ -195,15 +198,15 @@ export class TimetablePage implements OnInit {
     const tomorrow = this._dateKey(new Date(Date.now() + 24 * 60 * 60 * 1000));
 
     if (date === today) {
-      return 'Heute';
+      return this._i18n.translate('common.today');
     }
 
-    return date === tomorrow ? 'Morgen' : null;
+    return date === tomorrow ? this._i18n.translate('common.tomorrow') : null;
   }
 
   protected eventTime(event: TimetableEvent): string {
     if (event.isAllDay) {
-      return 'Ganzer Tag';
+      return this._i18n.translate('common.allDay');
     }
 
     return `${this._formatTime(event.start)}-${this._formatTime(event.end)}`;
@@ -221,8 +224,9 @@ export class TimetablePage implements OnInit {
 
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
+    const hourLabel = this._i18n.translate('common.hourShort');
 
-    return minutes === 0 ? `${hours} Std.` : `${hours} Std. ${minutes} min`;
+    return minutes === 0 ? `${hours} ${hourLabel}` : `${hours} ${hourLabel} ${minutes} min`;
   }
 
   protected timelineHourOffset(hour: number): number {
@@ -295,7 +299,7 @@ export class TimetablePage implements OnInit {
   private _loadCourse(course: string): void {
     const normalizedCourse = this._timetableService.normalizeCourse(course);
     if (!normalizedCourse) {
-      this._error.set('Bitte einen Kurs auswählen.');
+      this._error.set(this._i18n.translate('timetable.courseMissing'));
       return;
     }
 
@@ -392,14 +396,14 @@ export class TimetablePage implements OnInit {
   private _readError(error: unknown): string {
     if (error instanceof HttpErrorResponse) {
       const body = error.error as { error?: string } | null;
-      return body?.error ?? 'Der Vorlesungsplan konnte nicht geladen werden.';
+      return body?.error ?? this._i18n.translate('timetable.loadError');
     }
 
-    return 'Der Vorlesungsplan konnte nicht geladen werden.';
+    return this._i18n.translate('timetable.loadError');
   }
 
   private _formatTime(value: string): string {
-    return new Intl.DateTimeFormat('de-DE', {
+    return new Intl.DateTimeFormat(this._i18n.locale(), {
       hour: '2-digit',
       minute: '2-digit',
       timeZone: this._timezone(),
@@ -468,10 +472,10 @@ export class TimetablePage implements OnInit {
   }
 
   private _formatDateShort(value: string): string {
-    return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' }).format(this._fromDateKey(value));
+    return new Intl.DateTimeFormat(this._i18n.locale(), { day: '2-digit', month: '2-digit' }).format(this._fromDateKey(value));
   }
 
   private _formatDateLong(value: string): string {
-    return new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: '2-digit', month: 'long' }).format(this._fromDateKey(value));
+    return new Intl.DateTimeFormat(this._i18n.locale(), { weekday: 'long', day: '2-digit', month: 'long' }).format(this._fromDateKey(value));
   }
 }

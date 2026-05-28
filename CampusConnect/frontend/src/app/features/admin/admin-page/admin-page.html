@@ -1,12 +1,12 @@
 <div class="admin-page">
   <header class="admin-page__header">
     <div>
-      <p class="admin-page__eyebrow">Administration</p>
-      <h1>Benutzer und Kurse</h1>
+      <p class="admin-page__eyebrow">{{ 'admin.section' | translate }}</p>
+      <h1>{{ 'admin.header' | translate }}</h1>
     </div>
 
     <button type="button" class="admin-page__refresh" (click)="loadData()" [disabled]="_isLoading() || _coursesLoading()">
-      Aktualisieren
+      {{ 'common.refresh' | translate }}
     </button>
   </header>
 
@@ -18,34 +18,34 @@
     <p class="admin-page__message admin-page__message--success">{{ _success() }}</p>
   }
 
-  <section class="course-admin" aria-label="Kursverwaltung">
+  <section class="course-admin" [attr.aria-label]="'admin.createCourse' | translate">
     <header>
       <div>
-        <h3>Kurse</h3>
-        <p>{{ _courses().length }} aktive Kurse</p>
+        <h3>{{ 'common.course' | translate }}</h3>
+        <p>{{ 'admin.activeCourses' | translate:{ count: _courses().length } }}</p>
       </div>
     </header>
 
     <form class="course-admin__form" (ngSubmit)="createCourse()">
       <label>
-        Kurscode
+        {{ 'common.courseCode' | translate }}
         <input type="text" name="courseCode" [(ngModel)]="_courseForm.code" maxlength="40" placeholder="TIF25C" required />
       </label>
       <label>
-        Studiengang
-        <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Informatik" required />
+        {{ 'common.studyProgram' | translate }}
+        <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Computer Science" required />
       </label>
       <label>
-        Semester
+        {{ 'common.semester' | translate }}
         <input type="number" name="semester" [(ngModel)]="_courseForm.semester" min="1" max="6" required />
       </label>
-      <button type="submit" [disabled]="_isCreatingCourse()">{{ _isCreatingCourse() ? 'Speichert...' : 'Kurs anlegen' }}</button>
+      <button type="submit" [disabled]="_isCreatingCourse()">{{ _isCreatingCourse() ? ('admin.saveCourse' | translate) : ('admin.createCourse' | translate) }}</button>
     </form>
 
     @if (_coursesLoading()) {
-      <p class="course-admin__state">Kurse werden geladen...</p>
+      <p class="course-admin__state">{{ 'common.loading' | translate }}</p>
     } @else {
-      <div class="course-list" aria-label="Aktive Kurse">
+      <div class="course-list" [attr.aria-label]="'admin.activeCourses' | translate:{ count: _courses().length }">
         @for (course of _courses(); track course.code) {
           <span>{{ courseLabel(course) }}</span>
         }
@@ -54,18 +54,18 @@
   </section>
 
   @if (_isLoading()) {
-    <p class="admin-page__state">Benutzer werden geladen...</p>
+    <p class="admin-page__state">{{ 'admin.usersLoading' | translate }}</p>
   } @else if (_users().length === 0) {
-    <p class="admin-page__state">Es sind noch keine Benutzer angelegt.</p>
+    <p class="admin-page__state">{{ 'admin.emptyUsers' | translate }}</p>
   } @else {
-    <section class="user-table" aria-label="Benutzerverwaltung">
+    <section class="user-table" [attr.aria-label]="'admin.header' | translate">
       <div class="user-table__row user-table__row--head">
-        <span>Benutzer</span>
-        <span>Studium</span>
-        <span>Kurs</span>
-        <span>Rolle</span>
-        <span>Erstellt</span>
-        <span>Aktion</span>
+        <span>{{ 'common.account' | translate }}</span>
+        <span>{{ 'common.study' | translate }}</span>
+        <span>{{ 'common.course' | translate }}</span>
+        <span>{{ 'common.role' | translate }}</span>
+        <span>{{ 'admin.createdAt' | translate }}</span>
+        <span>{{ 'common.action' | translate }}</span>
       </div>
 
       @for (user of _users(); track user.id) {
@@ -75,14 +75,14 @@
             <span>{{ user.email }}</span>
           </div>
           <div>
-            <strong>{{ user.studyProgram || 'Nicht gesetzt' }}</strong>
-            <span>{{ user.course }} · {{ user.semester }}. Semester</span>
+            <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
+            <span>{{ user.course }} · {{ 'common.semesterValue' | translate:{ semester: user.semester } }}</span>
           </div>
           <label class="admin-select">
-            <span>Kurs</span>
+            <span>{{ 'common.course' | translate }}</span>
             <select [ngModel]="user.course" (ngModelChange)="updateCourse(user, $event)" [disabled]="_busyUserId() === user.id || _coursesLoading()">
               @if (user.course && !courseExists(user.course)) {
-                <option [value]="user.course">{{ user.course }} · nicht im Katalog</option>
+                <option [value]="user.course">{{ user.course }} · {{ 'common.notSet' | translate }}</option>
               }
               @for (course of _courses(); track course.code) {
                 <option [value]="course.code">{{ course.code }}</option>
@@ -90,16 +90,16 @@
             </select>
           </label>
           <label class="admin-select">
-            <span>Rolle</span>
+            <span>{{ 'common.role' | translate }}</span>
             <select [ngModel]="user.role" (ngModelChange)="updateRole(user, $event)" [disabled]="_busyUserId() === user.id">
               @for (role of _roles; track role) {
-                <option [value]="role">{{ role }}</option>
+                <option [value]="role">{{ roleLabel(role) }}</option>
               }
             </select>
           </label>
-          <span>{{ user.createdAt | date:'dd.MM.yyyy':'':'de' }}</span>
+          <span>{{ user.createdAt | date:'mediumDate':'':_i18n.locale() }}</span>
           <button type="button" class="delete-button" (click)="deleteUser(user)" [disabled]="_busyUserId() === user.id">
-            Löschen
+            {{ 'common.delete' | translate }}
           </button>
         </div>
       }

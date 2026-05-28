@@ -31,7 +31,7 @@ public class DhbwTimetableService : ITimetableService
     {
         var displayCourse = NormalizeDisplayCourse(course);
         if (string.IsNullOrWhiteSpace(displayCourse))
-            throw new InvalidOperationException("Bitte einen Kurs auswählen.");
+            throw new InvalidOperationException("Choose a course.");
 
         var lookupCourse = NormalizeLookupCourse(displayCourse);
         var boundedDays = Math.Clamp(days, 1, Math.Max(1, _options.MaxLookaheadDays));
@@ -69,10 +69,10 @@ public class DhbwTimetableService : ITimetableService
         {
             using var response = await _httpClient.GetAsync(BuildIcalUrl(lookupCourse), cancellationToken);
             if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-                throw new InvalidOperationException($"Der Kurs \"{displayCourse}\" konnte nicht gefunden werden.");
+                throw new InvalidOperationException($"Course \"{displayCourse}\" was not found.");
 
             if (!response.IsSuccessStatusCode)
-                return cached?.Text ?? throw new InvalidOperationException("Der Vorlesungsplan konnte gerade nicht geladen werden.");
+                return cached?.Text ?? throw new InvalidOperationException("The timetable could not be loaded right now.");
 
             var icalText = await response.Content.ReadAsStringAsync(cancellationToken);
             CacheIcal(cacheKey, icalText);
@@ -113,7 +113,7 @@ public class DhbwTimetableService : ITimetableService
     private string BuildIcalUrl(string normalizedCourse)
     {
         if (string.IsNullOrWhiteSpace(_options.CalendarUrlTemplate))
-            throw new InvalidOperationException("Die Stundenplan-Konfiguration ist unvollständig.");
+            throw new InvalidOperationException("The timetable configuration is incomplete.");
 
         var mailbox = Uri.EscapeDataString(normalizedCourse.ToLowerInvariant());
         return _options.CalendarUrlTemplate.Replace("{course}", mailbox, StringComparison.OrdinalIgnoreCase);
@@ -135,7 +135,7 @@ public class DhbwTimetableService : ITimetableService
 
         return new TimetableEventDto(
             evt.Id,
-            string.IsNullOrWhiteSpace(evt.Summary) ? "Vorlesung" : evt.Summary.Trim(),
+            string.IsNullOrWhiteSpace(evt.Summary) ? "Lecture" : evt.Summary.Trim(),
             evt.Start,
             evt.End,
             location,
@@ -435,7 +435,7 @@ public class DhbwTimetableService : ITimetableService
                 end = start.AddHours(isAllDay ? 24 : 1);
 
             var uid = DecodeText(FirstValue(properties, "UID")) ?? Guid.NewGuid().ToString("N");
-            var summary = DecodeText(FirstValue(properties, "SUMMARY")) ?? "Vorlesung";
+            var summary = DecodeText(FirstValue(properties, "SUMMARY")) ?? "Lecture";
             var status = FirstValue(properties, "STATUS") ?? string.Empty;
             var recurrenceIdProperty = properties.FirstOrDefault(prop => prop.Name == "RECURRENCE-ID");
             var recurrenceId = recurrenceIdProperty is null ? (DateTimeOffset?)null : ParseDateTime(recurrenceIdProperty, out _);

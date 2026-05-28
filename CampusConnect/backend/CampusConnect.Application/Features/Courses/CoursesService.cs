@@ -23,7 +23,7 @@ public class CoursesService(ICourseRepository courseRepository, IGroupRepository
             return Result<CourseDto>.Failure(validationError);
 
         if (await courseRepository.FindByCodeAsync(code, cancellationToken) is not null)
-            return Result<CourseDto>.Failure("Dieser Kurs existiert bereits.");
+            return Result<CourseDto>.Failure("This course already exists.");
 
         var course = new Course
         {
@@ -46,16 +46,16 @@ public class CoursesService(ICourseRepository courseRepository, IGroupRepository
     private static string? Validate(CreateCourseCommand command, string normalizedCode)
     {
         if (string.IsNullOrWhiteSpace(normalizedCode) || string.IsNullOrWhiteSpace(command.StudyProgram))
-            return "Bitte fülle alle Kursfelder aus.";
+            return "Fill in all course fields.";
 
         if (normalizedCode.Length > 40)
-            return "Der Kurscode darf höchstens 40 Zeichen lang sein.";
+            return "Course code must be at most 40 characters long.";
 
         if (command.StudyProgram.Trim().Length > 120)
-            return "Der Studiengang darf höchstens 120 Zeichen lang sein.";
+            return "Study program must be at most 120 characters long.";
 
         if (command.Semester is < 1 or > 6)
-            return "Das Semester muss zwischen 1 und 6 liegen.";
+            return "Semester must be between 1 and 6.";
 
         return null;
     }

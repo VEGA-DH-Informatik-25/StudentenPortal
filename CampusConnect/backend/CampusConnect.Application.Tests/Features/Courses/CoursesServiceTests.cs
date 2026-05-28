@@ -12,8 +12,8 @@ public sealed class CoursesServiceTests
     {
         var service = new CoursesService(
             new FakeCourseRepository(
-                new Course { Code = "TIF25A", StudyProgram = "Informatik", Semester = 1, IsActive = true },
-                new Course { Code = "OLD", StudyProgram = "Archiv", Semester = 1, IsActive = false }),
+                new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 1, IsActive = true },
+                new Course { Code = "OLD", StudyProgram = "Archive", Semester = 1, IsActive = false }),
             new FakeGroupRepository());
 
         var courses = await service.GetCoursesAsync();
@@ -29,22 +29,22 @@ public sealed class CoursesServiceTests
         var groups = new FakeGroupRepository();
         var service = new CoursesService(courses, groups);
 
-        var result = await service.CreateCourseAsync(new CreateCourseCommand(" tif25a ", "Informatik", 1));
+        var result = await service.CreateCourseAsync(new CreateCourseCommand(" tif25a ", "Computer Science", 1));
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(await courses.FindByCodeAsync("TIF25A"));
         Assert.Equal("TIF25A", groups.CreatedCourseCode);
-        Assert.Equal("Informatik", groups.CreatedStudyProgram);
+        Assert.Equal("Computer Science", groups.CreatedStudyProgram);
     }
 
     [Fact]
     public async Task CreateCourseAsync_ShouldRejectDuplicateCourseCodes()
     {
         var service = new CoursesService(
-            new FakeCourseRepository(new Course { Code = "TIF25A", StudyProgram = "Informatik", Semester = 1 }),
+            new FakeCourseRepository(new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 1 }),
             new FakeGroupRepository());
 
-        var result = await service.CreateCourseAsync(new CreateCourseCommand("tif25a", "Informatik", 1));
+        var result = await service.CreateCourseAsync(new CreateCourseCommand("tif25a", "Computer Science", 1));
 
         Assert.False(result.IsSuccess);
     }
@@ -82,7 +82,7 @@ public sealed class CoursesServiceTests
         {
             CreatedCourseCode = courseCode;
             CreatedStudyProgram = studyProgram;
-            return Task.FromResult(new CampusGroup { CourseCode = courseCode, Name = $"Kurs {courseCode}" });
+            return Task.FromResult(new CampusGroup { CourseCode = courseCode, Name = $"Course {courseCode}" });
         }
 
         public Task AddAsync(CampusGroup group) => Task.CompletedTask;

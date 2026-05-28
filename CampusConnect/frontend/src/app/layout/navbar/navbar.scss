@@ -142,8 +142,42 @@
   &__user {
     display: flex;
     align-items: center;
+    gap: 0.65rem;
     margin-left: auto;
     position: relative;
+  }
+
+  &__language {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.35rem;
+
+    span {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      color: var(--dhbw-surface);
+      font-size: 0.78rem;
+      font-weight: 800;
+      min-height: 2.35rem;
+      padding: 0.3rem 0.5rem;
+
+      &:focus-visible {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+        outline: none;
+      }
+
+      option {
+        color: var(--dhbw-ink);
+      }
+    }
   }
 
   &__profile-menu {
@@ -351,7 +385,13 @@
     }
 
     &__user {
+      align-items: flex-start;
+      flex-wrap: wrap;
       margin-left: 0;
+    }
+
+    &__language {
+      margin-bottom: 0.35rem;
     }
 
     &__profile-menu,

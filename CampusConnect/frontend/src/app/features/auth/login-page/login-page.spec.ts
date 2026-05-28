@@ -25,7 +25,7 @@ describe('LoginPage', () => {
         {
           provide: Courses,
           useValue: {
-            getCourses: vi.fn(() => of([{ code: 'TIF25A', studyProgram: 'Informatik', semester: 2 }])),
+            getCourses: vi.fn(() => of([{ code: 'TIF25A', studyProgram: 'Computer Science', semester: 2 }])),
           },
         },
       ],

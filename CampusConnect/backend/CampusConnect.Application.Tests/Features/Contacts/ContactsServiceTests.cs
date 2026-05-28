@@ -11,16 +11,16 @@ public sealed class ContactsServiceTests
     public async Task SearchAsync_ShouldFindUsersByCourseAndProfileDetails()
     {
         var currentUser = User("Alice", "alice@dhbw-loerrach.de", "TIF25A");
-        var bob = User("Bob", "bob@dhbw-loerrach.de", "WWI25A", location: "Bibliothek", profileNote: "Sucht Projektgruppe");
+        var bob = User("Bob", "bob@dhbw-loerrach.de", "WWI25A", location: "Library", profileNote: "Looking for a project group");
         var clara = User("Clara", "clara@dhbw-loerrach.de", "TIF25B", phoneNumber: "+49 7621 123456");
         var service = new ContactsService(new FakeUserRepository(currentUser, bob, clara));
 
-        var byNote = await service.SearchAsync(currentUser.Id, "Projektgruppe");
+        var byNote = await service.SearchAsync(currentUser.Id, "project group");
         var byCourse = await service.SearchAsync(currentUser.Id, "TIF25B");
 
         var noteResult = Assert.Single(byNote);
         Assert.Equal(bob.Id, noteResult.Id);
-        Assert.Equal("Bibliothek", noteResult.Location);
+        Assert.Equal("Library", noteResult.Location);
         Assert.DoesNotContain(byCourse, contact => contact.Id == currentUser.Id);
         Assert.Contains(byCourse, contact => contact.Id == clara.Id && contact.PhoneNumber == "+49 7621 123456");
     }
@@ -29,7 +29,7 @@ public sealed class ContactsServiceTests
     {
         DisplayName = displayName,
         Email = email,
-        StudyProgram = "Informatik",
+        StudyProgram = "Computer Science",
         Semester = 3,
         Course = course,
         PhoneNumber = phoneNumber,

@@ -26,7 +26,7 @@ public sealed class EntityUserRepositoryTests
                 Email = "  Alice.Example@DHBW-Loerrach.de  ",
                 PasswordHash = "hash",
                 DisplayName = "Alice Example",
-                StudyProgram = "Informatik",
+                StudyProgram = "Computer Science",
                 Semester = 2,
                 Course = "TIF25A"
             };

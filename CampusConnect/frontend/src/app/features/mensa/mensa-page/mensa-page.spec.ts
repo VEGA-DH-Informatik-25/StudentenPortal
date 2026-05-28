@@ -17,11 +17,11 @@ describe('MensaPage', () => {
         date: '2026-04-28',
         dishes: [
           {
-            name: 'Kartoffeltaschen mit Frischkäsefüllung',
-            nameLines: ['Kartoffeltaschen mit Frischkäsefüllung'],
-            category: 'Essen 1',
+            name: 'Potato pockets with cream cheese filling',
+            nameLines: ['Potato pockets with cream cheese filling'],
+            category: 'Meal 1',
             priceStudent: 3.2,
-            allergens: 'Milch',
+            allergens: 'Milk',
             isVegetarian: true,
             isVegan: false,
           },

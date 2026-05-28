@@ -41,12 +41,12 @@ Der Stundenplan wird im Backend aus iCal-Kalendern geladen. `Timetable:CalendarU
 
 ## Authentifizierungsablauf
 
-CampusConnect verwendet JWT-basierte API-Authentifizierung und für Browser-Sitzungen ein HttpOnly-Cookie mit 15 Minuten gleitender Inaktivitätszeit:
+CampusConnect uses JWT-based API authentication and an HttpOnly cookie for browser sessions with a 15-minute sliding idle timeout:
 
-1. Der Benutzer sendet seine Anmeldedaten an `POST /api/auth/login`.
-2. Das Backend prüft die Anmeldedaten, stellt ein signiertes JWT aus und setzt zusätzlich ein HttpOnly-Cookie für die Browser-Sitzung.
-3. Das Angular-Frontend speichert das Token **ausschließlich im Arbeitsspeicher** (nicht in localStorage oder sessionStorage); nach einem Reload wird die Sitzung über `GET /api/auth/me` aus dem Cookie wiederhergestellt.
-4. API-Clients können weiterhin den Header `Authorization: Bearer <token>` verwenden. Der Browser sendet stattdessen das HttpOnly-Cookie automatisch mit.
-5. Das Backend prüft die jeweilige Anmeldung bei jeder Anfrage und verlängert die Browser-Sitzung nur bei Aktivität.
+1. The user sends credentials to `POST /api/auth/login`.
+2. The backend validates the credentials, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
+3. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
+4. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
+5. The backend validates authentication on every request and extends the browser session only when there is activity.
 
 Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.

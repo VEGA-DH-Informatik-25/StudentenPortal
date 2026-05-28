@@ -27,6 +27,6 @@ describe('Courses', () => {
 
     const request = http.expectOne('/api/courses');
     expect(request.request.method).toBe('GET');
-    request.flush([{ code: 'TIF25A', studyProgram: 'Informatik', semester: 1, isActive: true, createdAt: '2026-04-28T10:00:00Z' }]);
+    request.flush([{ code: 'TIF25A', studyProgram: 'Computer Science', semester: 1, isActive: true, createdAt: '2026-04-28T10:00:00Z' }]);
   });
 });

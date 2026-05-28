@@ -16,7 +16,7 @@ public class CalendarController(CalendarService calendarService) : ControllerBas
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var exams = await calendarService.GetExamsAsync(userId.Value);
         return Ok(exams);
@@ -27,7 +27,7 @@ public class CalendarController(CalendarService calendarService) : ControllerBas
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await calendarService.AddExamAsync(new AddExamCommand(
             userId.Value, request.ModuleName, request.ExamDate, request.Location, request.Notes));
@@ -43,7 +43,7 @@ public class CalendarController(CalendarService calendarService) : ControllerBas
     {
         var userId = GetCurrentUserId();
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         await calendarService.DeleteExamAsync(id, userId.Value);
         return NoContent();

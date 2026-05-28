@@ -1,15 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ContactProfile } from '../../../core/models/contact.model';
 
 @Component({
   selector: 'app-profile-hover-card',
   standalone: true,
+  imports: [TranslatePipe],
   templateUrl: './profile-hover-card.html',
   styleUrl: './profile-hover-card.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileHoverCard {
   private static _nextTooltipId = 0;
+  private readonly _i18n = inject(I18n);
 
   readonly profile = input<ContactProfile | null | undefined>(null);
   readonly displayName = input.required<string>();
@@ -30,13 +34,6 @@ export class ProfileHoverCard {
   });
 
   protected roleLabel(role: string): string {
-    switch (role) {
-      case 'Admin':
-        return 'Administration';
-      case 'Lecturer':
-        return 'Lehrperson';
-      default:
-        return 'Student';
-    }
+    return this._i18n.roleLabel(role);
   }
 }

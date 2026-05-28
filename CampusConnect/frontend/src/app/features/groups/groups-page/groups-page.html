@@ -1,9 +1,9 @@
 <div class="groups-page">
   <header class="groups-page__header">
     <div>
-      <p class="groups-page__eyebrow">Campuskommunikation</p>
-      <h1>Gruppen</h1>
-      <p>Kurse, offizielle Mitteilungen und soziale Campusbereiche an einem Ort.</p>
+      <p class="groups-page__eyebrow">{{ 'groups.heroLabel' | translate }}</p>
+      <h1>{{ 'groups.header' | translate }}</h1>
+      <p>{{ 'groups.heroBody' | translate }}</p>
     </div>
   </header>
 
@@ -16,15 +16,15 @@
   }
 
   @if (_isLoading()) {
-    <p class="groups-page__state">Gruppen werden geladen...</p>
+    <p class="groups-page__state">{{ 'groups.loading' | translate }}</p>
   } @else {
-    <section class="groups-overview" aria-label="Gruppenübersicht">
+    <section class="groups-overview" [attr.aria-label]="'groups.header' | translate">
       <div>
-        <span>Offiziell</span>
+        <span>{{ 'groups.tab.official' | translate }}</span>
         <strong>{{ _officialGroups().length }}</strong>
       </div>
       <div>
-        <span>Kurse</span>
+        <span>{{ 'groups.tab.courses' | translate }}</span>
         <strong>{{ _courseGroups().length }}</strong>
       </div>
       <div>
@@ -33,7 +33,7 @@
       </div>
     </section>
 
-    <section class="group-directory" aria-label="Gruppenverzeichnis">
+    <section class="group-directory" [attr.aria-label]="'groups.directory' | translate">
       <div class="group-directory__create-row">
         <button
           type="button"
@@ -41,38 +41,38 @@
           [attr.aria-expanded]="_isCreateMenuOpen()"
           (click)="_isCreateMenuOpen() ? closeCreateMenu() : openCreateMenu()">
           @if (_isCreateMenuOpen()) {
-            Menü schließen
+            {{ 'groups.createMenuClose' | translate }}
           } @else {
-            Neue Gruppe erstellen
+            {{ 'groups.createMenuOpen' | translate }}
           }
         </button>
         <p>{{ _createPolicySummary() }}</p>
       </div>
 
       @if (_isCreateMenuOpen()) {
-        <section class="create-group-menu" aria-label="Neue Gruppe erstellen">
+        <section class="create-group-menu" [attr.aria-label]="'groups.createHeader' | translate">
           <header>
-            <p>Eigene Gruppe</p>
-            <h3>Neue Gruppe erstellen</h3>
-            <span>Lege direkt beim Erstellen fest, wer posten darf und ob die Gruppe öffentlich sichtbar ist.</span>
+            <p>{{ 'groups.createLabel' | translate }}</p>
+            <h3>{{ 'groups.createHeader' | translate }}</h3>
+            <span>{{ 'groups.createBody' | translate }}</span>
           </header>
 
           <form (ngSubmit)="createGroup()">
             <div class="create-group-menu__grid">
               <label>
-                <span>Gruppentyp</span>
+                <span>{{ 'groups.type' | translate }}</span>
                 <select
                   name="group-type"
                   [ngModel]="_createType()"
                   (ngModelChange)="updateCreateType($any($event))">
-                  <option value="Social">Campusgruppe</option>
-                  <option value="Official">Offizielle Gruppe</option>
-                  <option value="Course">Kursgruppe</option>
+                  <option value="Social">{{ 'groups.type.social' | translate }}</option>
+                  <option value="Official">{{ 'groups.type.official' | translate }}</option>
+                  <option value="Course">{{ 'groups.type.course' | translate }}</option>
                 </select>
               </label>
 
               <label>
-                <span>Name</span>
+                <span>{{ 'common.name' | translate }}</span>
                 <input
                   type="text"
                   maxlength="80"
@@ -82,7 +82,7 @@
               </label>
 
               <label>
-                <span>Zielgruppe</span>
+                <span>{{ 'groups.targetAudience' | translate }}</span>
                 <input
                   type="text"
                   maxlength="80"
@@ -93,7 +93,7 @@
 
               @if (_createType() === 'Course') {
                 <label>
-                  <span>Kurscode</span>
+                  <span>{{ 'common.courseCode' | translate }}</span>
                   <input
                     type="text"
                     maxlength="40"
@@ -105,7 +105,7 @@
             </div>
 
             <label>
-              <span>Beschreibung</span>
+              <span>{{ 'groups.description' | translate }}</span>
               <textarea
                 rows="4"
                 maxlength="240"
@@ -114,11 +114,11 @@
                 (ngModelChange)="_createDescription.set($event)"></textarea>
             </label>
 
-            <div class="create-group-menu__policies" aria-label="Gruppenrechte beim Erstellen">
-              <h4>Berechtigungen und Sichtbarkeit</h4>
+            <div class="create-group-menu__policies" [attr.aria-label]="'groups.memberRights' | translate">
+              <h4>{{ 'groups.memberRights' | translate }}</h4>
 
               <label>
-                <span>Studierende dürfen posten</span>
+                <span>{{ 'groups.policy.studentPosts' | translate }}</span>
                 <input
                   type="checkbox"
                   name="create-allow-student-posts"
@@ -127,7 +127,7 @@
               </label>
 
               <label>
-                <span>Kommentare erlauben</span>
+                <span>{{ 'groups.policy.comments' | translate }}</span>
                 <input
                   type="checkbox"
                   name="create-allow-comments"
@@ -136,7 +136,7 @@
               </label>
 
               <label>
-                <span>Beiträge benötigen Freigabe</span>
+                <span>{{ 'groups.policy.approval' | translate }}</span>
                 <input
                   type="checkbox"
                   name="create-requires-approval"
@@ -145,7 +145,7 @@
               </label>
 
               <label>
-                <span>Gruppe ist öffentlich sichtbar</span>
+                <span>{{ 'groups.discoverable' | translate }}</span>
                 <input
                   type="checkbox"
                   name="create-is-discoverable"
@@ -155,12 +155,12 @@
             </div>
 
             <div class="create-group-menu__actions">
-              <button type="button" class="create-group-menu__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">Abbrechen</button>
+              <button type="button" class="create-group-menu__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">{{ 'common.cancel' | translate }}</button>
               <button type="submit" [disabled]="!_canCreate()">
                 @if (_isCreating()) {
-                  Wird erstellt...
+                  {{ 'groups.creating' | translate }}
                 } @else {
-                  Gruppe erstellen
+                  {{ 'groups.create' | translate }}
                 }
               </button>
             </div>
@@ -168,7 +168,7 @@
         </section>
       }
 
-        <div class="group-tabs" role="tablist" aria-label="Gruppen filtern">
+        <div class="group-tabs" role="tablist" [attr.aria-label]="'groups.filter.allRules' | translate">
           @for (tab of _tabs(); track tab.id) {
             <button
               type="button"
@@ -183,25 +183,25 @@
           }
         </div>
 
-        <div class="group-directory__toolbar" aria-label="Gruppen suchen und weiter filtern">
+        <div class="group-directory__toolbar" [attr.aria-label]="'groups.searchAndFilter' | translate">
           <label>
-            <span>Suche</span>
+            <span>{{ 'common.search' | translate }}</span>
             <input
               type="search"
-              placeholder="Name, Kurs, Zielgruppe"
+              [placeholder]="'groups.searchPlaceholder' | translate"
               [value]="_searchQuery()"
               (input)="updateSearchQuery($any($event.target).value)">
           </label>
 
           <label>
-            <span>Filter</span>
+            <span>{{ 'common.filter' | translate }}</span>
             <select [value]="_policyFilter()" (change)="updatePolicyFilter($any($event.target).value)">
-              <option value="All">Alle Regeln</option>
-              <option value="StudentPosts">Studierende posten</option>
-              <option value="UniversityPosts">Nur Hochschule postet</option>
-              <option value="Approval">Mit Freigabe</option>
-              <option value="CommentsOpen">Kommentare offen</option>
-              <option value="CommentsClosed">Kommentare geschlossen</option>
+              <option value="All">{{ 'groups.filter.allRules' | translate }}</option>
+              <option value="StudentPosts">{{ 'groups.filter.studentPosts' | translate }}</option>
+              <option value="UniversityPosts">{{ 'groups.filter.universityPosts' | translate }}</option>
+              <option value="Approval">{{ 'groups.filter.approval' | translate }}</option>
+              <option value="CommentsOpen">{{ 'groups.filter.commentsOpen' | translate }}</option>
+              <option value="CommentsClosed">{{ 'groups.filter.commentsClosed' | translate }}</option>
             </select>
           </label>
         </div>
@@ -214,35 +214,35 @@
                 <div class="group-card__body">
                   <div class="group-card__title-row">
                     <div>
-                      <strong>{{ group.name }}</strong>
+                      <strong>{{ groupName(group) }}</strong>
                       <small>{{ groupTypeLabel(group.type) }}</small>
                     </div>
 
                     <div class="group-card__actions">
-                      <button type="button" class="group-card__open" (click)="openGroup(group)">Öffnen</button>
+                      <button type="button" class="group-card__open" (click)="openGroup(group)">{{ 'common.open' | translate }}</button>
                       @if (group.canJoin) {
                         <button type="button" class="group-card__join" [disabled]="isJoining(group.id)" (click)="joinGroup(group)">
                           @if (isJoining(group.id)) {
-                            Tritt bei...
+                            {{ 'groups.joining' | translate }}
                           } @else {
-                            Beitreten
+                            {{ 'groups.join' | translate }}
                           }
                         </button>
                       } @else if (group.canManage) {
                         <button type="button" class="group-card__settings" (click)="openSettings(group)">
-                          Einstellungen
+                          {{ 'groups.settings' | translate }}
                         </button>
                       }
                     </div>
                   </div>
 
-                  <p>{{ group.description }}</p>
+                  <p>{{ groupDescription(group) }}</p>
                 </div>
               </article>
             }
           </div>
         } @else {
-          <p class="groups-page__state">Für diesen Filter gibt es noch keine Gruppen.</p>
+          <p class="groups-page__state">{{ 'groups.emptyFilter' | translate }}</p>
         }
     </section>
   }

@@ -19,7 +19,7 @@ public class TimetableController(ITimetableService timetableService, AuthService
             : course;
 
         if (string.IsNullOrWhiteSpace(resolvedCourse))
-            return BadRequest(new { error = "Bitte einen Kurs auswählen." });
+            return BadRequest(new { error = "Choose a course." });
 
         try
         {

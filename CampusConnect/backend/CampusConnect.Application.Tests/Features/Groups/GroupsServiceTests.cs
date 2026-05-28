@@ -14,7 +14,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Cara",
             Email = "cara@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 1,
             Course = "TIF26C"
         };
@@ -33,7 +33,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Dina",
             Email = "dina@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 4,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -44,7 +44,7 @@ public class GroupsServiceTests
         var result = await service.UpdateSettingsAsync(group.Id, user.Id, new UpdateGroupSettingsCommand(false, false, true, true));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Keine Berechtigung zum Bearbeiten dieser Gruppeneinstellungen.", result.Error);
+        Assert.Equal("You are not allowed to edit these group settings.", result.Error);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -62,7 +62,7 @@ public class GroupsServiceTests
         var groups = new FakeGroupRepository();
         var service = new GroupsService(groups, new FakeUserRepository(user));
 
-        var result = await service.CreateGroupAsync(new CreateGroupCommand(user.Id, "Lerngruppe Web", "Gemeinsame Vorbereitung", "Interessierte Studierende"));
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(user.Id, "Web study group", "Shared preparation", "Interested students"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Social", result.Value!.Type);
@@ -75,24 +75,24 @@ public class GroupsServiceTests
     [InlineData("Official")]
     [InlineData("Course")]
     [InlineData("Social")]
-    public async Task CreateGroupAsync_AllowsVerwaltungToCreateEveryGroupType(string type)
+    public async Task CreateGroupAsync_AllowsManagementToCreateEveryGroupType(string type)
     {
         var user = new User
         {
-            DisplayName = "Vera Verwaltung",
+            DisplayName = "Vera Management",
             Email = "vera@dhbw-loerrach.de",
-            StudyProgram = "Campusverwaltung",
+            StudyProgram = "Campus Management",
             Semester = 1,
             Course = "ADM25A",
-            Role = UserRole.Verwaltung
+            Role = UserRole.Management
         };
         var groups = new FakeGroupRepository();
         var service = new GroupsService(groups, new FakeUserRepository(user));
 
         var result = await service.CreateGroupAsync(new CreateGroupCommand(
             user.Id,
-            $"{type} Gruppe",
-            "Organisatorische Gruppe",
+            $"{type} group",
+            "Organizational group",
             "Campus",
             Type: type,
             CourseCode: type == "Course" ? "tif25a" : null));
@@ -114,7 +114,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -123,14 +123,14 @@ public class GroupsServiceTests
 
         var result = await service.CreateGroupAsync(new CreateGroupCommand(
             user.Id,
-            $"{type} Gruppe",
-            "Organisatorische Gruppe",
+            $"{type} group",
+            "Organizational group",
             "Campus",
             Type: type,
             CourseCode: type == "Course" ? "TIF25A" : null));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Diese globale Rolle darf diesen Gruppentyp nicht erstellen.", result.Error);
+        Assert.Equal("This global role cannot create this group type.", result.Error);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -150,9 +150,9 @@ public class GroupsServiceTests
 
         var result = await service.CreateGroupAsync(new CreateGroupCommand(
             user.Id,
-            "Lerngruppe Web",
-            "Gemeinsame Vorbereitung",
-            "Interessierte Studierende",
+            "Web study group",
+            "Shared preparation",
+            "Interested students",
             AllowStudentPosts: false,
             AllowComments: false,
             RequiresApproval: true,
@@ -172,7 +172,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Jana",
             Email = "jana@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -181,7 +181,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Kai",
             Email = "kai@dhbw-loerrach.de",
-            StudyProgram = "Wirtschaftsinformatik",
+            StudyProgram = "Business Informatics",
             Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
@@ -201,7 +201,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Lea",
             Email = "lea@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -233,7 +233,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Nora",
             Email = "nora@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -265,7 +265,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Finn",
             Email = "finn@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 3,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -286,7 +286,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -295,7 +295,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Hannes",
             Email = "hannes@dhbw-loerrach.de",
-            StudyProgram = "Wirtschaftsinformatik",
+            StudyProgram = "Business Informatics",
             Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
@@ -319,7 +319,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -328,7 +328,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Hannes",
             Email = "hannes@dhbw-loerrach.de",
-            StudyProgram = "Wirtschaftsinformatik",
+            StudyProgram = "Business Informatics",
             Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
@@ -360,7 +360,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -369,7 +369,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Iris",
             Email = "iris@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -392,7 +392,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
@@ -401,7 +401,7 @@ public class GroupsServiceTests
         {
             DisplayName = "Hannes",
             Email = "hannes@dhbw-loerrach.de",
-            StudyProgram = "Wirtschaftsinformatik",
+            StudyProgram = "Business Informatics",
             Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
@@ -420,21 +420,21 @@ public class GroupsServiceTests
 
     private static CampusGroup CourseGroup(string courseCode) => new()
     {
-        Name = $"Kurs {courseCode}",
+        Name = $"Course {courseCode}",
         Type = GroupType.Course,
         Audience = courseCode,
         CourseCode = courseCode,
-        OwnerLabel = "Informatik",
+        OwnerLabel = "Computer Science",
         IconLabel = "TI",
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
     };
 
     private static CampusGroup SocialGroup(Guid ownerId, bool isDiscoverable = true) => new()
     {
-        Name = "Lerngruppe Web",
-        Description = "Gemeinsame Vorbereitung",
+        Name = "Web study group",
+        Description = "Shared preparation",
         Type = GroupType.Social,
-        Audience = "Interessierte Studierende",
+        Audience = "Interested students",
         OwnerUserId = ownerId,
         OwnerLabel = "Community",
         IconLabel = "LW",

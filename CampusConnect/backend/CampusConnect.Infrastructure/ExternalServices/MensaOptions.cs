@@ -8,7 +8,7 @@ public sealed class MensaOptions
 
     public string BaseUrl { get; init; } = "https://www.swfr.de/apispeiseplan";
 
-    public string OrtId { get; init; } = "677";
+    public string LocationId { get; init; } = "677";
 
     public int Days { get; init; } = 5;
 }

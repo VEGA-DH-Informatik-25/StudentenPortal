@@ -15,7 +15,7 @@ public class ContactsController(ContactsService contactsService) : ControllerBas
     {
         var userId = CurrentUser.GetUserId(User);
         if (userId is null)
-            return Unauthorized(new { error = "Benutzer konnte nicht aus dem Token ermittelt werden." });
+            return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var contacts = await contactsService.SearchAsync(userId.Value, query, cancellationToken);
         return Ok(contacts);

@@ -26,7 +26,7 @@ public class AuthServiceTests
         Assert.Equal("test-token", auth.Token);
         Assert.Equal("alice@dhbw-loerrach.de", auth.Profile.Email);
         Assert.Equal("Alice", auth.Profile.DisplayName);
-        Assert.Equal("Informatik", auth.Profile.StudyProgram);
+        Assert.Equal("Computer Science", auth.Profile.StudyProgram);
         Assert.Equal(3, auth.Profile.Semester);
         Assert.Equal("TIF25A", auth.Profile.Course);
 
@@ -48,7 +48,7 @@ public class AuthServiceTests
             "UNKNOWN"));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Bitte wähle einen gültigen Kurs aus.", result.Error);
+        Assert.Equal("Choose a valid course.", result.Error);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class AuthServiceTests
             Email = "bob@dhbw-loerrach.de",
             PasswordHash = "hash",
             DisplayName = "Bob",
-            StudyProgram = "Wirtschaftsinformatik",
+            StudyProgram = "Business Informatics",
             Semester = 1,
             Course = "WWI25A"
         };
@@ -89,20 +89,20 @@ public class AuthServiceTests
             "Bob B.",
             "TIF25B",
             " +49 7621 123456 ",
-            " Bibliothek ",
-            " Sucht Projektpartner für Webentwicklung. "));
+            " Library ",
+            " Looking for a project partner for web development. "));
 
         Assert.True(result.IsSuccess);
         var profile = result.Value!;
         Assert.Equal(user.Id, profile.Id);
         Assert.Equal("bob@dhbw-loerrach.de", profile.Email);
         Assert.Equal("Bob B.", profile.DisplayName);
-        Assert.Equal("Informatik", profile.StudyProgram);
+        Assert.Equal("Computer Science", profile.StudyProgram);
         Assert.Equal(3, profile.Semester);
         Assert.Equal("TIF25B", profile.Course);
         Assert.Equal("+49 7621 123456", profile.PhoneNumber);
-        Assert.Equal("Bibliothek", profile.Location);
-        Assert.Equal("Sucht Projektpartner für Webentwicklung.", profile.ProfileNote);
+        Assert.Equal("Library", profile.Location);
+        Assert.Equal("Looking for a project partner for web development.", profile.ProfileNote);
         Assert.Contains(user.Id, groups.AssignedUserIdsByCourse["TIF25B"]);
 
         var storedUser = await users.FindByIdAsync(user.Id);
@@ -118,7 +118,7 @@ public class AuthServiceTests
             Email = "chris@dhbw-loerrach.de",
             PasswordHash = "hash",
             DisplayName = "Chris",
-            StudyProgram = "Informatik",
+            StudyProgram = "Computer Science",
             Semester = 4,
             Course = "TIF24A"
         };
@@ -128,7 +128,7 @@ public class AuthServiceTests
         var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand("", "TIF25A", "", "", ""));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Bitte fülle alle Profilfelder aus.", result.Error);
+        Assert.Equal("Fill in all profile fields.", result.Error);
         var storedUser = await users.FindByIdAsync(user.Id);
         Assert.Equal("Chris", storedUser!.DisplayName);
         Assert.Equal(4, storedUser.Semester);
@@ -184,9 +184,9 @@ public class AuthServiceTests
     {
         private readonly Dictionary<string, Course> _courses = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["TIF25A"] = new Course { Code = "TIF25A", StudyProgram = "Informatik", Semester = 3 },
-            ["TIF25B"] = new Course { Code = "TIF25B", StudyProgram = "Informatik", Semester = 3 },
-            ["WWI25A"] = new Course { Code = "WWI25A", StudyProgram = "Wirtschaftsinformatik", Semester = 1 }
+            ["TIF25A"] = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 3 },
+            ["TIF25B"] = new Course { Code = "TIF25B", StudyProgram = "Computer Science", Semester = 3 },
+            ["WWI25A"] = new Course { Code = "WWI25A", StudyProgram = "Business Informatics", Semester = 1 }
         };
 
         public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default) =>

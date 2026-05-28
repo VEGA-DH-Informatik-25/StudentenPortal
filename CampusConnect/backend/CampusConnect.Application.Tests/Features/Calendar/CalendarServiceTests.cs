@@ -11,16 +11,16 @@ public sealed class CalendarServiceTests
     {
         var userId = Guid.NewGuid();
         var service = new CalendarService(new FakeExamRepository(
-            new ExamEntry { UserId = userId, ModuleName = "Später", ExamDate = new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc) },
-            new ExamEntry { UserId = userId, ModuleName = "Früher", ExamDate = new DateTime(2026, 5, 1, 10, 0, 0, DateTimeKind.Utc) },
-            new ExamEntry { UserId = Guid.NewGuid(), ModuleName = "Andere Person", ExamDate = new DateTime(2026, 4, 1, 10, 0, 0, DateTimeKind.Utc) }));
+            new ExamEntry { UserId = userId, ModuleName = "Later", ExamDate = new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc) },
+            new ExamEntry { UserId = userId, ModuleName = "Earlier", ExamDate = new DateTime(2026, 5, 1, 10, 0, 0, DateTimeKind.Utc) },
+            new ExamEntry { UserId = Guid.NewGuid(), ModuleName = "Other person", ExamDate = new DateTime(2026, 4, 1, 10, 0, 0, DateTimeKind.Utc) }));
 
         var exams = await service.GetExamsAsync(userId);
 
         Assert.Collection(
             exams,
-            exam => Assert.Equal("Früher", exam.ModuleName),
-            exam => Assert.Equal("Später", exam.ModuleName));
+            exam => Assert.Equal("Earlier", exam.ModuleName),
+            exam => Assert.Equal("Later", exam.ModuleName));
     }
 
     [Fact]
@@ -38,8 +38,8 @@ public sealed class CalendarServiceTests
     {
         var userId = Guid.NewGuid();
         var otherUserId = Guid.NewGuid();
-        var exam = new ExamEntry { UserId = userId, ModuleName = "Mathematik", ExamDate = DateTime.UtcNow };
-        var otherExam = new ExamEntry { UserId = otherUserId, ModuleName = "Mathematik", ExamDate = DateTime.UtcNow };
+        var exam = new ExamEntry { UserId = userId, ModuleName = "Mathematics", ExamDate = DateTime.UtcNow };
+        var otherExam = new ExamEntry { UserId = otherUserId, ModuleName = "Mathematics", ExamDate = DateTime.UtcNow };
         var repository = new FakeExamRepository(exam, otherExam);
         var service = new CalendarService(repository);
 

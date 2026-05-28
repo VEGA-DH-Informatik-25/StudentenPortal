@@ -341,7 +341,7 @@ Mensa:
 - Backend service: `CampusConnect.Infrastructure/ExternalServices/MensaApiClient.cs`.
 - Configuration section: `Mensa`.
 - Current default base URL: `https://www.swfr.de/apispeiseplan`.
-- Current default `OrtId`: `677`.
+- Current default `LocationId`: `677`.
 - Current default days: `5`.
 - Keep API keys out of Git.
 

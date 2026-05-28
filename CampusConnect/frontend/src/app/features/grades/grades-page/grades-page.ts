@@ -2,6 +2,8 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Grade, GradePlan, GradePlanModule, GradeSummary } from '../../../core/models/grade.model';
 import { Grades } from '../../../core/services/grades';
 
@@ -15,13 +17,14 @@ interface ModuleSummary {
 @Component({
   selector: 'app-grades-page',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, TranslatePipe],
   templateUrl: './grades-page.html',
   styleUrl: './grades-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GradesPage implements OnInit {
   private readonly _gradesService = inject(Grades);
+  protected readonly _i18n = inject(I18n);
 
   protected readonly _summary = signal<GradeSummary>({ grades: [], weightedAverage: 0, totalEcts: 0 });
   protected readonly _plan = signal<GradePlan | null>(null);
@@ -110,17 +113,17 @@ export class GradesPage implements OnInit {
     const moduleName = this.moduleName.trim();
 
     if (hasPlan && !this.hasOpenPlanModules()) {
-      this._error.set('Alle Module aus deinem Kursplan sind bereits erfasst.');
+      this._error.set(this._i18n.translate('grades.allModulesRecorded'));
       return;
     }
 
     if (hasPlan && !selectedModule) {
-      this._error.set('Bitte wähle ein Modul aus deinem Kursplan aus.');
+      this._error.set(this._i18n.translate('grades.selectPlanModule'));
       return;
     }
 
     if (!hasPlan && !moduleName) {
-      this._error.set('Bitte gib ein Modul oder eine Prüfung ein.');
+      this._error.set(this._i18n.translate('grades.enterModule'));
       return;
     }
 
@@ -153,7 +156,7 @@ export class GradesPage implements OnInit {
         this._loadPlan();
       },
       error: error => {
-        this._error.set(this._readError(error, 'Note konnte nicht gespeichert werden.'));
+        this._error.set(this._readError(error, this._i18n.translate('grades.saveError')));
         this._isSubmitting.set(false);
       },
     });
@@ -165,7 +168,7 @@ export class GradesPage implements OnInit {
         this._summary.set(this.createSummary(this.grades().filter(entry => entry.id !== id)));
         this._loadPlan();
       },
-      error: error => this._error.set(this._readError(error, 'Note konnte nicht gelöscht werden.')),
+      error: error => this._error.set(this._readError(error, this._i18n.translate('grades.deleteError'))),
     });
   }
 
@@ -175,7 +178,7 @@ export class GradesPage implements OnInit {
 
   protected examText(module: GradePlanModule): string {
     if (module.exams.length === 0) {
-      return 'Prüfungsform laut DHBW-Plan noch nicht eindeutig angegeben';
+      return this._i18n.translate('grades.examFormatMissing');
     }
 
     return module.exams
@@ -188,25 +191,25 @@ export class GradesPage implements OnInit {
       return '–';
     }
 
-    return value.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+    return value.toLocaleString(this._i18n.locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 });
   }
 
   protected targetHint(): string {
     const required = this.requiredGradeForTarget();
 
     if (!Number.isFinite(required)) {
-      return 'Lege zuerst bestehende Noten oder eine Gewichtung fest.';
+      return this._i18n.translate('grades.targetNeedsData');
     }
 
     if (required < 1) {
-      return 'Das Ziel ist bereits sicher erreichbar.';
+      return this._i18n.translate('grades.targetAlreadyReachable');
     }
 
     if (required > 5) {
-      return 'Das Ziel ist mit dieser Gewichtung nicht mehr erreichbar.';
+      return this._i18n.translate('grades.targetNotReachable');
     }
 
-    return `Benötigte Zusatznote: ${this.format(required)}`;
+    return this._i18n.translate('grades.requiredAdditionalGrade', { grade: this.format(required) });
   }
 
   private _loadGrades(): void {
@@ -219,7 +222,7 @@ export class GradesPage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, 'Noten konnten nicht geladen werden.'));
+        this._error.set(this._readError(error, this._i18n.translate('grades.loadError')));
         this._isLoading.set(false);
       },
     });
@@ -239,7 +242,7 @@ export class GradesPage implements OnInit {
       },
       error: error => {
         this._plan.set(null);
-        this._planNotice.set(this._readError(error, 'Für deinen Kurs wurde kein DHBW-Studienplan gefunden.'));
+        this._planNotice.set(this._readError(error, this._i18n.translate('grades.planLoadError')));
         this.selectedModuleCode = '';
         this._isPlanLoading.set(false);
       },

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18n } from '../../../core/i18n/i18n';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ContactProfile } from '../../../core/models/contact.model';
 import { Contacts } from '../../../core/services/contacts';
 import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
@@ -7,13 +9,14 @@ import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-
 @Component({
   selector: 'app-contact-book-page',
   standalone: true,
-  imports: [FormsModule, ProfileHoverCard],
+  imports: [FormsModule, ProfileHoverCard, TranslatePipe],
   templateUrl: './contact-book-page.html',
   styleUrl: './contact-book-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactBookPage implements OnInit {
   private readonly _contactsService = inject(Contacts);
+  private readonly _i18n = inject(I18n);
 
   protected readonly _contacts = signal<ContactProfile[]>([]);
   protected readonly _query = signal('');
@@ -21,7 +24,9 @@ export class ContactBookPage implements OnInit {
   protected readonly _error = signal('');
   protected readonly _resultLabel = computed(() => {
     const count = this._contacts().length;
-    return count === 1 ? '1 Kontakt' : `${count} Kontakte`;
+    return count === 1
+      ? this._i18n.translate('contacts.count.one')
+      : this._i18n.translate('contacts.count.many', { count });
   });
 
   ngOnInit(): void {
@@ -42,7 +47,7 @@ export class ContactBookPage implements OnInit {
       },
       error: () => {
         this._contacts.set([]);
-        this._error.set('Kontakte konnten nicht geladen werden.');
+        this._error.set(this._i18n.translate('contacts.loadError'));
         this._isLoading.set(false);
       },
     });
@@ -54,13 +59,6 @@ export class ContactBookPage implements OnInit {
   }
 
   protected roleLabel(role: string): string {
-    switch (role) {
-      case 'Admin':
-        return 'Administration';
-      case 'Lecturer':
-        return 'Lehrperson';
-      default:
-        return 'Student';
-    }
+    return this._i18n.roleLabel(role);
   }
 }

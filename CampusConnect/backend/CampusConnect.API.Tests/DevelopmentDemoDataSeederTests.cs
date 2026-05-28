@@ -40,9 +40,9 @@ public sealed class DevelopmentDemoDataSeederTests
                 await seeder.SeedAsync();
 
                 var courses = await dbContext.Courses.AsNoTracking().ToListAsync();
-                Assert.Contains(courses, course => course.Code == "TIF25A" && course.StudyProgram == "Informatik");
-                Assert.Contains(courses, course => course.Code == "WDB25A" && course.StudyProgram == "BWL-Digital Business Management");
-                Assert.Contains(courses, course => course.Code == "GIG25A" && course.StudyProgram == "Interprofessionelle Gesundheitsversorgung");
+                Assert.Contains(courses, course => course.Code == "TIF25A" && course.StudyProgram == "Computer Science");
+                Assert.Contains(courses, course => course.Code == "WDB25A" && course.StudyProgram == "Business Administration - Digital Business Management");
+                Assert.Contains(courses, course => course.Code == "GIG25A" && course.StudyProgram == "Interprofessional Health Care");
 
                 var users = await dbContext.Users.AsNoTracking().ToListAsync();
                 Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin);
@@ -51,17 +51,17 @@ public sealed class DevelopmentDemoDataSeederTests
                 Assert.Equal("TIF25A", tifStudent.Course);
 
                 var seededGroups = await groups.GetAllAsync();
-                Assert.Contains(seededGroups, group => group.Name == "Prüfungsamt und Fristen" && group.Type == GroupType.Official);
+                Assert.Contains(seededGroups, group => group.Name == "Exam office and deadlines" && group.Type == GroupType.Official);
                 Assert.Contains(seededGroups, group => group.CourseCode == "TIF25A" && group.AssignedUserIds.Contains(tifStudent.Id));
                 Assert.Contains(seededGroups, group =>
-                    group.Name == "Wohnungssuche Lörrach" &&
+                    group.Name == "Housing in Loerrach" &&
                     group.Settings.IsDiscoverable &&
                     !group.Settings.RequiresApproval &&
                     group.AssignedUserIds.Contains(housingOwner.Id) &&
                     !group.AssignedUserIds.Contains(tifStudent.Id));
 
                 var posts = await feed.GetAllAsync(1, 20);
-                Assert.Contains(posts, post => post.Content.Contains("CampusConnect-Demobereich", StringComparison.Ordinal));
+                Assert.Contains(posts, post => post.Content.Contains("CampusConnect demo area", StringComparison.Ordinal));
 
                 Assert.NotEmpty(await grades.GetByUserAsync(tifStudent.Id));
                 Assert.NotEmpty(await exams.GetByUserAsync(tifStudent.Id));
@@ -77,12 +77,12 @@ public sealed class DevelopmentDemoDataSeederTests
 
     private static List<DemoCourseOptions> DemoCourses() =>
     [
-        new() { Code = "TIF25A", StudyProgram = "Informatik", Semester = 2 },
-        new() { Code = "WWI25A", StudyProgram = "Wirtschaftsinformatik", Semester = 2 },
-        new() { Code = "WDB25A", StudyProgram = "BWL-Digital Business Management", Semester = 2 },
-        new() { Code = "TMB25A", StudyProgram = "Maschinenbau", Semester = 2 },
-        new() { Code = "WGM24A", StudyProgram = "BWL-Gesundheitsmanagement", Semester = 4 },
-        new() { Code = "GIG25A", StudyProgram = "Interprofessionelle Gesundheitsversorgung", Semester = 2 }
+        new() { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2 },
+        new() { Code = "WWI25A", StudyProgram = "Business Informatics", Semester = 2 },
+        new() { Code = "WDB25A", StudyProgram = "Business Administration - Digital Business Management", Semester = 2 },
+        new() { Code = "TMB25A", StudyProgram = "Mechanical Engineering", Semester = 2 },
+        new() { Code = "WGM24A", StudyProgram = "Business Health Management", Semester = 4 },
+        new() { Code = "GIG25A", StudyProgram = "Interprofessional Health Care", Semester = 2 }
     ];
 
     private static CampusConnectDbContext CreateDbContext(string databasePath) => new(

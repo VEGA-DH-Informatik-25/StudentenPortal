@@ -31,13 +31,13 @@ describe('FeedPage', () => {
 
   const group: CampusGroup = {
     id: 'group-1',
-    name: 'Kurs TIF25A',
-    description: 'Kursgruppe',
+    name: 'Course TIF25A',
+    description: 'Course group',
     type: 'Course',
     audience: 'TIF25A',
     courseCode: 'TIF25A',
     ownerUserId: null,
-    ownerLabel: 'Informatik',
+    ownerLabel: 'Computer Science',
     iconLabel: 'TI',
     accentColor: '#e2001a',
     assignedUserCount: 0,
@@ -50,7 +50,7 @@ describe('FeedPage', () => {
   };
 
   beforeEach(async () => {
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
     feedApi = {
       getFeed: vi.fn(() => of([])),
       createPost: vi.fn(() => of(post)),
@@ -111,13 +111,13 @@ describe('FeedPage', () => {
       'Moodle',
       'Webmail',
       'DUALIS',
-      'Bibliothek',
+      'Library',
     ]);
     expect(links.map(link => link.querySelector('small')?.textContent?.trim())).toEqual([
-      'Kurse und Unterlagen',
-      'E-Mails und Kalender',
-      'Noten und Prüfungen',
-      'Katalog und Recherche',
+      'Courses and materials',
+      'Email and calendar',
+      'Grades and exams',
+      'Catalog and research',
     ]);
     expect(links.map(link => link.href)).toEqual([
       'https://moodle.loerrach.dhbw.de/',
@@ -130,12 +130,12 @@ describe('FeedPage', () => {
 
   it('opens the comment composer from the compact comment button', () => {
     fixture.detectChanges();
-    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }]);
+    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }]);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).toBeNull();
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    buttons.find(button => button.textContent?.includes('Kommentieren'))?.click();
+    buttons.find(button => button.textContent?.includes('Comment'))?.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).not.toBeNull();
@@ -143,7 +143,7 @@ describe('FeedPage', () => {
 
   it('submits a picked emoji reaction', () => {
     fixture.detectChanges();
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hallo', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
     (component as any)._posts.set([post]);
 
     (component as any).onPickReaction(post, '🚀');
@@ -174,7 +174,7 @@ describe('FeedPage', () => {
     fixture.detectChanges();
 
     expect(timetableApi.getTimetable).not.toHaveBeenCalled();
-    expect(component['_scheduleError']()).toBe('Wähle im Stundenplan zuerst deinen Kurs aus.');
+    expect(component['_scheduleError']()).toBe('Choose a course to see the next events.');
   });
 
   it('clears schedule events and shows an error when schedule loading fails', () => {
@@ -183,18 +183,18 @@ describe('FeedPage', () => {
     fixture.detectChanges();
 
     expect(component['_scheduleEvents']()).toEqual([]);
-    expect(component['_scheduleError']()).toBe('Der Tagesplan konnte nicht geladen werden.');
+    expect(component['_scheduleError']()).toBe('The daily schedule could not be loaded.');
   });
 
   it('clears stale feed errors on a successful reload and prevents duplicate posts', () => {
     fixture.detectChanges();
-    component['_error'].set('Alter Fehler');
+    component['_error'].set('Old error');
 
     component['_loadFeed']();
 
     expect(component['_error']()).toBe('');
 
-    component['updateContent']('Neuer Beitrag');
+    component['updateContent']('New post');
     component['_isPosting'].set(true);
     component['onPost']();
 
@@ -216,7 +216,7 @@ function createEvent(id: string, start: string, end: string) {
     title: 'Software Engineering',
     start,
     end,
-    location: 'Aula',
+    location: 'Auditorium',
     description: null,
     isAllDay: false,
     isOnline: false,

@@ -17,7 +17,7 @@ public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupA
 
 public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
 {
-    public const string PermissionError = "Keine Berechtigung zum Bearbeiten dieser Gruppeneinstellungen.";
+    public const string PermissionError = "You are not allowed to edit these group settings.";
 
     public async Task<IReadOnlyList<CampusGroupDto>> GetGroupsForUserAsync(Guid userId)
     {
@@ -37,30 +37,30 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
     {
         var user = await userRepo.FindByIdAsync(command.CreatorId);
         if (user is null)
-            return Result<CampusGroupDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<CampusGroupDto>.Failure("User profile was not found.");
 
         var validationError = ValidateGroup(command.Name, command.Description, command.Audience);
         if (validationError is not null)
             return Result<CampusGroupDto>.Failure(validationError);
 
         if (!TryParseGroupType(command.Type, out var groupType))
-            return Result<CampusGroupDto>.Failure("Gruppentyp ist ungültig.");
+            return Result<CampusGroupDto>.Failure("Group type is invalid.");
 
         if (!CanCreateGroupType(user.Role, groupType))
-            return Result<CampusGroupDto>.Failure("Diese globale Rolle darf diesen Gruppentyp nicht erstellen.");
+            return Result<CampusGroupDto>.Failure("This global role cannot create this group type.");
 
         var courseCode = NormalizeCourseCode(command.CourseCode);
         if (groupType == GroupType.Course)
         {
             if (courseCode is null)
-                return Result<CampusGroupDto>.Failure("Bitte gib einen Kurscode für die Kursgruppe an.");
+                return Result<CampusGroupDto>.Failure("Enter a course code for the course group.");
 
             if (courseCode.Length > 40)
-                return Result<CampusGroupDto>.Failure("Der Kurscode darf höchstens 40 Zeichen lang sein.");
+                return Result<CampusGroupDto>.Failure("Course code must be at most 40 characters long.");
 
             var existingGroups = await groupRepo.GetAllAsync();
             if (existingGroups.Any(group => group.Type == GroupType.Course && string.Equals(group.CourseCode, courseCode, StringComparison.OrdinalIgnoreCase)))
-                return Result<CampusGroupDto>.Failure("Für diesen Kurs existiert bereits eine Kursgruppe.");
+                return Result<CampusGroupDto>.Failure("A course group already exists for this course.");
         }
 
         var group = new CampusGroup
@@ -124,7 +124,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
             return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
 
         if (context.Value!.Group.Type == GroupType.Course)
-            return Result<GroupSettingsDetailsDto>.Failure("Kursgruppen werden über die Kurszuordnung der Benutzer verwaltet.");
+            return Result<GroupSettingsDetailsDto>.Failure("Course groups are managed through user course assignments.");
 
         var users = await userRepo.ListAsync();
         var existingUserIds = users.Select(user => user.Id).ToHashSet();
@@ -154,7 +154,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
                 continue;
 
             if (!TryParsePermission(item.Permission, out var permission))
-                return Result<GroupSettingsDetailsDto>.Failure("Berechtigung ist ungültig.");
+                return Result<GroupSettingsDetailsDto>.Failure("Permission is invalid.");
 
             permissionMap[item.UserId] = permission;
         }
@@ -178,14 +178,14 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         await SyncCourseGroupAssignmentsAsync();
         var user = await userRepo.FindByIdAsync(userId);
         if (user is null)
-            return Result<CampusGroupDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<CampusGroupDto>.Failure("User profile was not found.");
 
         var group = await groupRepo.FindByIdAsync(groupId);
         if (group is null || !GroupDtoMapper.CanView(user, group))
-            return Result<CampusGroupDto>.Failure("Gruppe wurde nicht gefunden.");
+            return Result<CampusGroupDto>.Failure("Group was not found.");
 
         if (!GroupDtoMapper.CanJoin(user, group))
-            return Result<CampusGroupDto>.Failure("Dieser Gruppe kannst du nicht direkt beitreten.");
+            return Result<CampusGroupDto>.Failure("You cannot join this group directly.");
 
         var assignedUserIds = group.AssignedUserIds.ToHashSet();
         assignedUserIds.Add(user.Id);
@@ -199,11 +199,11 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
     {
         var group = await groupRepo.FindByIdAsync(groupId);
         if (group is null)
-            return Result<GroupEditContext>.Failure("Gruppe wurde nicht gefunden.");
+            return Result<GroupEditContext>.Failure("Group was not found.");
 
         var user = await userRepo.FindByIdAsync(userId);
         if (user is null)
-            return Result<GroupEditContext>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<GroupEditContext>.Failure("User profile was not found.");
 
         if (!GroupDtoMapper.CanManage(user, group))
             return Result<GroupEditContext>.Failure(PermissionError);
@@ -251,7 +251,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         Enum.TryParse(value, ignoreCase: true, out type) && Enum.IsDefined(type);
 
     private static bool CanCreateGroupType(UserRole role, GroupType type) =>
-        type == GroupType.Social || role is UserRole.Admin or UserRole.Verwaltung;
+        type == GroupType.Social || role is UserRole.Admin or UserRole.Management;
 
     private static string? NormalizeCourseCode(string? courseCode) =>
         string.IsNullOrWhiteSpace(courseCode) ? null : courseCode.Trim().ToUpperInvariant();
@@ -259,16 +259,16 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
     private static string? ValidateGroup(string name, string description, string audience)
     {
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(audience))
-            return "Bitte fülle alle Gruppenfelder aus.";
+            return "Fill in all group fields.";
 
         if (name.Trim().Length > 80)
-            return "Der Gruppenname darf höchstens 80 Zeichen lang sein.";
+            return "Group name must be at most 80 characters long.";
 
         if (description.Trim().Length > 240)
-            return "Die Beschreibung darf höchstens 240 Zeichen lang sein.";
+            return "Description must be at most 240 characters long.";
 
         if (audience.Trim().Length > 80)
-            return "Die Zielgruppe darf höchstens 80 Zeichen lang sein.";
+            return "Audience must be at most 80 characters long.";
 
         return null;
     }

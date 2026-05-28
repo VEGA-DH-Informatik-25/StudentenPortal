@@ -17,7 +17,7 @@ describe('AdminPage', () => {
           useValue: {
             getUsers: () => of([]),
             getCourses: () => of([]),
-            createCourse: () => of({ code: 'TIF25A', studyProgram: 'Informatik', semester: 3, isActive: true, createdAt: '' }),
+            createCourse: () => of({ code: 'TIF25A', studyProgram: 'Computer Science', semester: 3, isActive: true, createdAt: '' }),
             updateUserRole: () => of({}),
             updateUserCourse: () => of({}),
             deleteUser: () => of(undefined),

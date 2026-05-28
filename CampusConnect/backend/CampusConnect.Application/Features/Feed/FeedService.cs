@@ -51,26 +51,26 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     public async Task<Result<FeedPostDto>> CreatePostAsync(CreatePostCommand cmd)
     {
         if (string.IsNullOrWhiteSpace(cmd.Content))
-            return Result<FeedPostDto>.Failure("Inhalt darf nicht leer sein.");
+            return Result<FeedPostDto>.Failure("Content cannot be empty.");
 
         var user = await userRepo.FindByIdAsync(cmd.AuthorId);
         if (user is null)
-            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<FeedPostDto>.Failure("User profile was not found.");
 
         await SyncCourseGroupAssignmentsAsync();
         var group = await ResolveTargetGroupAsync(cmd.GroupId, user);
         if (group is null)
-            return Result<FeedPostDto>.Failure("Bitte wähle eine gültige Gruppe aus.");
+            return Result<FeedPostDto>.Failure("Choose a valid group.");
 
         if (!GroupDtoMapper.CanPost(user, group))
         {
             if (GroupDtoMapper.IsAssigned(user, group) && !GroupDtoMapper.CanWrite(user, group))
-                return Result<FeedPostDto>.Failure("Du hast in dieser Gruppe nur Leserechte.");
+                return Result<FeedPostDto>.Failure("You only have read access in this group.");
 
             if (GroupDtoMapper.IsAssigned(user, group) && user.Role == UserRole.Student && !group.Settings.AllowStudentPosts)
-                return Result<FeedPostDto>.Failure("In dieser Gruppe dürfen Studierende keine Beiträge veröffentlichen.");
+                return Result<FeedPostDto>.Failure("Students are not allowed to publish posts in this group.");
 
-            return Result<FeedPostDto>.Failure("Du kannst nur in Gruppen posten, denen du zugewiesen bist.");
+            return Result<FeedPostDto>.Failure("You can only post in groups assigned to you.");
         }
 
         var post = new FeedPost
@@ -87,23 +87,23 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     public async Task<Result<FeedPostDto>> AddCommentAsync(CreateCommentCommand cmd)
     {
         if (string.IsNullOrWhiteSpace(cmd.Content))
-            return Result<FeedPostDto>.Failure("Kommentar darf nicht leer sein.");
+            return Result<FeedPostDto>.Failure("Comment cannot be empty.");
 
         var user = await userRepo.FindByIdAsync(cmd.AuthorId);
         if (user is null)
-            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<FeedPostDto>.Failure("User profile was not found.");
 
         var post = await feedRepo.FindByIdAsync(cmd.PostId);
         if (post is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         await SyncCourseGroupAssignmentsAsync();
         var group = await ResolvePostGroupAsync(post);
         if (!CanParticipate(user, group))
-            return Result<FeedPostDto>.Failure("Keine Berechtigung.");
+            return Result<FeedPostDto>.Failure("Permission denied.");
 
         if (!group.Settings.AllowComments)
-            return Result<FeedPostDto>.Failure("Kommentare sind in dieser Gruppe geschlossen.");
+            return Result<FeedPostDto>.Failure("Comments are closed in this group.");
 
         var comment = new FeedComment
         {
@@ -114,7 +114,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
 
         var updatedPost = await feedRepo.AddCommentAsync(cmd.PostId, comment);
         if (updatedPost is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         return Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, group, cmd.AuthorId, user));
     }
@@ -123,23 +123,23 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     {
         var post = await feedRepo.FindByIdAsync(postId);
         if (post is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         var comment = post.Comments.FirstOrDefault(item => item.Id == commentId);
         if (comment is null)
-            return Result<FeedPostDto>.Failure("Kommentar nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Comment was not found.");
 
         var currentUser = await userRepo.FindByIdAsync(userId);
         if (currentUser is null)
-            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<FeedPostDto>.Failure("User profile was not found.");
 
         if (comment.AuthorId != userId && currentUser.Role != UserRole.Admin)
-            return Result<FeedPostDto>.Failure("Keine Berechtigung.");
+            return Result<FeedPostDto>.Failure("Permission denied.");
 
         var updatedPost = await feedRepo.DeleteCommentAsync(postId, commentId);
         var group = await ResolvePostGroupAsync(post);
         if (updatedPost is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         return Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, group, userId, currentUser));
     }
@@ -148,24 +148,24 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     {
         var emoji = cmd.Emoji.Trim();
         if (!IsSupportedEmoji(emoji))
-            return Result<FeedPostDto>.Failure("Bitte wähle ein gültiges Emoji aus.");
+            return Result<FeedPostDto>.Failure("Choose a valid emoji.");
 
         var user = await userRepo.FindByIdAsync(cmd.UserId);
         if (user is null)
-            return Result<FeedPostDto>.Failure("Benutzerprofil wurde nicht gefunden.");
+            return Result<FeedPostDto>.Failure("User profile was not found.");
 
         var post = await feedRepo.FindByIdAsync(cmd.PostId);
         if (post is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         await SyncCourseGroupAssignmentsAsync();
         var group = await ResolvePostGroupAsync(post);
         if (!CanParticipate(user, group))
-            return Result<FeedPostDto>.Failure("Keine Berechtigung.");
+            return Result<FeedPostDto>.Failure("Permission denied.");
 
         var updatedPost = await feedRepo.ToggleReactionAsync(cmd.PostId, emoji, cmd.UserId);
         if (updatedPost is null)
-            return Result<FeedPostDto>.Failure("Beitrag nicht gefunden.");
+            return Result<FeedPostDto>.Failure("Post was not found.");
 
         return Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost, group, cmd.UserId, user));
     }
@@ -173,12 +173,12 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     public async Task<Result<bool>> DeletePostAsync(Guid postId, Guid userId)
     {
         var post = await feedRepo.FindByIdAsync(postId);
-        if (post is null) return Result<bool>.Failure("Beitrag nicht gefunden.");
+        if (post is null) return Result<bool>.Failure("Post was not found.");
         if (post.AuthorId != userId)
         {
             var user = await userRepo.FindByIdAsync(userId);
             if (user?.Role != UserRole.Admin)
-                return Result<bool>.Failure("Keine Berechtigung.");
+                return Result<bool>.Failure("Permission denied.");
         }
 
         await feedRepo.DeleteAsync(postId);
@@ -302,10 +302,10 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     private static CampusGroup MissingGroup(Guid groupId) => new()
     {
         Id = groupId,
-        Name = "Unbekannte Gruppe",
-        Description = "Diese Gruppe ist nicht mehr verfügbar.",
+        Name = "Unknown group",
+        Description = "This group is no longer available.",
         Type = GroupType.Social,
-        Audience = "Archiv",
+        Audience = "Archive",
         OwnerLabel = "CampusConnect",
         IconLabel = "?",
         AccentColor = "#5c6672",
