@@ -70,7 +70,7 @@ Der Notenbereich liest den Studienplan nicht aus einer manuell gepflegten Modull
 
 ## Gruppen und Feed
 
-Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, den Berechtigungsflags `canManage`, `isAssigned`, `canPost`, `canJoin`, der aktuellen Mitgliedsberechtigung `memberPermission` (`ReadOnly`, `ReadWrite` oder `Manage`) und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
+Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl zugewiesener Konten, den Berechtigungsflags `canManage`, `isAssigned`, `canPost`, `canJoin`, der aktuellen Mitgliedsberechtigung `memberPermission` (`ReadOnly`, `ReadWrite` oder `Manage`), der Gruppenrolle `groupRole` (`Owner`, `Moderator`, `Member` oder `None`), `isSystemAdminAccess`, `canAppointModerator` und Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
 
 Feed-Antworten enthalten nur Beiträge aus Gruppen, für deren Beiträge der Nutzer leseberechtigt ist: Admins sehen alle Beiträge, zugewiesene Mitglieder sehen die Beiträge ihrer Gruppen. Private Gruppen erscheinen nur für Admins und zugewiesene Mitglieder; öffentliche Gruppen erscheinen zusätzlich als Entdecken-Kandidaten, geben ihre Beiträge aber erst nach Beitritt oder Zuweisung frei. Beiträge, Kommentare und Reaktionen können nur von Admins oder Gruppenmitgliedern mit `ReadWrite` oder `Manage` erstellt werden. Mitglieder mit `ReadOnly` dürfen Gruppen und Beiträge lesen, aber nicht posten, kommentieren oder reagieren. Für Studierende muss bei Beiträgen zusätzlich `allowStudentPosts` aktiv sein, Kommentare respektieren zusätzlich `allowComments`.
 
@@ -86,3 +86,18 @@ Gruppeneinstellungen enthalten aktuell:
 | `isDiscoverable` | Gruppe ist öffentlich und kann unter Entdecken gefunden werden; `false` macht sie privat |
 
 Global roles are separate from group roles: `Student`, `Lecturer`, `Management`, and `Admin` describe system-wide permissions; `ReadOnly`, `ReadWrite`, and `Manage` describe permissions inside a specific group. Students and lecturers can discover public groups, read posts from assigned groups, post in assigned and enabled groups with `ReadWrite` or `Manage`, join public campus groups through `POST /api/groups/{id}/join`, and create their own campus groups. The global `Management` role can create campus groups, official groups, and course groups like `Admin`; course groups require a `courseCode` and continue to be synchronized when user-course assignments change. The creator of a group can open its settings, assign accounts, and set assigned accounts to `ReadOnly`, `ReadWrite`, or `Manage` through `PUT /api/groups/{id}/member-permissions`. `Manage` additionally allows editing group settings and member administration. Admins can edit all group settings; lecturers can manage course groups when they are assigned to that course group. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings`, `PUT /api/groups/{id}/assignments`, and `PUT /api/groups/{id}/member-permissions` return `403 Forbidden` for unauthorized users; for course groups, `PUT /api/groups/{id}/assignments` rejects manual assignments so course membership stays consistent.
+
+### Gruppenrollen (Besitzer / Moderator / Mitglied)
+
+Zusätzlich zur globalen Rolle hat jeder Nutzer pro Gruppe eine eigene Gruppenrolle. Sie wird aus Besitz und Mitgliedsberechtigung abgeleitet und in `groupRole` jedes Gruppen-Objekts sowie pro Konto in `GET /api/groups/{id}/settings` ausgegeben:
+
+| Gruppenrolle | Ableitung | Bedeutung |
+|---|---|---|
+| `Owner` (Besitzer) | `ownerUserId == userId` | Volle Kontrolle über die Gruppe |
+| `Moderator` | zugewiesen mit `Manage` | Moderation, Freigaben, Mitgliederverwaltung |
+| `Member` (Mitglied) | zugewiesen mit `ReadOnly`/`ReadWrite` | Normales Gruppenmitglied |
+| `None` | nicht zugewiesen | Keine Gruppenrolle |
+
+Nur der Besitzer (oder ein systemweiter Admin) darf weitere Moderatoren ernennen, also über `PUT /api/groups/{id}/member-permissions` die Berechtigung `Manage` vergeben. Versucht ein Moderator das, antwortet die API mit `400 Bad Request` und der Meldung `Only the group owner can appoint moderators.`. Das Gruppen-Objekt liefert hierfür `canAppointModerator`.
+
+Der systemweite Admin-Zugriff ist von der eigentlichen Gruppenrolle getrennt: Ein Admin kann jede Gruppe verwalten (`canManage = true`), erscheint dabei aber nicht als Besitzer. Ist der Admin nicht selbst Mitglied, gilt `groupRole = None` und `isSystemAdminAccess = true`, sodass das UI klar zwischen Admin-Zugriff und Gruppenrolle unterscheiden kann.

@@ -32,6 +32,9 @@ describe('GroupsPage', () => {
     canPost: true,
     canJoin: false,
     memberPermission: 'ReadWrite',
+    groupRole: 'Member',
+    isSystemAdminAccess: false,
+    canAppointModerator: false,
     settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
   };
 

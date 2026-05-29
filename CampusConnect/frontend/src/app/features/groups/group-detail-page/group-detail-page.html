@@ -11,7 +11,7 @@
     <header class="group-detail-page__header" [style.border-left-color]="group.accentColor">
       <span class="group-detail-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
       <div>
-        <p>{{ groupTypeLabel(group.type) }} · {{ permissionLabel(group) }}</p>
+        <p>{{ groupTypeLabel(group.type) }} · {{ permissionLabel(group) }}@if (hasGroupRoleBadge(group)) { · {{ groupRoleBadge(group) }}}</p>
         <h2>{{ groupName(group) }}</h2>
         <span>{{ groupDescription(group) }}</span>
       </div>

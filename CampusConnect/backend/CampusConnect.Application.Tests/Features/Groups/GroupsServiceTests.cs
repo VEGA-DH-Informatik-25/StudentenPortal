@@ -459,6 +459,101 @@ public class GroupsServiceTests
         Assert.Equal(GroupsService.PermissionError, result.Error);
     }
 
+    [Fact]
+    public async Task GetGroupsForUserAsync_ExposesGroupRolesPerMember()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var moderator = StudentUser("Iris", "iris@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(moderator.Id);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
+        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
+
+        var ownerGroup = Assert.Single(await service.GetGroupsForUserAsync(owner.Id), item => item.Id == group.Id);
+        var moderatorGroup = Assert.Single(await service.GetGroupsForUserAsync(moderator.Id), item => item.Id == group.Id);
+        var memberGroup = Assert.Single(await service.GetGroupsForUserAsync(member.Id), item => item.Id == group.Id);
+
+        Assert.Equal("Owner", ownerGroup.GroupRole);
+        Assert.Equal("Moderator", moderatorGroup.GroupRole);
+        Assert.Equal("Member", memberGroup.GroupRole);
+    }
+
+    [Fact]
+    public async Task GetGroupsForUserAsync_AdminHasSystemAccessWithoutGroupRole()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var admin = new User
+        {
+            DisplayName = "Ada",
+            Email = "ada@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Admin
+        };
+        var group = SocialGroup(owner.Id);
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, admin));
+
+        var adminGroup = Assert.Single(await service.GetGroupsForUserAsync(admin.Id), item => item.Id == group.Id);
+
+        Assert.Equal("None", adminGroup.GroupRole);
+        Assert.True(adminGroup.IsSystemAdminAccess);
+        Assert.True(adminGroup.CanManage);
+        Assert.NotEqual(admin.Id, adminGroup.OwnerUserId);
+    }
+
+    [Fact]
+    public async Task UpdateMemberPermissionsAsync_OwnerCanAppointModerator()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.UpdateMemberPermissionsAsync(
+            group.Id,
+            owner.Id,
+            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.GroupRole == "Moderator");
+    }
+
+    [Fact]
+    public async Task UpdateMemberPermissionsAsync_ModeratorCannotAppointAnotherModerator()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var moderator = StudentUser("Iris", "iris@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(moderator.Id);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
+
+        var result = await service.UpdateMemberPermissionsAsync(
+            group.Id,
+            moderator.Id,
+            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Only the group owner can appoint moderators.", result.Error);
+    }
+
+    private static User StudentUser(string displayName, string email) => new()
+    {
+        DisplayName = displayName,
+        Email = email,
+        StudyProgram = "Computer Science",
+        Semester = 2,
+        Course = "TIF25A",
+        Role = UserRole.Student
+    };
+
     private static CampusGroup CourseGroup(string courseCode) => new()
     {
         Name = $"Course {courseCode}",

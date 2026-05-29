@@ -48,6 +48,8 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _hasPermissionChanges = computed(() => this._accounts()
     .filter(account => this.isAccountSelected(account))
     .some(account => this.permissionFor(account) !== account.permission));
+  protected readonly _canAppointModerator = computed(() => this._group()?.canAppointModerator ?? false);
+  protected readonly _isSystemAdminAccess = computed(() => this._group()?.isSystemAdminAccess ?? false);
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
@@ -130,11 +132,36 @@ export class GroupSettingsPage implements OnInit {
       return;
     }
 
+    if (permission === 'Manage' && !this._canAppointModerator() && account.permission !== 'Manage') {
+      this._error.set(this._i18n.translate('groups.role.ownerOnlyModerator'));
+      return;
+    }
+
     this._selectedPermissions.update(permissions => ({ ...permissions, [account.id]: permission }));
   }
 
   protected roleLabel(role: string): string {
     return this._i18n.roleLabel(role);
+  }
+
+  protected groupRoleLabel(role: string): string {
+    return this._i18n.groupRoleLabel(role);
+  }
+
+  protected accountGroupRole(account: GroupAccount): GroupAccount['groupRole'] {
+    if (this.isOwner(account)) {
+      return 'Owner';
+    }
+
+    if (!this.isAccountSelected(account)) {
+      return 'None';
+    }
+
+    return this.permissionFor(account) === 'Manage' ? 'Moderator' : 'Member';
+  }
+
+  protected canAppointModeratorFor(account: GroupAccount): boolean {
+    return this._canAppointModerator() || account.permission === 'Manage';
   }
 
   protected permissionLabel(permission: GroupMemberPermission): string {

@@ -136,6 +136,16 @@ export class GroupsPage implements OnInit {
     return this._i18n.groupName(group);
   }
 
+  protected groupRoleBadge(group: CampusGroup): string {
+    return group.isSystemAdminAccess
+      ? this._i18n.translate('groups.role.adminAccess')
+      : this._i18n.groupRoleLabel(group.groupRole);
+  }
+
+  protected hasGroupRoleBadge(group: CampusGroup): boolean {
+    return group.isSystemAdminAccess || group.groupRole !== 'None';
+  }
+
   protected groupDescription(group: CampusGroup): string {
     return this._i18n.groupDescription(group);
   }
