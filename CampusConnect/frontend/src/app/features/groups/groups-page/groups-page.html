@@ -215,7 +215,7 @@
                   <div class="group-card__title-row">
                     <div>
                       <strong>{{ groupName(group) }}</strong>
-                      <small>{{ groupTypeLabel(group.type) }}</small>
+                      <small>{{ groupTypeLabel(group.type) }}@if (hasGroupRoleBadge(group)) { · {{ groupRoleBadge(group) }}}</small>
                     </div>
 
                     <div class="group-card__actions">

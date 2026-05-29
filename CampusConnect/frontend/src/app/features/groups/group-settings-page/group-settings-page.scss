@@ -41,6 +41,15 @@
 	}
 }
 
+.group-settings-page__admin-note {
+	color: var(--dhbw-ink-soft);
+	text-align: left;
+
+	strong {
+		color: var(--dhbw-ink);
+	}
+}
+
 .group-settings-page__header {
 	align-items: center;
 	border-left: 4px solid var(--dhbw-red);
@@ -265,6 +274,11 @@
 		font-size: 0.78rem;
 		line-height: 1.4;
 		overflow-wrap: anywhere;
+	}
+
+	small.account-row__group-role {
+		color: var(--dhbw-ink-soft);
+		font-weight: 700;
 	}
 
 	em {

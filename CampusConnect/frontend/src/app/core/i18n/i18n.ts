@@ -53,6 +53,20 @@ export class I18n {
     }
   }
 
+  groupRoleLabel(role: string): string {
+    switch (role) {
+      case 'Owner':
+        return this.translate('groups.role.owner');
+      case 'Moderator':
+        return this.translate('groups.role.moderator');
+      case 'Member':
+        return this.translate('groups.role.member');
+      case 'None':
+      default:
+        return this.translate('groups.role.none');
+    }
+  }
+
   groupName(group: CampusGroup): string {
     if (group.type === 'Course' && group.courseCode && this._isGeneratedCourseName(group.name, group.courseCode)) {
       return this.translate('groups.name.course', { code: group.courseCode });

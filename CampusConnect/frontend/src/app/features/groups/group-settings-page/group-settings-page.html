@@ -17,6 +17,12 @@
       </div>
     </header>
 
+    @if (_isSystemAdminAccess()) {
+      <p class="group-settings-page__state group-settings-page__admin-note">
+        <strong>{{ 'groups.role.adminAccess' | translate }}</strong> · {{ 'groups.role.adminAccessNote' | translate }}
+      </p>
+    }
+
     <div class="group-settings-layout">
       <section class="settings-block" [attr.aria-label]="'groups.settingsBehavior' | translate">
         <header>
@@ -122,6 +128,7 @@
               <span>
                 <strong>{{ account.displayName }}</strong>
                 <small>{{ account.email }}{{ isOwner(account) ? ' · ' + ('groups.ownerSuffix' | translate) : '' }}</small>
+                <small class="account-row__group-role">{{ 'groups.role.label' | translate }}: {{ groupRoleLabel(accountGroupRole(account)) }}</small>
               </span>
               <em>{{ roleLabel(account.role) }}</em>
               <em>{{ account.course || ('common.noCourse' | translate) }}</em>
@@ -133,7 +140,7 @@
                   (change)="updateMemberPermission(account, $any($event.target).value)">
                   <option value="ReadOnly">{{ permissionLabel('ReadOnly') }}</option>
                   <option value="ReadWrite">{{ permissionLabel('ReadWrite') }}</option>
-                  <option value="Manage">{{ permissionLabel('Manage') }}</option>
+                  <option value="Manage" [disabled]="!canAppointModeratorFor(account)">{{ permissionLabel('Manage') }}</option>
                 </select>
               </label>
             </div>

@@ -28,11 +28,14 @@ describe('GroupSettingsPage', () => {
       canPost: true,
       canJoin: false,
       memberPermission: 'ReadWrite',
+      groupRole: 'Owner',
+      isSystemAdminAccess: false,
+      canAppointModerator: true,
       settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
     },
     accounts: [
-      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true, permission: 'ReadWrite' },
-      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false, permission: 'ReadWrite' },
+      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true, permission: 'ReadWrite', groupRole: 'Member' },
+      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false, permission: 'ReadWrite', groupRole: 'None' },
     ],
   };
 
@@ -73,5 +76,23 @@ describe('GroupSettingsPage', () => {
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Bob');
     expect(text).not.toContain('alice@dhbw-loerrach.de');
+  });
+
+  it('derives group roles from ownership and permissions', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const owner = details.accounts[0];
+    const other = details.accounts[1];
+
+    expect((component as any).accountGroupRole(owner)).toBe('Owner');
+    expect((component as any).accountGroupRole(other)).toBe('None');
+
+    (component as any)._selectedAccountIds.set(['user-2']);
+    (component as any)._selectedPermissions.set({ 'user-2': 'Manage' });
+    expect((component as any).accountGroupRole(other)).toBe('Moderator');
+
+    (component as any)._selectedPermissions.set({ 'user-2': 'ReadWrite' });
+    expect((component as any).accountGroupRole(other)).toBe('Member');
   });
 });

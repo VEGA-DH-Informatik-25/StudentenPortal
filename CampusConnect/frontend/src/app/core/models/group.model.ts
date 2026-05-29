@@ -1,5 +1,6 @@
 export type GroupType = 'Course' | 'Official' | 'Social';
 export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite' | 'Manage';
+export type GroupRole = 'None' | 'Member' | 'Moderator' | 'Owner';
 
 export interface GroupSettings {
   allowStudentPosts: boolean;
@@ -25,6 +26,9 @@ export interface CampusGroup {
   canPost: boolean;
   canJoin: boolean;
   memberPermission: GroupMemberPermission;
+  groupRole: GroupRole;
+  isSystemAdminAccess: boolean;
+  canAppointModerator: boolean;
   settings: GroupSettings;
 }
 
@@ -50,6 +54,7 @@ export interface GroupAccount {
   course: string;
   isAssigned: boolean;
   permission: GroupMemberPermission;
+  groupRole: GroupRole;
 }
 
 export interface GroupSettingsDetails {

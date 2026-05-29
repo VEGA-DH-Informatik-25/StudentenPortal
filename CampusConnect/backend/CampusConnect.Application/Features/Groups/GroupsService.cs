@@ -6,13 +6,13 @@ using CampusConnect.Domain.Interfaces;
 namespace CampusConnect.Application.Features.Groups;
 
 public record GroupSettingsDto(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
-public record CampusGroupDto(Guid Id, string Name, string Description, string Type, string Audience, string? CourseCode, Guid? OwnerUserId, string OwnerLabel, string IconLabel, string AccentColor, int AssignedUserCount, bool CanManage, bool IsAssigned, bool CanPost, bool CanJoin, string MemberPermission, GroupSettingsDto Settings);
+public record CampusGroupDto(Guid Id, string Name, string Description, string Type, string Audience, string? CourseCode, Guid? OwnerUserId, string OwnerLabel, string IconLabel, string AccentColor, int AssignedUserCount, bool CanManage, bool IsAssigned, bool CanPost, bool CanJoin, string MemberPermission, string GroupRole, bool IsSystemAdminAccess, bool CanAppointModerator, GroupSettingsDto Settings);
 public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true, string Type = "Social", string? CourseCode = null);
 public record UpdateGroupSettingsCommand(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
 public record UpdateGroupAssignmentsCommand(IReadOnlyList<Guid> UserIds);
 public record UpdateGroupMemberPermissionCommand(Guid UserId, string Permission);
 public record UpdateGroupMemberPermissionsCommand(IReadOnlyList<UpdateGroupMemberPermissionCommand> Permissions);
-public record GroupAccountDto(Guid Id, string DisplayName, string Email, string Role, string Course, bool IsAssigned, string Permission);
+public record GroupAccountDto(Guid Id, string DisplayName, string Email, string Role, string Course, bool IsAssigned, string Permission, string GroupRole);
 public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupAccountDto> Accounts);
 
 public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
@@ -147,6 +147,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (!context.IsSuccess)
             return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
 
+        var canAppointModerator = GroupDtoMapper.CanAppointModerator(context.Value!.User, context.Value.Group);
         var permissionMap = new Dictionary<Guid, GroupMemberPermission>();
         foreach (var item in command.Permissions)
         {
@@ -155,6 +156,11 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
 
             if (!TryParsePermission(item.Permission, out var permission))
                 return Result<GroupSettingsDetailsDto>.Failure("Permission is invalid.");
+
+            if (permission == GroupMemberPermission.Manage
+                && !canAppointModerator
+                && GroupDtoMapper.MemberPermissionFor(item.UserId, context.Value.Group) != GroupMemberPermission.Manage)
+                return Result<GroupSettingsDetailsDto>.Failure("Only the group owner can appoint moderators.");
 
             permissionMap[item.UserId] = permission;
         }
@@ -238,7 +244,8 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
                 account.Role.ToString(),
                 account.Course,
                 group.AssignedUserIds.Contains(account.Id),
-                GroupDtoMapper.MemberPermissionFor(account.Id, group).ToString()))
+                GroupDtoMapper.MemberPermissionFor(account.Id, group).ToString(),
+                GroupDtoMapper.GroupRoleFor(account.Id, group).ToString()))
             .ToList();
 
         return new GroupSettingsDetailsDto(GroupDtoMapper.ToDto(group, user), accounts);
@@ -313,6 +320,9 @@ public static class GroupDtoMapper
         currentUser is not null && CanPost(currentUser, group),
         currentUser is not null && CanJoin(currentUser, group),
         currentUser is null ? GroupMemberPermission.ReadOnly.ToString() : CurrentUserPermission(currentUser, group).ToString(),
+        currentUser is null ? Domain.Enums.GroupRole.None.ToString() : GroupRoleFor(currentUser.Id, group).ToString(),
+        currentUser is not null && IsSystemAdminAccess(currentUser, group),
+        currentUser is not null && CanAppointModerator(currentUser, group),
         new GroupSettingsDto(
             group.Settings.AllowStudentPosts,
             group.Settings.AllowComments,
@@ -358,6 +368,28 @@ public static class GroupDtoMapper
             ? GroupMemberPermission.Manage
             :
         group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite;
+
+    public static GroupRole GroupRoleFor(Guid userId, CampusGroup group)
+    {
+        if (group.OwnerUserId == userId)
+            return GroupRole.Owner;
+
+        if (!group.AssignedUserIds.Contains(userId))
+            return GroupRole.None;
+
+        return MemberPermissionFor(userId, group) == GroupMemberPermission.Manage
+            ? GroupRole.Moderator
+            : GroupRole.Member;
+    }
+
+    public static bool IsSystemAdminAccess(User user, CampusGroup group) =>
+        user.Role == UserRole.Admin && GroupRoleFor(user.Id, group) == GroupRole.None;
+
+    public static bool CanAppointModerator(User user, CampusGroup group) =>
+        user.Role == UserRole.Admin || group.OwnerUserId == user.Id;
+
+    public static bool CanDeleteGroup(User user, CampusGroup group) =>
+        user.Role == UserRole.Admin || group.OwnerUserId == user.Id;
 
     private static GroupMemberPermission CurrentUserPermission(User user, CampusGroup group) =>
         IsAssigned(user, group) || user.Role == UserRole.Admin || group.OwnerUserId == user.Id ? MemberPermissionFor(user.Id, group) : GroupMemberPermission.ReadOnly;

@@ -249,6 +249,18 @@ export class GroupDetailPage implements OnInit {
     }
   }
 
+  protected groupRoleBadge(group: CampusGroup): string {
+    if (group.isSystemAdminAccess) {
+      return this._i18n.translate('groups.role.adminAccess');
+    }
+
+    return this._i18n.groupRoleLabel(group.groupRole);
+  }
+
+  protected hasGroupRoleBadge(group: CampusGroup): boolean {
+    return group.isSystemAdminAccess || group.groupRole !== 'None';
+  }
+
   protected permissionLabel(group: CampusGroup): string {
     if (!group.isAssigned && !group.canManage) {
       return group.canJoin ? this._i18n.translate('groups.permission.public') : this._i18n.translate('groups.permission.none');
