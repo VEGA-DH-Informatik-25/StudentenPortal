@@ -5,7 +5,7 @@ using CampusConnect.Domain.Interfaces;
 
 namespace CampusConnect.Application.Features.Groups;
 
-public record GroupSettingsDto(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
+public record GroupSettingsDto(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable, string JoinRule);
 public record CampusGroupDto(
     Guid Id,
     string Name,
@@ -13,6 +13,7 @@ public record CampusGroupDto(
     string Type,
     string Audience,
     string? CourseCode,
+    string? OfficialCategory,
     Guid? OwnerUserId,
     string OwnerLabel,
     string IconLabel,
@@ -26,18 +27,24 @@ public record CampusGroupDto(
     bool CanPost,
     bool CanInteract,
     bool CanJoin,
+    bool CanRequestJoin,
+    bool HasPendingJoinRequest,
+    bool HasPendingInvitation,
+    int PendingJoinRequestCount,
     string GroupRole,
     bool IsSystemAdminAccess,
     bool IsCourseManaged,
     GroupSettingsDto Settings);
-public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true, string Type = "Social", string? CourseCode = null);
-public record UpdateGroupSettingsCommand(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
+public record CreateGroupCommand(Guid CreatorId, string Name, string Description, string Audience, bool AllowStudentPosts = true, bool AllowComments = true, bool RequiresApproval = false, bool IsDiscoverable = true, string Type = "Campus", string? CourseCode = null, string JoinRule = "Open", string? OfficialCategory = null);
+public record UpdateGroupSettingsCommand(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable, string JoinRule = "Open");
 public record AddGroupMembersCommand(IReadOnlyList<Guid> UserIds);
+public record InviteGroupMembersCommand(IReadOnlyList<Guid> UserIds);
 public record AddGroupCourseCommand(string CourseCode);
 public record SetGroupMemberRoleCommand(string Role);
 public record GroupMemberDto(Guid Id, string DisplayName, string Email, string Role, string Course, string GroupRole, bool IsOwner);
+public record GroupRequestDto(Guid Id, string DisplayName, string Email, string Role, string Course);
 public record GroupCandidateDto(Guid Id, string DisplayName, string Email, string Role, string Course);
-public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupMemberDto> Members);
+public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupMemberDto> Members, IReadOnlyList<GroupRequestDto> JoinRequests, IReadOnlyList<GroupRequestDto> Invitations);
 
 public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
 {
@@ -75,6 +82,16 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (!CanCreateGroupType(user.Role, groupType))
             return Result<CampusGroupDto>.Failure("This global role cannot create this group type.");
 
+        if (!TryParseJoinRule(command.JoinRule, out var joinRule))
+            return Result<CampusGroupDto>.Failure("Join rule is invalid.");
+
+        var officialCategory = NormalizeOfficialCategory(command.OfficialCategory);
+        if (groupType == GroupType.Official && officialCategory is null)
+            return Result<CampusGroupDto>.Failure("Enter an official category for the official group.");
+
+        if (officialCategory is { Length: > 80 })
+            return Result<CampusGroupDto>.Failure("Official category must be at most 80 characters long.");
+
         var courseCode = NormalizeCourseCode(command.CourseCode);
         if (groupType == GroupType.Course)
         {
@@ -96,6 +113,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
             Type = groupType,
             Audience = command.Audience.Trim(),
             CourseCode = groupType == GroupType.Course ? courseCode : null,
+            OfficialCategory = groupType == GroupType.Official ? officialCategory : null,
             OwnerUserId = user.Id,
             OwnerLabel = user.DisplayName,
             IconLabel = Initials(command.Name),
@@ -105,7 +123,8 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
                 AllowStudentPosts = command.AllowStudentPosts,
                 AllowComments = command.AllowComments,
                 RequiresApproval = command.RequiresApproval,
-                IsDiscoverable = command.IsDiscoverable
+                IsDiscoverable = command.IsDiscoverable,
+                JoinRule = joinRule
             },
             AssignedUserIds = [user.Id]
         };
@@ -130,12 +149,16 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (!context.IsSuccess)
             return Result<CampusGroupDto>.Failure(context.Error!);
 
+        if (!TryParseJoinRule(command.JoinRule, out var joinRule))
+            return Result<CampusGroupDto>.Failure("Join rule is invalid.");
+
         var settings = new GroupSettings
         {
             AllowStudentPosts = command.AllowStudentPosts,
             AllowComments = command.AllowComments,
             RequiresApproval = command.RequiresApproval,
-            IsDiscoverable = command.IsDiscoverable
+            IsDiscoverable = command.IsDiscoverable,
+            JoinRule = joinRule
         };
 
         await groupRepo.UpdateSettingsAsync(groupId, settings);
@@ -265,10 +288,125 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         if (group is null || !GroupDtoMapper.CanView(user, group))
             return Result<CampusGroupDto>.Failure("Group was not found.");
 
-        if (!GroupDtoMapper.CanJoin(user, group))
+        if (user.Role == UserRole.Admin || group.Type == GroupType.Course || GroupDtoMapper.IsAssigned(user, group))
             return Result<CampusGroupDto>.Failure("You cannot join this group directly.");
 
-        await groupRepo.AddMembersAsync(groupId, [user.Id]);
+        // An open invitation always lets the user join, regardless of the join rule.
+        if (group.Invitations.Contains(user.Id))
+        {
+            await groupRepo.AddMembersAsync(groupId, [user.Id]);
+            return await ReloadGroupAsync(groupId, user);
+        }
+
+        switch (group.Settings.JoinRule)
+        {
+            case GroupJoinRule.Open when group.Settings.IsDiscoverable:
+                await groupRepo.AddMembersAsync(groupId, [user.Id]);
+                return await ReloadGroupAsync(groupId, user);
+
+            case GroupJoinRule.RequestRequired when group.Settings.IsDiscoverable:
+                if (group.PendingJoinRequests.Contains(user.Id))
+                    return Result<CampusGroupDto>.Failure("Your join request is already pending.");
+
+                await groupRepo.AddJoinRequestAsync(groupId, user.Id);
+                return await ReloadGroupAsync(groupId, user);
+
+            default:
+                return Result<CampusGroupDto>.Failure("You cannot join this group directly.");
+        }
+    }
+
+    public async Task<Result<GroupSettingsDetailsDto>> ApproveJoinRequestAsync(Guid groupId, Guid userId, Guid targetUserId)
+    {
+        var context = await GetGroupContextAsync(groupId, userId, GroupDtoMapper.CanManageMembers);
+        if (!context.IsSuccess)
+            return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
+
+        if (context.Value!.Group.Type == GroupType.Course)
+            return Result<GroupSettingsDetailsDto>.Failure(CourseManagedError);
+
+        if (!context.Value.Group.PendingJoinRequests.Contains(targetUserId))
+            return Result<GroupSettingsDetailsDto>.Failure("There is no pending join request for this account.");
+
+        await groupRepo.AddMembersAsync(groupId, [targetUserId]);
+        await groupRepo.RemoveJoinRequestAsync(groupId, targetUserId);
+        return await ReloadDetailsAsync(groupId, context.Value.User);
+    }
+
+    public async Task<Result<GroupSettingsDetailsDto>> RejectJoinRequestAsync(Guid groupId, Guid userId, Guid targetUserId)
+    {
+        var context = await GetGroupContextAsync(groupId, userId, GroupDtoMapper.CanManageMembers);
+        if (!context.IsSuccess)
+            return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
+
+        if (!context.Value!.Group.PendingJoinRequests.Contains(targetUserId))
+            return Result<GroupSettingsDetailsDto>.Failure("There is no pending join request for this account.");
+
+        await groupRepo.RemoveJoinRequestAsync(groupId, targetUserId);
+        return await ReloadDetailsAsync(groupId, context.Value.User);
+    }
+
+    public async Task<Result<GroupSettingsDetailsDto>> InviteMembersAsync(Guid groupId, Guid userId, InviteGroupMembersCommand command)
+    {
+        var context = await GetGroupContextAsync(groupId, userId, GroupDtoMapper.CanManageMembers);
+        if (!context.IsSuccess)
+            return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
+
+        var group = context.Value!.Group;
+        if (group.Type == GroupType.Course)
+            return Result<GroupSettingsDetailsDto>.Failure(CourseManagedError);
+
+        var users = await userRepo.ListAsync();
+        var existingUserIds = users.Select(account => account.Id).ToHashSet();
+        var toInvite = command.UserIds
+            .Where(existingUserIds.Contains)
+            .Where(id => !group.AssignedUserIds.Contains(id))
+            .Distinct()
+            .ToList();
+
+        if (toInvite.Count == 0)
+            return Result<GroupSettingsDetailsDto>.Failure("Select at least one account that is not already a member.");
+
+        await groupRepo.AddInvitationsAsync(groupId, toInvite);
+        return await ReloadDetailsAsync(groupId, context.Value.User);
+    }
+
+    public async Task<Result<GroupSettingsDetailsDto>> CancelInvitationAsync(Guid groupId, Guid userId, Guid targetUserId)
+    {
+        var context = await GetGroupContextAsync(groupId, userId, GroupDtoMapper.CanManageMembers);
+        if (!context.IsSuccess)
+            return Result<GroupSettingsDetailsDto>.Failure(context.Error!);
+
+        if (!context.Value!.Group.Invitations.Contains(targetUserId))
+            return Result<GroupSettingsDetailsDto>.Failure("There is no pending invitation for this account.");
+
+        await groupRepo.RemoveInvitationAsync(groupId, targetUserId);
+        return await ReloadDetailsAsync(groupId, context.Value.User);
+    }
+
+    public async Task<Result<CampusGroupDto>> RespondToInvitationAsync(Guid groupId, Guid userId, bool accept)
+    {
+        var user = await userRepo.FindByIdAsync(userId);
+        if (user is null)
+            return Result<CampusGroupDto>.Failure("User profile was not found.");
+
+        var group = await groupRepo.FindByIdAsync(groupId);
+        if (group is null)
+            return Result<CampusGroupDto>.Failure("Group was not found.");
+
+        if (!group.Invitations.Contains(user.Id))
+            return Result<CampusGroupDto>.Failure("You do not have a pending invitation for this group.");
+
+        if (accept)
+            await groupRepo.AddMembersAsync(groupId, [user.Id]);
+        else
+            await groupRepo.RemoveInvitationAsync(groupId, user.Id);
+
+        return await ReloadGroupAsync(groupId, user);
+    }
+
+    private async Task<Result<CampusGroupDto>> ReloadGroupAsync(Guid groupId, User user)
+    {
         var updatedGroup = await groupRepo.FindByIdAsync(groupId);
         return Result<CampusGroupDto>.Success(GroupDtoMapper.ToDto(updatedGroup!, user));
     }
@@ -330,7 +468,21 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
                 group.OwnerUserId == account.Id))
             .ToList();
 
-        return new GroupSettingsDetailsDto(GroupDtoMapper.ToDto(group, user), members);
+        var joinRequests = group.PendingJoinRequests
+            .Where(byId.ContainsKey)
+            .Select(requestId => byId[requestId])
+            .OrderBy(account => account.DisplayName)
+            .Select(account => new GroupRequestDto(account.Id, account.DisplayName, account.Email, account.Role.ToString(), account.Course))
+            .ToList();
+
+        var invitations = group.Invitations
+            .Where(byId.ContainsKey)
+            .Select(inviteId => byId[inviteId])
+            .OrderBy(account => account.DisplayName)
+            .Select(account => new GroupRequestDto(account.Id, account.DisplayName, account.Email, account.Role.ToString(), account.Course))
+            .ToList();
+
+        return new GroupSettingsDetailsDto(GroupDtoMapper.ToDto(group, user), members, joinRequests, invitations);
     }
 
     private static bool MatchesQuery(User account, string term)
@@ -360,10 +512,13 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
     private static bool TryParseGroupType(string value, out GroupType type) =>
         Enum.TryParse(value, ignoreCase: true, out type) && Enum.IsDefined(type);
 
+    private static bool TryParseJoinRule(string value, out GroupJoinRule joinRule) =>
+        Enum.TryParse(value, ignoreCase: true, out joinRule) && Enum.IsDefined(joinRule);
+
     private static bool CanCreateGroupType(UserRole role, GroupType type) =>
         type switch
         {
-            GroupType.Social => true,
+            GroupType.Campus => true,
             GroupType.Course => role is UserRole.Lecturer or UserRole.Management or UserRole.Admin,
             GroupType.Official => role is UserRole.Management or UserRole.Admin,
             _ => false
@@ -371,6 +526,9 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
 
     private static string? NormalizeCourseCode(string? courseCode) =>
         string.IsNullOrWhiteSpace(courseCode) ? null : courseCode.Trim().ToUpperInvariant();
+
+    private static string? NormalizeOfficialCategory(string? category) =>
+        string.IsNullOrWhiteSpace(category) ? null : category.Trim();
 
     private static string? ValidateGroup(string name, string description, string audience)
     {
@@ -413,6 +571,7 @@ public static class GroupDtoMapper
         group.Type.ToString(),
         group.Audience,
         group.CourseCode,
+        group.OfficialCategory,
         group.OwnerUserId,
         group.OwnerLabel,
         group.IconLabel,
@@ -426,6 +585,10 @@ public static class GroupDtoMapper
         currentUser is not null && CanPost(currentUser, group),
         currentUser is not null && CanInteract(currentUser, group),
         currentUser is not null && CanJoin(currentUser, group),
+        currentUser is not null && CanRequestJoin(currentUser, group),
+        currentUser is not null && group.PendingJoinRequests.Contains(currentUser.Id),
+        currentUser is not null && group.Invitations.Contains(currentUser.Id),
+        CanManageMembersFor(currentUser, group) ? group.PendingJoinRequests.Count : 0,
         currentUser is null ? GroupRole.None.ToString() : GroupRoleFor(currentUser.Id, group).ToString(),
         currentUser is not null && IsSystemAdminAccess(currentUser, group),
         group.Type == GroupType.Course,
@@ -433,7 +596,10 @@ public static class GroupDtoMapper
             group.Settings.AllowStudentPosts,
             group.Settings.AllowComments,
             group.Settings.RequiresApproval,
-            group.Settings.IsDiscoverable));
+            group.Settings.IsDiscoverable,
+            group.Settings.JoinRule.ToString()));
+
+    private static bool CanManageMembersFor(User? user, CampusGroup group) => user is not null && CanManageMembers(user, group);
 
     public static bool CanView(User? user, CampusGroup group) =>
         user is not null &&
@@ -488,10 +654,19 @@ public static class GroupDtoMapper
 
     public static bool CanJoin(User user, CampusGroup group) =>
         user.Role != UserRole.Admin &&
-        group.Type == GroupType.Social &&
+        group.Type != GroupType.Course &&
+        !IsAssigned(user, group) &&
+        (group.Invitations.Contains(user.Id) ||
+            (group.Settings.IsDiscoverable && group.Settings.JoinRule == GroupJoinRule.Open));
+
+    public static bool CanRequestJoin(User user, CampusGroup group) =>
+        user.Role != UserRole.Admin &&
+        group.Type != GroupType.Course &&
+        !IsAssigned(user, group) &&
+        !group.Invitations.Contains(user.Id) &&
+        !group.PendingJoinRequests.Contains(user.Id) &&
         group.Settings.IsDiscoverable &&
-        !group.Settings.RequiresApproval &&
-        !IsAssigned(user, group);
+        group.Settings.JoinRule == GroupJoinRule.RequestRequired;
 
     public static bool IsAssigned(User user, CampusGroup group) => group.AssignedUserIds.Contains(user.Id);
 

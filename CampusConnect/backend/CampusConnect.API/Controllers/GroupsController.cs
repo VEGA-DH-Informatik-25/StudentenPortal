@@ -39,7 +39,9 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
             request.RequiresApproval,
             request.IsDiscoverable,
             request.Type,
-            request.CourseCode));
+            request.CourseCode,
+            request.JoinRule,
+            request.OfficialCategory));
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
@@ -70,7 +72,7 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
         var result = await groupsService.UpdateSettingsAsync(
             id,
             userId.Value,
-            new UpdateGroupSettingsCommand(request.AllowStudentPosts, request.AllowComments, request.RequiresApproval, request.IsDiscoverable));
+            new UpdateGroupSettingsCommand(request.AllowStudentPosts, request.AllowComments, request.RequiresApproval, request.IsDiscoverable, request.JoinRule));
 
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
@@ -156,6 +158,90 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
             return Unauthorized(new { error = "User could not be resolved from the token." });
 
         var result = await groupsService.JoinGroupAsync(id, userId.Value);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/requests/{userId:guid}/approve")]
+    public async Task<IActionResult> ApproveJoinRequest(Guid id, Guid userId)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.ApproveJoinRequestAsync(id, currentUserId.Value, userId);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/requests/{userId:guid}/reject")]
+    public async Task<IActionResult> RejectJoinRequest(Guid id, Guid userId)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.RejectJoinRequestAsync(id, currentUserId.Value, userId);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/invitations")]
+    public async Task<IActionResult> InviteMembers(Guid id, [FromBody] InviteGroupMembersRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.InviteMembersAsync(id, userId.Value, new InviteGroupMembersCommand(request.UserIds));
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{id:guid}/invitations/{userId:guid}")]
+    public async Task<IActionResult> CancelInvitation(Guid id, Guid userId)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.CancelInvitationAsync(id, currentUserId.Value, userId);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/invitations/accept")]
+    public async Task<IActionResult> AcceptInvitation(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.RespondToInvitationAsync(id, userId.Value, accept: true);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/invitations/decline")]
+    public async Task<IActionResult> DeclineInvitation(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.RespondToInvitationAsync(id, userId.Value, accept: false);
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 

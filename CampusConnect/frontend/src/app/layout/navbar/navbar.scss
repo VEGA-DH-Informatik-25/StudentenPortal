@@ -376,11 +376,14 @@
 @media (max-width: 760px) {
   .navbar {
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 0.75rem;
+    overflow-x: clip;
 
     &__brand,
     &__links,
     &__user {
+      min-width: 0;
       width: 100%;
     }
 

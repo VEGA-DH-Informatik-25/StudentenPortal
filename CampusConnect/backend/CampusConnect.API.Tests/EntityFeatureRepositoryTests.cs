@@ -33,7 +33,7 @@ public sealed class EntityFeatureRepositoryTests
                     Id = groupId,
                     Name = "Database study group",
                     Description = "Shared preparation for the database exam.",
-                    Type = GroupType.Social,
+                    Type = GroupType.Campus,
                     Audience = "TIF25A",
                     OwnerUserId = userId,
                     OwnerLabel = "Alice",

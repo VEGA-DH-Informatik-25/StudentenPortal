@@ -53,6 +53,66 @@ button {
   width: 1px;
 }
 
+.create-group-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: clamp(1rem, 2.8vw, 2rem); background: rgba(31, 35, 40, 0.5); }
+.create-group-dialog { display: grid; width: min(68rem, calc(100vw - 2rem)); max-height: min(92dvh, 58rem); overflow: hidden; background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; box-shadow: 0 28px 70px rgba(31, 35, 40, 0.28); }
+.create-group-dialog__header { display: flex; gap: 1rem; justify-content: space-between; padding: 1.1rem 1.2rem; background: #fff7f8; border-bottom: 1px solid var(--dhbw-border); }
+.create-group-dialog__header p { color: var(--dhbw-red); font-size: 0.75rem; font-weight: 900; margin: 0 0 0.3rem; text-transform: uppercase; }
+.create-group-dialog__header h3 { color: var(--dhbw-ink); font-size: 1.45rem; line-height: 1.1; margin: 0 0 0.35rem; }
+.create-group-dialog__header span, .create-type-card small, .create-group-dialog__actions p { color: var(--dhbw-text-muted); }
+.create-group-dialog__close { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; color: var(--dhbw-ink-soft); cursor: pointer; font-size: 1.2rem; font-weight: 900; height: 2.25rem; width: 2.25rem; }
+.create-group-dialog__form, .create-group-dialog__type-panel, .create-group-dialog__fields, .create-group-dialog__grid, .create-group-dialog__description, .create-group-dialog__policies { display: grid; gap: 0.75rem; }
+.create-group-dialog__body { display: grid; gap: 1rem; grid-template-columns: minmax(13rem, 0.38fr) minmax(0, 1fr); overflow: auto; padding: 1rem 1.2rem; }
+.create-group-dialog__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.create-type-card { display: grid; gap: 0.35rem; justify-items: start; width: 100%; padding: 0.85rem; text-align: left; background: var(--dhbw-surface-muted); border: 1px solid var(--dhbw-border); border-radius: 8px; color: var(--dhbw-ink); cursor: pointer; }
+.create-type-card:is(:hover, :focus-visible), .create-type-card--active { background: var(--dhbw-red-soft); border-color: rgba(226, 0, 26, 0.34); outline: none; }
+.create-type-card span { color: var(--dhbw-red-dark); font-size: 0.74rem; font-weight: 900; }
+.create-group-dialog label { display: grid; gap: 0.45rem; }
+.create-group-dialog label span, .create-group-dialog__policies h4 { color: var(--dhbw-ink); font-size: 0.8rem; font-weight: 900; }
+.create-group-dialog :is(input, textarea, select) { width: 100%; min-height: 2.65rem; padding: 0.65rem 0.7rem; background: var(--dhbw-surface-muted); border: 1px solid var(--dhbw-border); border-radius: 8px; color: var(--dhbw-ink); font: inherit; }
+.create-group-dialog :is(input, textarea, select):focus { background: var(--dhbw-surface); border-color: var(--dhbw-red); box-shadow: 0 0 0 3px var(--dhbw-focus); outline: none; }
+.create-group-dialog textarea { min-height: 7rem; resize: vertical; }
+.create-group-dialog__special-field, .create-group-dialog__policies { padding: 0.75rem; background: var(--dhbw-surface-muted); border: 1px solid var(--dhbw-border); border-radius: 8px; }
+.create-group-dialog__policies h4 { margin: 0 0 0.2rem; text-transform: uppercase; }
+.create-group-dialog__policies label { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.65rem; background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; }
+.create-group-dialog__policies input[type="checkbox"] { accent-color: var(--dhbw-red); width: 1.05rem; height: 1.05rem; }
+.create-group-dialog__actions { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 1.2rem; background: var(--dhbw-surface); border-top: 1px solid var(--dhbw-border); }
+.create-group-dialog__actions div { display: flex; flex-wrap: wrap; gap: 0.55rem; justify-content: flex-end; }
+.create-group-dialog__actions button { border-radius: 8px; cursor: pointer; font-weight: 900; padding: 0.72rem 0.95rem; }
+.create-group-dialog__submit { background: var(--dhbw-red); border: 0; color: var(--dhbw-surface); }
+.create-group-dialog__submit:disabled { background: var(--dhbw-border); color: var(--dhbw-text-muted); cursor: not-allowed; }
+.create-group-dialog__cancel { background: var(--dhbw-surface-muted); border: 1px solid var(--dhbw-border); color: var(--dhbw-ink-soft); }
+.create-group-dialog :is(.create-group-dialog__close, .create-group-dialog__cancel):is(:hover, :focus-visible) { background: var(--dhbw-red-soft); border-color: var(--dhbw-red-soft); color: var(--dhbw-red-dark); outline: none; }
+.create-group-dialog__submit:is(:hover, :focus-visible) { background: var(--dhbw-red-dark); outline: none; }
+
+@media (max-width: 1024px) {
+  .create-group-modal { align-items: start; padding: 1rem; }
+  .create-group-dialog { width: min(100%, 54rem); max-height: calc(100dvh - 2rem); }
+  .create-group-dialog__body { grid-template-columns: 12rem minmax(0, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .create-group-modal { padding: 0.5rem; }
+  .create-group-dialog { width: 100%; max-height: calc(100dvh - 1rem); }
+  .create-group-dialog__header { padding: 0.9rem; }
+  .create-group-dialog__body, .create-group-dialog__grid { grid-template-columns: 1fr; }
+  .create-group-dialog__body { padding: 0.85rem; }
+  .create-group-dialog__type-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .create-type-card { min-height: 5rem; padding: 0.65rem; }
+  .create-type-card small { display: none; }
+  .create-group-dialog__actions, .create-group-dialog__actions div { display: grid; justify-content: stretch; }
+  .create-group-dialog__actions { padding: 0.75rem 0.85rem; }
+  .create-group-dialog__actions button { width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .create-group-dialog__header h3 { font-size: 1.18rem; }
+  .create-group-dialog__header span, .create-group-dialog__actions p { display: none; }
+  .create-group-dialog__type-panel { grid-template-columns: 1fr; }
+  .create-type-card { min-height: auto; }
+  .create-group-dialog textarea { min-height: 5rem; }
+  .create-group-dialog__policies label { padding: 0.5rem; }
+}
+
 .reaction-bar {
   display: flex;
   flex-wrap: wrap;

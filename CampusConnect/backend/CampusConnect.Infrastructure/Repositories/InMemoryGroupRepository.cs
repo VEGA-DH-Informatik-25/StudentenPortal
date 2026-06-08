@@ -87,6 +87,15 @@ public class InMemoryGroupRepository : IGroupRepository
                     assigned.Add(userId);
 
                 updated.AssignedUserIds = assigned;
+                var pending = updated.PendingJoinRequests.ToHashSet();
+                var invitations = updated.Invitations.ToHashSet();
+                foreach (var userId in userIds)
+                {
+                    pending.Remove(userId);
+                    invitations.Remove(userId);
+                }
+                updated.PendingJoinRequests = pending;
+                updated.Invitations = invitations;
                 SyncMemberRoles(updated);
                 _store[id] = updated;
             }
@@ -151,6 +160,70 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
+    public Task AddJoinRequestAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group) && !group.AssignedUserIds.Contains(userId))
+            {
+                var updated = Clone(group);
+                updated.PendingJoinRequests.Add(userId);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveJoinRequestAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.PendingJoinRequests.Remove(userId);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                foreach (var userId in userIds)
+                {
+                    if (!updated.AssignedUserIds.Contains(userId))
+                        updated.Invitations.Add(userId);
+                }
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveInvitationAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.Invitations.Remove(userId);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static CampusGroup CreateCourseGroup(string courseCode, string? studyProgram) => new()
     {
         Name = $"Course {courseCode}",
@@ -172,13 +245,16 @@ public class InMemoryGroupRepository : IGroupRepository
         Type = group.Type,
         Audience = group.Audience,
         CourseCode = group.CourseCode,
+        OfficialCategory = group.OfficialCategory,
         OwnerUserId = group.OwnerUserId,
         OwnerLabel = group.OwnerLabel,
         IconLabel = group.IconLabel,
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
         AssignedUserIds = group.AssignedUserIds.ToHashSet(),
-        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value)
+        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value),
+        PendingJoinRequests = group.PendingJoinRequests.ToHashSet(),
+        Invitations = group.Invitations.ToHashSet()
     };
 
     private static void SyncMemberRoles(CampusGroup group)
@@ -198,7 +274,8 @@ public class InMemoryGroupRepository : IGroupRepository
         AllowStudentPosts = settings.AllowStudentPosts,
         AllowComments = settings.AllowComments,
         RequiresApproval = settings.RequiresApproval,
-        IsDiscoverable = settings.IsDiscoverable
+        IsDiscoverable = settings.IsDiscoverable,
+        JoinRule = settings.JoinRule
     };
 
     private static string NormalizeCourse(string courseCode) => courseCode.Trim().ToUpperInvariant();
@@ -213,7 +290,7 @@ public class InMemoryGroupRepository : IGroupRepository
     {
         GroupType.Official => 0,
         GroupType.Course => 1,
-        GroupType.Social => 2,
+        GroupType.Campus => 2,
         _ => 3
     };
 }

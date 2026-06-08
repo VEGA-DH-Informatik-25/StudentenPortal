@@ -13,5 +13,9 @@ public interface IGroupRepository
     Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds);
     Task RemoveMemberAsync(Guid id, Guid userId);
     Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role);
+    Task AddJoinRequestAsync(Guid id, Guid userId);
+    Task RemoveJoinRequestAsync(Guid id, Guid userId);
+    Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds);
+    Task RemoveInvitationAsync(Guid id, Guid userId);
     Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds);
 }

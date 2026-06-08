@@ -30,6 +30,7 @@ describe('Groups', () => {
       allowComments: false,
       requiresApproval: true,
       isDiscoverable: true,
+      joinRule: 'Open',
     }).subscribe();
 
     const request = http.expectOne('/api/groups/group-1/settings');
@@ -39,6 +40,7 @@ describe('Groups', () => {
       allowComments: false,
       requiresApproval: true,
       isDiscoverable: true,
+      joinRule: 'Open',
     });
     request.flush({});
   });
@@ -47,13 +49,15 @@ describe('Groups', () => {
     service.createGroup({
       name: 'Lerngruppe Web',
       description: 'Gemeinsam lernen',
-      type: 'Social',
+      type: 'Campus',
       audience: 'Interessierte',
       courseCode: null,
+      officialCategory: null,
       allowStudentPosts: true,
       allowComments: true,
       requiresApproval: false,
       isDiscoverable: true,
+      joinRule: 'Open',
     }).subscribe();
 
     const request = http.expectOne('/api/groups');
@@ -61,13 +65,15 @@ describe('Groups', () => {
     expect(request.request.body).toEqual({
       name: 'Lerngruppe Web',
       description: 'Gemeinsam lernen',
-      type: 'Social',
+      type: 'Campus',
       audience: 'Interessierte',
       courseCode: null,
+      officialCategory: null,
       allowStudentPosts: true,
       allowComments: true,
       requiresApproval: false,
       isDiscoverable: true,
+      joinRule: 'Open',
     });
     request.flush({});
   });

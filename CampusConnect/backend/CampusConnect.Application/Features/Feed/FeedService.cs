@@ -301,7 +301,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
         Id = groupId,
         Name = "Unknown group",
         Description = "This group is no longer available.",
-        Type = GroupType.Social,
+        Type = GroupType.Campus,
         Audience = "Archive",
         OwnerLabel = "CampusConnect",
         IconLabel = "?",

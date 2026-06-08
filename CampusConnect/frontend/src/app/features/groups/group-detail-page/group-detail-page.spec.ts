@@ -26,9 +26,10 @@ describe('GroupDetailPage', () => {
     id: 'group-1',
     name: 'Lerngruppe Web',
     description: 'Gemeinsam lernen',
-    type: 'Social',
+    type: 'Campus',
     audience: 'Interessierte',
     courseCode: null,
+    officialCategory: null,
     ownerUserId: 'user-1',
     ownerLabel: 'Alice',
     iconLabel: 'LW',
@@ -42,10 +43,14 @@ describe('GroupDetailPage', () => {
     canPost: true,
     canInteract: true,
     canJoin: false,
+    canRequestJoin: false,
+    hasPendingJoinRequest: false,
+    hasPendingInvitation: false,
+    pendingJoinRequestCount: 0,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: false,
-    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
+    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true, joinRule: 'Open' },
   };
 
   const posts: FeedPost[] = [

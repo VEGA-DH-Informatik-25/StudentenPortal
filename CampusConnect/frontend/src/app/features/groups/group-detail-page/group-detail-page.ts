@@ -244,7 +244,7 @@ export class GroupDetailPage implements OnInit {
         return this._i18n.translate('groups.type.course');
       case 'Official':
         return this._i18n.translate('groups.type.official');
-      case 'Social':
+      case 'Campus':
         return this._i18n.translate('groups.type.social');
     }
   }

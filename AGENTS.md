@@ -283,6 +283,12 @@ Implemented endpoints:
 | DELETE | `/api/groups/{id}/members/{userId}` | User with group-management permission |
 | PUT | `/api/groups/{id}/members/{userId}/role` | User with group-management permission |
 | POST | `/api/groups/{id}/join` | User |
+| POST | `/api/groups/{id}/requests/{userId}/approve` | User with group-management permission |
+| POST | `/api/groups/{id}/requests/{userId}/reject` | User with group-management permission |
+| POST | `/api/groups/{id}/invitations` | User with group-management permission |
+| DELETE | `/api/groups/{id}/invitations/{userId}` | User with group-management permission |
+| POST | `/api/groups/{id}/invitations/accept` | User |
+| POST | `/api/groups/{id}/invitations/decline` | User |
 
 When adding, removing, or changing endpoints, update `CampusConnect/docs/api.md` and add focused API tests.
 

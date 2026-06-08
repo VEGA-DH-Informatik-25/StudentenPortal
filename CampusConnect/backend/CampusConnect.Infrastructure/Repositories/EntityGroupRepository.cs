@@ -11,7 +11,7 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
     public async Task<IReadOnlyList<CampusGroup>> GetAllAsync() =>
         await dbContext.CampusGroups
             .AsNoTracking()
-            .OrderBy(group => group.Type == GroupType.Official ? 0 : group.Type == GroupType.Course ? 1 : group.Type == GroupType.Social ? 2 : 3)
+            .OrderBy(group => group.Type == GroupType.Official ? 0 : group.Type == GroupType.Course ? 1 : group.Type == GroupType.Campus ? 2 : 3)
             .ThenBy(group => group.CourseCode ?? group.Name)
             .Select(group => Clone(group))
             .ToListAsync();
@@ -81,6 +81,17 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
             assigned.Add(userId);
 
         group.AssignedUserIds = assigned;
+
+        var pending = group.PendingJoinRequests.ToHashSet();
+        var invitations = group.Invitations.ToHashSet();
+        foreach (var userId in userIds)
+        {
+            pending.Remove(userId);
+            invitations.Remove(userId);
+        }
+
+        group.PendingJoinRequests = pending;
+        group.Invitations = invitations;
         SyncMemberRoles(group);
         await dbContext.SaveChangesAsync();
     }
@@ -114,6 +125,63 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         group.MemberRoles = roles;
 
         SyncMemberRoles(group);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddJoinRequestAsync(Guid id, Guid userId)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null || group.AssignedUserIds.Contains(userId))
+            return;
+
+        var pending = group.PendingJoinRequests.ToHashSet();
+        pending.Add(userId);
+        group.PendingJoinRequests = pending;
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task RemoveJoinRequestAsync(Guid id, Guid userId)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null)
+            return;
+
+        var pending = group.PendingJoinRequests.ToHashSet();
+        if (!pending.Remove(userId))
+            return;
+
+        group.PendingJoinRequests = pending;
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null)
+            return;
+
+        var invitations = group.Invitations.ToHashSet();
+        foreach (var userId in userIds)
+        {
+            if (!group.AssignedUserIds.Contains(userId))
+                invitations.Add(userId);
+        }
+
+        group.Invitations = invitations;
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task RemoveInvitationAsync(Guid id, Guid userId)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null)
+            return;
+
+        var invitations = group.Invitations.ToHashSet();
+        if (!invitations.Remove(userId))
+            return;
+
+        group.Invitations = invitations;
         await dbContext.SaveChangesAsync();
     }
 
@@ -151,6 +219,7 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         target.Type = source.Type;
         target.Audience = source.Audience;
         target.CourseCode = source.CourseCode;
+        target.OfficialCategory = source.OfficialCategory;
         target.OwnerUserId = source.OwnerUserId;
         target.OwnerLabel = source.OwnerLabel;
         target.IconLabel = source.IconLabel;
@@ -158,6 +227,8 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         target.Settings = Clone(source.Settings);
         target.AssignedUserIds = source.AssignedUserIds.ToHashSet();
         target.MemberRoles = source.MemberRoles.ToDictionary(item => item.Key, item => item.Value);
+        target.PendingJoinRequests = source.PendingJoinRequests.ToHashSet();
+        target.Invitations = source.Invitations.ToHashSet();
         SyncMemberRoles(target);
     }
 
@@ -169,13 +240,16 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         Type = group.Type,
         Audience = group.Audience,
         CourseCode = group.CourseCode,
+        OfficialCategory = group.OfficialCategory,
         OwnerUserId = group.OwnerUserId,
         OwnerLabel = group.OwnerLabel,
         IconLabel = group.IconLabel,
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
         AssignedUserIds = group.AssignedUserIds.ToHashSet(),
-        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value)
+        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value),
+        PendingJoinRequests = group.PendingJoinRequests.ToHashSet(),
+        Invitations = group.Invitations.ToHashSet()
     };
 
     private static void SyncMemberRoles(CampusGroup group)
@@ -195,7 +269,8 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         AllowStudentPosts = settings.AllowStudentPosts,
         AllowComments = settings.AllowComments,
         RequiresApproval = settings.RequiresApproval,
-        IsDiscoverable = settings.IsDiscoverable
+        IsDiscoverable = settings.IsDiscoverable,
+        JoinRule = settings.JoinRule
     };
 
     private static string NormalizeCourse(string courseCode) => courseCode.Trim().ToUpperInvariant();

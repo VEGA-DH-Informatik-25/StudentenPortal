@@ -22,6 +22,7 @@ describe('GroupsPage', () => {
     type: 'Course',
     audience: 'TIF25A',
     courseCode: 'TIF25A',
+    officialCategory: null,
     ownerUserId: null,
     ownerLabel: 'Computer Science',
     iconLabel: 'TI',
@@ -35,16 +36,20 @@ describe('GroupsPage', () => {
     canPost: true,
     canInteract: true,
     canJoin: false,
+    canRequestJoin: false,
+    hasPendingJoinRequest: false,
+    hasPendingInvitation: false,
+    pendingJoinRequestCount: 0,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: true,
-    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
+    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true, joinRule: 'Open' },
   };
 
   beforeEach(async () => {
     groupsService = {
       getGroups: vi.fn(() => of([group])),
-      createGroup: vi.fn(() => of({ ...group, id: 'group-2', type: 'Social', canManage: true })),
+      createGroup: vi.fn(() => of({ ...group, id: 'group-2', type: 'Campus', canManage: true })),
       joinGroup: vi.fn(() => of({ ...group, isAssigned: true, canJoin: false })),
     };
 
@@ -77,7 +82,7 @@ describe('GroupsPage', () => {
 
   it('shows joinable public groups in explore tab', () => {
     fixture.detectChanges();
-    const exploreGroup: CampusGroup = { ...group, id: 'group-3', type: 'Social', isAssigned: false, canPost: false, canJoin: true };
+    const exploreGroup: CampusGroup = { ...group, id: 'group-3', type: 'Campus', isAssigned: false, canPost: false, canJoin: true };
     (component as any)._groups.set([group, exploreGroup]);
     (component as any)._activeTab.set('Explore');
     fixture.detectChanges();
@@ -91,9 +96,10 @@ describe('GroupsPage', () => {
     (component as any)._createName.set('Exam office');
     (component as any)._createDescription.set('Exam information');
     (component as any)._createAudience.set('All students');
+    (component as any)._createOfficialCategory.set('Exam office');
 
     (component as any).createGroup();
 
-    expect(groupsService.createGroup).toHaveBeenCalledWith(expect.objectContaining({ type: 'Official', courseCode: null }));
+    expect(groupsService.createGroup).toHaveBeenCalledWith(expect.objectContaining({ type: 'Official', courseCode: null, officialCategory: 'Exam office' }));
   });
 });

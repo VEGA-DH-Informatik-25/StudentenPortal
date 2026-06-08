@@ -36,6 +36,7 @@ describe('FeedPage', () => {
     type: 'Course',
     audience: 'TIF25A',
     courseCode: 'TIF25A',
+    officialCategory: null,
     ownerUserId: null,
     ownerLabel: 'Computer Science',
     iconLabel: 'TI',
@@ -49,10 +50,14 @@ describe('FeedPage', () => {
     canPost: true,
     canInteract: true,
     canJoin: false,
+    canRequestJoin: false,
+    hasPendingJoinRequest: false,
+    hasPendingInvitation: false,
+    pendingJoinRequestCount: 0,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: true,
-    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
+    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true, joinRule: 'Open' },
   };
 
   beforeEach(async () => {

@@ -355,7 +355,7 @@ public class FeedServiceTests
     {
         Name = "Housing in Loerrach",
         Description = "Exchange about rooms and commuting",
-        Type = GroupType.Social,
+        Type = GroupType.Campus,
         Audience = "Students",
         OwnerUserId = ownerId,
         OwnerLabel = "Community",
@@ -481,6 +481,32 @@ public class FeedServiceTests
                 group.MemberRoles[userId] = GroupRole.Moderator;
             else
                 group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task AddJoinRequestAsync(Guid id, Guid userId)
+        {
+            _groups.First(group => group.Id == id).PendingJoinRequests.Add(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveJoinRequestAsync(Guid id, Guid userId)
+        {
+            _groups.First(group => group.Id == id).PendingJoinRequests.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds)
+        {
+            var group = _groups.First(group => group.Id == id);
+            foreach (var userId in userIds)
+                group.Invitations.Add(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveInvitationAsync(Guid id, Guid userId)
+        {
+            _groups.First(group => group.Id == id).Invitations.Remove(userId);
             return Task.CompletedTask;
         }
 

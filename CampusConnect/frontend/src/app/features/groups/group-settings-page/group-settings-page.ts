@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Course } from '../../../core/models/course.model';
-import { CampusGroup, GroupCandidate, GroupMember, GroupRole, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
+import { CampusGroup, GroupCandidate, GroupJoinRule, GroupMember, GroupRequest, GroupRole, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
 import { Courses } from '../../../core/services/courses';
 import { Groups } from '../../../core/services/groups';
 
@@ -39,6 +39,8 @@ export class GroupSettingsPage implements OnInit {
 
   protected readonly _group = computed(() => this._details()?.group ?? null);
   protected readonly _members = computed(() => this._details()?.members ?? []);
+  protected readonly _joinRequests = computed(() => this._details()?.joinRequests ?? []);
+  protected readonly _invitations = computed(() => this._details()?.invitations ?? []);
   protected readonly _canEditSettings = computed(() => this._group()?.canEditSettings ?? false);
   protected readonly _canManageMembers = computed(() => this._group()?.canManageMembers ?? false);
   protected readonly _canAppointModerator = computed(() => this._group()?.canAppointModerator ?? false);
@@ -81,6 +83,127 @@ export class GroupSettingsPage implements OnInit {
 
   protected isSettingBusy(setting: keyof GroupSettings): boolean {
     return this._savingSetting() === setting;
+  }
+
+  protected updateJoinRule(value: string): void {
+    const group = this._group();
+    if (!group || !this._canEditSettings() || this._savingSetting()) {
+      return;
+    }
+
+    const joinRule = value as GroupJoinRule;
+    if (joinRule === group.settings.joinRule) {
+      return;
+    }
+
+    this._savingSetting.set('joinRule');
+    this._error.set('');
+    this._groupsService.updateSettings(group.id, { ...group.settings, joinRule }).subscribe({
+      next: updatedGroup => {
+        this._details.update(details => (details ? { ...details, group: updatedGroup } : details));
+        this._savingSetting.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.settingSaveError'));
+        this._savingSetting.set('');
+      },
+    });
+  }
+
+  protected joinRuleLabel(rule: string): string {
+    switch (rule) {
+      case 'RequestRequired':
+        return this._i18n.translate('groups.joinRule.request');
+      case 'InviteOnly':
+        return this._i18n.translate('groups.joinRule.invite');
+      default:
+        return this._i18n.translate('groups.joinRule.open');
+    }
+  }
+
+  protected approveRequest(request: GroupRequest): void {
+    const group = this._group();
+    if (!group || this._busyUserId()) {
+      return;
+    }
+
+    this._busyUserId.set(request.id);
+    this._error.set('');
+    this._groupsService.approveRequest(group.id, request.id).subscribe({
+      next: details => {
+        this._setDetails(details);
+        this._busyUserId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.requestActionError'));
+        this._busyUserId.set('');
+      },
+    });
+  }
+
+  protected rejectRequest(request: GroupRequest): void {
+    const group = this._group();
+    if (!group || this._busyUserId()) {
+      return;
+    }
+
+    this._busyUserId.set(request.id);
+    this._error.set('');
+    this._groupsService.rejectRequest(group.id, request.id).subscribe({
+      next: details => {
+        this._setDetails(details);
+        this._busyUserId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.requestActionError'));
+        this._busyUserId.set('');
+      },
+    });
+  }
+
+  protected inviteCandidate(candidate: GroupCandidate): void {
+    const group = this._group();
+    if (!group || this._busyUserId()) {
+      return;
+    }
+
+    this._busyUserId.set(candidate.id);
+    this._error.set('');
+    this._groupsService.inviteMembers(group.id, { userIds: [candidate.id] }).subscribe({
+      next: details => {
+        this._setDetails(details);
+        this._candidates.update(items => items.filter(item => item.id !== candidate.id));
+        this._busyUserId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.inviteError'));
+        this._busyUserId.set('');
+      },
+    });
+  }
+
+  protected cancelInvitation(invitation: GroupRequest): void {
+    const group = this._group();
+    if (!group || this._busyUserId()) {
+      return;
+    }
+
+    this._busyUserId.set(invitation.id);
+    this._error.set('');
+    this._groupsService.cancelInvitation(group.id, invitation.id).subscribe({
+      next: details => {
+        this._setDetails(details);
+        this._busyUserId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.cancelInvitationError'));
+        this._busyUserId.set('');
+      },
+    });
+  }
+
+  protected isRequestBusy(request: GroupRequest): boolean {
+    return this._busyUserId() === request.id;
   }
 
   protected updateSearchTerm(value: string): void {

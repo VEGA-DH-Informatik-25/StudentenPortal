@@ -58,6 +58,7 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
             .IsRequired();
         group.Property(entity => entity.Audience).HasMaxLength(80).IsRequired();
         group.Property(entity => entity.CourseCode).HasMaxLength(40);
+        group.Property(entity => entity.OfficialCategory).HasMaxLength(80);
         group.Property(entity => entity.OwnerLabel).HasMaxLength(120).IsRequired();
         group.Property(entity => entity.IconLabel).HasMaxLength(8).IsRequired();
         group.Property(entity => entity.AccentColor).HasMaxLength(16).IsRequired();
@@ -77,6 +78,17 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
                 value => Serialize(value),
                 value => Deserialize(value, () => new Dictionary<Guid, GroupRole>()))
             .Metadata.SetValueComparer(JsonComparer<Dictionary<Guid, GroupRole>>());
+
+        group.Property(entity => entity.PendingJoinRequests)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize(value, () => new HashSet<Guid>()))
+            .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
+        group.Property(entity => entity.Invitations)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize(value, () => new HashSet<Guid>()))
+            .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
 
         var feedPost = modelBuilder.Entity<FeedPost>();
         feedPost.ToTable("FeedPosts");

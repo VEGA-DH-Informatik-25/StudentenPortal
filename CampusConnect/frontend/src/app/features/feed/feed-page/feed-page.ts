@@ -230,7 +230,7 @@ export class FeedPage implements OnInit {
         return this._i18n.translate('common.course');
       case 'Official':
         return this._i18n.translate('groups.tab.official');
-      case 'Social':
+      case 'Campus':
         return this._i18n.translate('groups.tab.campus');
     }
   }
@@ -362,7 +362,7 @@ export class FeedPage implements OnInit {
     const officialGroup = groups.find(group => group.type === 'Official' && this.canPostToGroup(group));
     const fallback = (role === 'Admin' ? officialGroup : courseGroup)
       ?? courseGroup
-      ?? groups.find(group => group.type === 'Social' && this.canPostToGroup(group))
+      ?? groups.find(group => group.type === 'Campus' && this.canPostToGroup(group))
       ?? groups.find(group => this.canPostToGroup(group));
 
     this._selectedGroupId.set(fallback?.id ?? '');

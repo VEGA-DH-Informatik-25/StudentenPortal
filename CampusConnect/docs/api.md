@@ -39,15 +39,21 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
 | GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen (`course` optional, `days` optional) | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
-| POST | `/api/groups` | Gruppe mit Typ `Social`, `Official` oder `Course` erstellen (Kursgruppen benötigen `courseCode`) | Ja |
-| GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive aktueller Mitgliederliste abrufen | Ja |
-| PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe und Sichtbarkeit ändern | Ja |
+| POST | `/api/groups` | Gruppe mit Typ `Campus`, `Official` oder `Course` erstellen (Kursgruppen benötigen `courseCode`, offizielle Gruppen `officialCategory`); optional `joinRule` (`Open`, `RequestRequired`, `InviteOnly`) | Ja |
+| GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive Mitglieder, offener Beitrittsanfragen und Einladungen abrufen | Ja |
+| PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe, Sichtbarkeit und Beitrittsregel ändern | Ja |
 | GET | `/api/groups/{id}/candidates` | Personen für die Aufnahme suchen (`query` optional, ohne Treffer für Kursgruppen) | Ja |
 | POST | `/api/groups/{id}/members` | Eine oder mehrere Personen als Mitglieder hinzufügen (`userIds`) | Ja |
 | POST | `/api/groups/{id}/members/course` | Alle aktuellen Mitglieder eines Kurses einmalig als Mitglieder übernehmen (`courseCode`) | Ja |
 | DELETE | `/api/groups/{id}/members/{userId}` | Ein Mitglied aus der Gruppe entfernen (nicht den Besitzer) | Ja |
 | PUT | `/api/groups/{id}/members/{userId}/role` | Gruppenrolle eines Mitglieds setzen (`Member` oder `Moderator`) | Ja |
-| POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
+| POST | `/api/groups/{id}/join` | Beitreten (`Open`) oder Beitritt anfragen (`RequestRequired`); offene Einladungen werden direkt angenommen | Ja |
+| POST | `/api/groups/{id}/requests/{userId}/approve` | Offene Beitrittsanfrage freigeben (Verwaltungsrecht) | Ja |
+| POST | `/api/groups/{id}/requests/{userId}/reject` | Offene Beitrittsanfrage ablehnen (Verwaltungsrecht) | Ja |
+| POST | `/api/groups/{id}/invitations` | Personen einladen (`userIds`, Verwaltungsrecht) | Ja |
+| DELETE | `/api/groups/{id}/invitations/{userId}` | Einladung zurückziehen (Verwaltungsrecht) | Ja |
+| POST | `/api/groups/{id}/invitations/accept` | Eigene Einladung annehmen | Ja |
+| POST | `/api/groups/{id}/invitations/decline` | Eigene Einladung ablehnen | Ja |
 
 > **Hinweis:** Externe API-Clients authentifizieren sich weiterhin mit folgendem HTTP-Header:
 > ```
@@ -73,7 +79,7 @@ Der Notenbereich liest den Studienplan nicht aus einer manuell gepflegten Modull
 
 ## Gruppen und Feed
 
-Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Social`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl der Mitglieder, der Gruppenrolle `groupRole` (`Owner`, `Moderator`, `Member` oder `None`) und den daraus abgeleiteten Fähigkeits-Flags `isAssigned`, `canManage`, `canEditSettings`, `canManageMembers`, `canAppointModerator`, `canPost`, `canInteract`, `canJoin`, `isSystemAdminAccess`, `isCourseManaged` sowie den Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
+Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Campus`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl der Mitglieder, der Gruppenrolle `groupRole` (`Owner`, `Moderator`, `Member` oder `None`) und den daraus abgeleiteten Fähigkeits-Flags `isAssigned`, `canManage`, `canEditSettings`, `canManageMembers`, `canAppointModerator`, `canPost`, `canInteract`, `canJoin`, `canRequestJoin`, `hasPendingJoinRequest`, `hasPendingInvitation`, `isSystemAdminAccess`, `isCourseManaged` sowie den Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
 
 Feed-Antworten enthalten nur Beiträge aus Gruppen, für deren Beiträge der Nutzer leseberechtigt ist: Admins sehen alle Beiträge, zugewiesene Mitglieder sehen die Beiträge ihrer Gruppen. Private Gruppen erscheinen nur für Admins und zugewiesene Mitglieder; öffentliche Gruppen erscheinen zusätzlich als Entdecken-Kandidaten, geben ihre Beiträge aber erst nach Beitritt oder Zuweisung frei. Wer posten darf, ergibt sich aus der Gruppenrolle: Besitzer und Moderatoren dürfen immer posten, einfache Mitglieder nur, wenn `allowStudentPosts` aktiv ist (`canPost`). Kommentieren und Reagieren steht allen Mitgliedern offen (`canInteract`); Kommentare respektieren zusätzlich `allowComments`.
 
@@ -87,6 +93,9 @@ Gruppeneinstellungen enthalten aktuell:
 | `allowComments` | Beiträge der Gruppe sind kommentierbar |
 | `requiresApproval` | Neue Beiträge benötigen Moderation/Freigabe |
 | `isDiscoverable` | Gruppe ist öffentlich und kann unter Entdecken gefunden werden; `false` macht sie privat |
+| `joinRule` | Beitrittsregel: `Open` (sofort beitreten), `RequestRequired` (Beitritt per Anfrage) oder `InviteOnly` (nur per Einladung) |
+
+Zusätzlich tragen Gruppen das Feld `officialCategory` (fachliche Einordnung offizieller Gruppen, z. B. `Prüfungsamt`). Jedes Gruppen-Objekt liefert außerdem `canRequestJoin`, `hasPendingJoinRequest`, `hasPendingInvitation` und `pendingJoinRequestCount` für die Beitritts- und Einladungslogik.
 
 Global roles are separate from group roles: `Student`, `Lecturer`, `Management`, and `Admin` describe system-wide permissions; `Owner`, `Moderator`, and `Member` describe a user's role inside a specific group. Students and lecturers can discover public groups, read posts from assigned groups, comment and react in their groups, join public campus groups through `POST /api/groups/{id}/join`, and create their own campus groups. The global `Management` role can create campus groups, official groups, and course groups like `Admin`; course groups require a `courseCode` and continue to be synchronized when user-course assignments change. The creator of a group is its `Owner`. Owners and moderators open group settings, search candidates through `GET /api/groups/{id}/candidates`, add members through `POST /api/groups/{id}/members`, add an entire course as a one-time snapshot through `POST /api/groups/{id}/members/course`, remove members through `DELETE /api/groups/{id}/members/{userId}`, and set member roles through `PUT /api/groups/{id}/members/{userId}/role`. Only the owner (or a system admin) can appoint moderators or edit group settings. Admins can manage all group settings and members; lecturers can manage the course groups they are assigned to. `GET /api/groups/{id}/settings`, `PUT /api/groups/{id}/settings`, the member endpoints, and the role endpoint return `403 Forbidden` for unauthorized users; for course groups, the candidate, member, and course endpoints reject manual changes so course membership stays consistent.
 

@@ -95,6 +95,14 @@ public sealed class CoursesServiceTests
 
         public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role) => Task.CompletedTask;
 
+        public Task AddJoinRequestAsync(Guid id, Guid userId) => Task.CompletedTask;
+
+        public Task RemoveJoinRequestAsync(Guid id, Guid userId) => Task.CompletedTask;
+
+        public Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds) => Task.CompletedTask;
+
+        public Task RemoveInvitationAsync(Guid id, Guid userId) => Task.CompletedTask;
+
         public Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds) => Task.CompletedTask;
     }
 }

@@ -70,7 +70,23 @@
                 [disabled]="!!_savingSetting()"
                 (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
             </label>
+
+            <label class="settings-block__select">
+              <span>{{ 'groups.joinRule' | translate }}</span>
+              <select
+                [value]="group.settings.joinRule"
+                [disabled]="!!_savingSetting()"
+                (change)="updateJoinRule($any($event.target).value)">
+                <option value="Open">{{ 'groups.joinRule.open' | translate }}</option>
+                <option value="RequestRequired">{{ 'groups.joinRule.request' | translate }}</option>
+                <option value="InviteOnly">{{ 'groups.joinRule.invite' | translate }}</option>
+              </select>
+            </label>
           </div>
+
+          @if (group.officialCategory) {
+            <p class="settings-block__hint">{{ 'groups.officialCategory' | translate }}: <strong>{{ group.officialCategory }}</strong></p>
+          }
 
           @if (_savingSetting()) {
             <p class="settings-block__hint">{{ 'groups.settingSaving' | translate }}</p>
@@ -132,6 +148,61 @@
       </section>
 
       @if (_canManageMembers() && !_isCourseManaged()) {
+        <section class="settings-block" [attr.aria-label]="'groups.joinRequests' | translate">
+          <header>
+            <h3>{{ 'groups.joinRequests' | translate }}</h3>
+            <p>{{ 'groups.joinRequestsBody' | translate }}</p>
+          </header>
+
+          <ul class="candidate-list">
+            @for (request of _joinRequests(); track request.id) {
+              <li class="candidate-row">
+                <span class="candidate-row__identity">
+                  <strong>{{ request.displayName }}</strong>
+                  <small>{{ request.email }}</small>
+                  <small class="candidate-row__meta">{{ roleLabel(request.role) }}{{ request.course ? ' · ' + request.course : '' }}</small>
+                </span>
+                <span class="candidate-row__actions">
+                  <button type="button" class="candidate-row__add" [disabled]="isRequestBusy(request)" (click)="approveRequest(request)">
+                    {{ 'groups.approve' | translate }}
+                  </button>
+                  <button type="button" class="member-row__remove" [disabled]="isRequestBusy(request)" (click)="rejectRequest(request)" [attr.aria-label]="'groups.reject' | translate">
+                    ×
+                  </button>
+                </span>
+              </li>
+            } @empty {
+              <li class="candidate-list__empty">{{ 'groups.joinRequestsEmpty' | translate }}</li>
+            }
+          </ul>
+        </section>
+
+        <section class="settings-block" [attr.aria-label]="'groups.invitations' | translate">
+          <header>
+            <h3>{{ 'groups.invitations' | translate }}</h3>
+            <p>{{ 'groups.invitationsBody' | translate }}</p>
+          </header>
+
+          <ul class="candidate-list">
+            @for (invitation of _invitations(); track invitation.id) {
+              <li class="candidate-row">
+                <span class="candidate-row__identity">
+                  <strong>{{ invitation.displayName }}</strong>
+                  <small>{{ invitation.email }}</small>
+                  <small class="candidate-row__meta">{{ roleLabel(invitation.role) }}{{ invitation.course ? ' · ' + invitation.course : '' }}</small>
+                </span>
+                <button type="button" class="member-row__remove" [disabled]="isRequestBusy(invitation)" (click)="cancelInvitation(invitation)" [attr.aria-label]="'groups.cancelInvitation' | translate">
+                  ×
+                </button>
+              </li>
+            } @empty {
+              <li class="candidate-list__empty">{{ 'groups.invitationsEmpty' | translate }}</li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (_canManageMembers() && !_isCourseManaged()) {
         <section class="settings-block" [attr.aria-label]="'groups.addMembers' | translate">
           <header>
             <h3>{{ 'groups.addMembers' | translate }}</h3>
@@ -165,9 +236,14 @@
                   <small>{{ candidate.email }}</small>
                   <small class="candidate-row__meta">{{ roleLabel(candidate.role) }}{{ candidate.course ? ' · ' + candidate.course : '' }}</small>
                 </span>
-                <button type="button" class="candidate-row__add" [disabled]="isCandidateBusy(candidate)" (click)="addMember(candidate)">
-                  {{ 'groups.add' | translate }}
-                </button>
+                <span class="candidate-row__actions">
+                  <button type="button" class="candidate-row__add" [disabled]="isCandidateBusy(candidate)" (click)="addMember(candidate)">
+                    {{ 'groups.add' | translate }}
+                  </button>
+                  <button type="button" class="member-search__button" [disabled]="isCandidateBusy(candidate)" (click)="inviteCandidate(candidate)">
+                    {{ 'groups.invite' | translate }}
+                  </button>
+                </span>
               </li>
             } @empty {
               @if (_hasSearched()) {

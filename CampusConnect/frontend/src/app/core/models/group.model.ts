@@ -1,11 +1,13 @@
-export type GroupType = 'Course' | 'Official' | 'Social';
+export type GroupType = 'Course' | 'Official' | 'Campus';
 export type GroupRole = 'None' | 'Member' | 'Moderator' | 'Owner';
+export type GroupJoinRule = 'Open' | 'RequestRequired' | 'InviteOnly';
 
 export interface GroupSettings {
   allowStudentPosts: boolean;
   allowComments: boolean;
   requiresApproval: boolean;
   isDiscoverable: boolean;
+  joinRule: GroupJoinRule;
 }
 
 export interface CampusGroup {
@@ -15,6 +17,7 @@ export interface CampusGroup {
   type: GroupType;
   audience: string;
   courseCode: string | null;
+  officialCategory: string | null;
   ownerUserId: string | null;
   ownerLabel: string;
   iconLabel: string;
@@ -28,6 +31,10 @@ export interface CampusGroup {
   canPost: boolean;
   canInteract: boolean;
   canJoin: boolean;
+  canRequestJoin: boolean;
+  hasPendingJoinRequest: boolean;
+  hasPendingInvitation: boolean;
+  pendingJoinRequestCount: number;
   groupRole: GroupRole;
   isSystemAdminAccess: boolean;
   isCourseManaged: boolean;
@@ -40,10 +47,12 @@ export interface CreateGroupRequest {
   type: GroupType;
   audience: string;
   courseCode: string | null;
+  officialCategory: string | null;
   allowStudentPosts: boolean;
   allowComments: boolean;
   requiresApproval: boolean;
   isDiscoverable: boolean;
+  joinRule: GroupJoinRule;
 }
 
 export interface UpdateGroupSettingsRequest extends GroupSettings {}
@@ -66,12 +75,26 @@ export interface GroupCandidate {
   course: string;
 }
 
+export interface GroupRequest {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  course: string;
+}
+
 export interface GroupSettingsDetails {
   group: CampusGroup;
   members: GroupMember[];
+  joinRequests: GroupRequest[];
+  invitations: GroupRequest[];
 }
 
 export interface AddGroupMembersRequest {
+  userIds: string[];
+}
+
+export interface InviteGroupMembersRequest {
   userIds: string[];
 }
 

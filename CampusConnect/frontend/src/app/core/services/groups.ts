@@ -8,6 +8,7 @@ import {
   CreateGroupRequest,
   GroupCandidate,
   GroupSettingsDetails,
+  InviteGroupMembersRequest,
   SetGroupMemberRoleRequest,
   UpdateGroupSettingsRequest,
 } from '../models/group.model';
@@ -55,5 +56,29 @@ export class Groups {
 
   joinGroup(id: string): Observable<CampusGroup> {
     return this._http.post<CampusGroup>(`/api/groups/${id}/join`, {});
+  }
+
+  approveRequest(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/requests/${userId}/approve`, {});
+  }
+
+  rejectRequest(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/requests/${userId}/reject`, {});
+  }
+
+  inviteMembers(id: string, req: InviteGroupMembersRequest): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/invitations`, req);
+  }
+
+  cancelInvitation(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.delete<GroupSettingsDetails>(`/api/groups/${id}/invitations/${userId}`);
+  }
+
+  acceptInvitation(id: string): Observable<CampusGroup> {
+    return this._http.post<CampusGroup>(`/api/groups/${id}/invitations/accept`, {});
+  }
+
+  declineInvitation(id: string): Observable<CampusGroup> {
+    return this._http.post<CampusGroup>(`/api/groups/${id}/invitations/decline`, {});
   }
 }

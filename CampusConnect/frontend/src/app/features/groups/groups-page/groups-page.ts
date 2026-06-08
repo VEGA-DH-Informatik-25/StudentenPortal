@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
-import { CampusGroup, GroupType } from '../../../core/models/group.model';
+import { CampusGroup, GroupJoinRule, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 
 type GroupTab = 'All' | 'Explore' | GroupType;
@@ -38,18 +38,20 @@ export class GroupsPage implements OnInit {
   protected readonly _searchQuery = signal('');
   protected readonly _policyFilter = signal<GroupPolicyFilter>('All');
   protected readonly _joiningGroupIds = signal<string[]>([]);
-  protected readonly _createType = signal<GroupType>('Social');
+  protected readonly _createType = signal<GroupType>('Campus');
   protected readonly _createName = signal('');
   protected readonly _createDescription = signal('');
   protected readonly _createAudience = signal('');
   protected readonly _createCourseCode = signal('');
+  protected readonly _createOfficialCategory = signal('');
+  protected readonly _createJoinRule = signal<GroupJoinRule>('Open');
   protected readonly _createAllowStudentPosts = signal(true);
   protected readonly _createAllowComments = signal(true);
   protected readonly _createRequiresApproval = signal(false);
   protected readonly _createIsDiscoverable = signal(true);
   protected readonly _officialGroups = computed(() => this._groups().filter(group => group.type === 'Official'));
   protected readonly _courseGroups = computed(() => this._groups().filter(group => group.type === 'Course'));
-  protected readonly _socialGroups = computed(() => this._groups().filter(group => group.type === 'Social'));
+  protected readonly _socialGroups = computed(() => this._groups().filter(group => group.type === 'Campus'));
   protected readonly _directoryGroups = computed(() => this._groups().filter(group => !group.canJoin));
   protected readonly _exploreGroups = computed(() => this._groups().filter(group => group.canJoin));
   protected readonly _directoryFilteredGroups = computed(() => this._directoryGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
@@ -58,7 +60,7 @@ export class GroupsPage implements OnInit {
     { id: 'All', label: this._i18n.translate('groups.tab.all'), count: this._directoryFilteredGroups().length },
     { id: 'Official', label: this._i18n.translate('groups.tab.official'), count: this._directoryFilteredGroups().filter(group => group.type === 'Official').length },
     { id: 'Course', label: this._i18n.translate('groups.tab.courses'), count: this._directoryFilteredGroups().filter(group => group.type === 'Course').length },
-    { id: 'Social', label: this._i18n.translate('groups.tab.campus'), count: this._directoryFilteredGroups().filter(group => group.type === 'Social').length },
+    { id: 'Campus', label: this._i18n.translate('groups.tab.campus'), count: this._directoryFilteredGroups().filter(group => group.type === 'Campus').length },
     { id: 'Explore', label: this._i18n.translate('groups.tab.discover'), count: this._exploreFilteredGroups().length },
   ]);
   protected readonly _filteredGroups = computed(() => {
@@ -76,12 +78,14 @@ export class GroupsPage implements OnInit {
     this._createDescription().trim().length > 0 &&
     this._createAudience().trim().length > 0 &&
     (this._createType() !== 'Course' || this._createCourseCode().trim().length > 0) &&
+    (this._createType() !== 'Official' || this._createOfficialCategory().trim().length > 0) &&
     !this._isCreating()
   );
 
   protected readonly _createPolicySummary = computed(() => {
     const policies: string[] = [];
     policies.push(this.groupTypeLabel(this._createType()));
+    policies.push(this.joinRuleLabel(this._createJoinRule()));
     policies.push(this._createAllowStudentPosts() ? this._i18n.translate('groups.policy.studentPosts') : this._i18n.translate('groups.policy.universityPosts'));
     policies.push(this._createAllowComments() ? this._i18n.translate('groups.commentPolicy.open') : this._i18n.translate('groups.commentPolicy.closed'));
     policies.push(this._createRequiresApproval() ? this._i18n.translate('groups.policy.approval') : this._i18n.translate('groups.policy.noApproval'));
@@ -121,13 +125,28 @@ export class GroupsPage implements OnInit {
     this._createType.set(value);
   }
 
+  protected updateCreateJoinRule(value: GroupJoinRule): void {
+    this._createJoinRule.set(value);
+  }
+
+  protected joinRuleLabel(rule: GroupJoinRule): string {
+    switch (rule) {
+      case 'Open':
+        return this._i18n.translate('groups.joinRule.open');
+      case 'RequestRequired':
+        return this._i18n.translate('groups.joinRule.request');
+      case 'InviteOnly':
+        return this._i18n.translate('groups.joinRule.invite');
+    }
+  }
+
   protected groupTypeLabel(type: GroupType): string {
     switch (type) {
       case 'Course':
         return this._i18n.translate('groups.type.course');
       case 'Official':
         return this._i18n.translate('groups.type.official');
-      case 'Social':
+      case 'Campus':
         return this._i18n.translate('groups.type.social');
     }
   }
@@ -174,7 +193,72 @@ export class GroupsPage implements OnInit {
       next: updatedGroup => {
         this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
         this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+        this._success.set(updatedGroup.hasPendingJoinRequest
+          ? this._i18n.translate('groups.requestSent')
+          : this._i18n.translate('groups.joinSuccess'));
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.joinError'));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+      },
+    });
+  }
+
+  protected requestJoin(group: CampusGroup): void {
+    if (!group.canRequestJoin || this.isJoining(group.id)) {
+      return;
+    }
+
+    this._joiningGroupIds.update(ids => [...ids, group.id]);
+    this._error.set('');
+    this._success.set('');
+    this._groupsService.joinGroup(group.id).subscribe({
+      next: updatedGroup => {
+        this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+        this._success.set(this._i18n.translate('groups.requestSent'));
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.joinError'));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+      },
+    });
+  }
+
+  protected acceptInvitation(group: CampusGroup): void {
+    if (!group.hasPendingInvitation || this.isJoining(group.id)) {
+      return;
+    }
+
+    this._joiningGroupIds.update(ids => [...ids, group.id]);
+    this._error.set('');
+    this._success.set('');
+    this._groupsService.acceptInvitation(group.id).subscribe({
+      next: updatedGroup => {
+        this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
         this._success.set(this._i18n.translate('groups.joinSuccess'));
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.joinError'));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+      },
+    });
+  }
+
+  protected declineInvitation(group: CampusGroup): void {
+    if (!group.hasPendingInvitation || this.isJoining(group.id)) {
+      return;
+    }
+
+    this._joiningGroupIds.update(ids => [...ids, group.id]);
+    this._error.set('');
+    this._success.set('');
+    this._groupsService.declineInvitation(group.id).subscribe({
+      next: updatedGroup => {
+        this._groups.update(groups => groups.map(item => item.id === updatedGroup.id ? updatedGroup : item));
+        this._joiningGroupIds.update(ids => ids.filter(id => id !== group.id));
+        this._success.set(this._i18n.translate('groups.invitationDeclined'));
       },
       error: () => {
         this._error.set(this._i18n.translate('groups.joinError'));
@@ -201,19 +285,23 @@ export class GroupsPage implements OnInit {
       type: this._createType(),
       audience: this._createAudience().trim(),
       courseCode: this._createType() === 'Course' ? this._createCourseCode().trim() : null,
+      officialCategory: this._createType() === 'Official' ? this._createOfficialCategory().trim() : null,
       allowStudentPosts: this._createAllowStudentPosts(),
       allowComments: this._createAllowComments(),
       requiresApproval: this._createRequiresApproval(),
       isDiscoverable: this._createIsDiscoverable(),
+      joinRule: this._createJoinRule(),
     }).subscribe({
       next: group => {
         this._groups.update(groups => [group, ...groups]);
         this._activeTab.set(group.type);
-        this._createType.set('Social');
+        this._createType.set('Campus');
         this._createName.set('');
         this._createDescription.set('');
         this._createAudience.set('');
         this._createCourseCode.set('');
+        this._createOfficialCategory.set('');
+        this._createJoinRule.set('Open');
         this._createAllowStudentPosts.set(true);
         this._createAllowComments.set(true);
         this._createRequiresApproval.set(false);
