@@ -65,7 +65,7 @@ Darf Gruppe erstellen?
 
                         Offiziell    Kursgruppe    Campus-Gruppe
 Student                     Nein         Nein            Ja
-Lehrer                      Nein         Nein            Ja
+Lehrer                      Nein          Ja            Ja
 Management                   Ja           Ja             Ja
 Admin                        Ja           Ja             Ja
 ```
@@ -73,7 +73,7 @@ Admin                        Ja           Ja             Ja
 | Rolle | Offizielle Gruppe erstellen | Kursgruppe erstellen | Campus-Gruppe erstellen |
 |---|---:|---:|---:|
 | Student | Nein | Nein | Ja |
-| Lehrer | Nein | Nein | Ja |
+| Lehrer | Nein | Ja | Ja |
 | Management | Ja | Ja | Ja |
 | Admin | Ja | Ja | Ja |
 
