@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { I18n } from '../../core/i18n/i18n';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
@@ -15,6 +15,7 @@ import { Auth } from '../../core/services/auth';
 export class Navbar {
   protected readonly _auth = inject(Auth);
   protected readonly _i18n = inject(I18n);
+  protected readonly _isMenuOpen = signal(false);
 
   protected readonly _profileInitials = computed(() => {
     const displayName = this._auth.displayName().trim();
@@ -37,6 +38,14 @@ export class Navbar {
 
   protected setLanguage(language: string): void {
     this._i18n.setLanguage(language);
+  }
+
+  protected toggleMenu(): void {
+    this._isMenuOpen.update(isOpen => !isOpen);
+  }
+
+  protected closeMenu(): void {
+    this._isMenuOpen.set(false);
   }
 
   protected roleLabel(role: string): string {
