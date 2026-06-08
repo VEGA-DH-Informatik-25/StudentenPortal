@@ -11,6 +11,6 @@ public record CreateGroupRequest(
 	string Type = "Social",
 	string? CourseCode = null);
 public record UpdateGroupSettingsRequest(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
-public record UpdateGroupAssignmentsRequest(IReadOnlyList<Guid> UserIds);
-public record UpdateGroupMemberPermissionRequest(Guid UserId, string Permission);
-public record UpdateGroupMemberPermissionsRequest(IReadOnlyList<UpdateGroupMemberPermissionRequest> Permissions);
+public record AddGroupMembersRequest(IReadOnlyList<Guid> UserIds);
+public record AddGroupCourseRequest(string CourseCode);
+public record SetGroupMemberRoleRequest(string Role);

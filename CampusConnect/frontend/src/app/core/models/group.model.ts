@@ -1,5 +1,4 @@
 export type GroupType = 'Course' | 'Official' | 'Social';
-export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite' | 'Manage';
 export type GroupRole = 'None' | 'Member' | 'Moderator' | 'Owner';
 
 export interface GroupSettings {
@@ -21,14 +20,17 @@ export interface CampusGroup {
   iconLabel: string;
   accentColor: string;
   assignedUserCount: number;
-  canManage: boolean;
   isAssigned: boolean;
+  canManage: boolean;
+  canEditSettings: boolean;
+  canManageMembers: boolean;
+  canAppointModerator: boolean;
   canPost: boolean;
+  canInteract: boolean;
   canJoin: boolean;
-  memberPermission: GroupMemberPermission;
   groupRole: GroupRole;
   isSystemAdminAccess: boolean;
-  canAppointModerator: boolean;
+  isCourseManaged: boolean;
   settings: GroupSettings;
 }
 
@@ -46,31 +48,37 @@ export interface CreateGroupRequest {
 
 export interface UpdateGroupSettingsRequest extends GroupSettings {}
 
-export interface GroupAccount {
+export interface GroupMember {
   id: string;
   displayName: string;
   email: string;
   role: string;
   course: string;
-  isAssigned: boolean;
-  permission: GroupMemberPermission;
   groupRole: GroupRole;
+  isOwner: boolean;
+}
+
+export interface GroupCandidate {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  course: string;
 }
 
 export interface GroupSettingsDetails {
   group: CampusGroup;
-  accounts: GroupAccount[];
+  members: GroupMember[];
 }
 
-export interface UpdateGroupAssignmentsRequest {
+export interface AddGroupMembersRequest {
   userIds: string[];
 }
 
-export interface UpdateGroupMemberPermissionItem {
-  userId: string;
-  permission: GroupMemberPermission;
+export interface AddGroupCourseRequest {
+  courseCode: string;
 }
 
-export interface UpdateGroupMemberPermissionsRequest {
-  permissions: UpdateGroupMemberPermissionItem[];
+export interface SetGroupMemberRoleRequest {
+  role: GroupRole;
 }

@@ -16,5 +16,11 @@ public class CampusGroup
     public string AccentColor { get; set; } = "#e2001a";
     public GroupSettings Settings { get; set; } = new();
     public HashSet<Guid> AssignedUserIds { get; set; } = [];
-    public Dictionary<Guid, GroupMemberPermission> MemberPermissions { get; set; } = [];
+
+    /// <summary>
+    /// Group role of each assigned member. The owner (<see cref="OwnerUserId"/>) is always treated as
+    /// <see cref="GroupRole.Owner"/> and is not stored here. Assigned members without an explicit entry
+    /// default to <see cref="GroupRole.Member"/>.
+    /// </summary>
+    public Dictionary<Guid, GroupRole> MemberRoles { get; set; } = [];
 }

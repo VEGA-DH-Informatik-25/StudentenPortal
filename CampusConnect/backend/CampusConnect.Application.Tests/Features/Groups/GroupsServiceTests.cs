@@ -44,7 +44,7 @@ public class GroupsServiceTests
         var result = await service.UpdateSettingsAsync(group.Id, user.Id, new UpdateGroupSettingsCommand(false, false, true, true));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("You are not allowed to edit these group settings.", result.Error);
+        Assert.Equal(GroupsService.PermissionError, result.Error);
     }
 
     [Fact]
@@ -321,7 +321,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task UpdateAssignmentsAsync_AssignsExistingAccountsAndKeepsOwner()
+    public async Task AddMembersAsync_AddsExistingAccountsAsMembers()
     {
         var owner = new User
         {
@@ -345,57 +345,36 @@ public class GroupsServiceTests
         var groups = new FakeGroupRepository(group);
         var service = new GroupsService(groups, new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateAssignmentsAsync(group.Id, owner.Id, new UpdateGroupAssignmentsCommand([member.Id]));
+        var result = await service.AddMembersAsync(group.Id, owner.Id, new AddGroupMembersCommand([member.Id]));
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == owner.Id && account.IsAssigned);
-        Assert.Contains(result.Value.Accounts, account => account.Id == member.Id && account.IsAssigned);
+        Assert.Contains(result.Value!.Members, account => account.Id == owner.Id && account.IsOwner);
+        Assert.Contains(result.Value.Members, account => account.Id == member.Id && account.GroupRole == "Member");
         Assert.Equal(2, result.Value.Group.AssignedUserCount);
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_CanSetMemberReadOnly()
+    public async Task RemoveMemberAsync_RemovesMemberButNotOwner()
     {
-        var owner = new User
-        {
-            DisplayName = "Gina",
-            Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Computer Science",
-            Semester = 2,
-            Course = "TIF25A",
-            Role = UserRole.Student
-        };
-        var member = new User
-        {
-            DisplayName = "Hannes",
-            Email = "hannes@dhbw-loerrach.de",
-            StudyProgram = "Business Informatics",
-            Semester = 2,
-            Course = "WWI25A",
-            Role = UserRole.Student
-        };
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(member.Id);
-        var groups = new FakeGroupRepository(group);
-        var service = new GroupsService(groups, new FakeUserRepository(owner, member));
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            owner.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "ReadOnly")]));
+        var ownerRemoval = await service.RemoveMemberAsync(group.Id, owner.Id, owner.Id);
+        Assert.False(ownerRemoval.IsSuccess);
+        Assert.Equal("The group owner cannot be removed.", ownerRemoval.Error);
+
+        var result = await service.RemoveMemberAsync(group.Id, owner.Id, member.Id);
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.Permission == "ReadOnly");
-
-        var memberGroups = await service.GetGroupsForUserAsync(member.Id);
-        var memberGroup = Assert.Single(memberGroups, item => item.Id == group.Id);
-        Assert.True(memberGroup.IsAssigned);
-        Assert.False(memberGroup.CanPost);
-        Assert.Equal("ReadOnly", memberGroup.MemberPermission);
+        Assert.DoesNotContain(result.Value!.Members, account => account.Id == member.Id);
+        Assert.Equal(1, result.Value.Group.AssignedUserCount);
     }
 
     [Fact]
-    public async Task GetSettingsDetailsAsync_AllowsAssignedMemberWithManagePermission()
+    public async Task GetSettingsDetailsAsync_AllowsAssignedModerator()
     {
         var owner = new User
         {
@@ -417,7 +396,7 @@ public class GroupsServiceTests
         };
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(manager.Id);
-        group.MemberPermissions[manager.Id] = GroupMemberPermission.Manage;
+        group.MemberRoles[manager.Id] = GroupRole.Moderator;
 
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, manager));
 
@@ -427,7 +406,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task GetSettingsDetailsAsync_RejectsAssignedMemberWithReadWritePermission()
+    public async Task GetSettingsDetailsAsync_RejectsPlainMember()
     {
         var owner = new User
         {
@@ -449,7 +428,6 @@ public class GroupsServiceTests
         };
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
 
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
@@ -468,8 +446,7 @@ public class GroupsServiceTests
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(moderator.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
 
         var ownerGroup = Assert.Single(await service.GetGroupsForUserAsync(owner.Id), item => item.Id == group.Id);
@@ -506,7 +483,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_OwnerCanAppointModerator()
+    public async Task SetMemberRoleAsync_OwnerCanAppointModerator()
     {
         var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
         var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
@@ -514,17 +491,14 @@ public class GroupsServiceTests
         group.AssignedUserIds.Add(member.Id);
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            owner.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+        var result = await service.SetMemberRoleAsync(group.Id, owner.Id, member.Id, new SetGroupMemberRoleCommand("Moderator"));
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.GroupRole == "Moderator");
+        Assert.Contains(result.Value!.Members, account => account.Id == member.Id && account.GroupRole == "Moderator");
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_ModeratorCannotAppointAnotherModerator()
+    public async Task SetMemberRoleAsync_ModeratorCannotAppointAnotherModerator()
     {
         var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
         var moderator = StudentUser("Iris", "iris@dhbw-loerrach.de");
@@ -532,13 +506,10 @@ public class GroupsServiceTests
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(moderator.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            moderator.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+        var result = await service.SetMemberRoleAsync(group.Id, moderator.Id, member.Id, new SetGroupMemberRoleCommand("Moderator"));
 
         Assert.False(result.IsSuccess);
         Assert.Equal("Only the group owner can appoint moderators.", result.Error);
@@ -610,17 +581,33 @@ public class GroupsServiceTests
             return Task.CompletedTask;
         }
 
-        public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+        public Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
         {
             var group = _groups.First(group => group.Id == id);
-            group.AssignedUserIds = assignedUserIds.ToHashSet();
+            var assigned = group.AssignedUserIds.ToHashSet();
+            foreach (var userId in userIds)
+                assigned.Add(userId);
+            group.AssignedUserIds = assigned;
             return Task.CompletedTask;
         }
 
-        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+        public Task RemoveMemberAsync(Guid id, Guid userId)
         {
             var group = _groups.First(group => group.Id == id);
-            group.MemberPermissions = permissions.ToDictionary(item => item.Key, item => item.Value);
+            var assigned = group.AssignedUserIds.ToHashSet();
+            assigned.Remove(userId);
+            group.AssignedUserIds = assigned;
+            group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+        {
+            var group = _groups.First(group => group.Id == id);
+            if (role == GroupRole.Moderator)
+                group.MemberRoles[userId] = GroupRole.Moderator;
+            else
+                group.MemberRoles.Remove(userId);
             return Task.CompletedTask;
         }
 

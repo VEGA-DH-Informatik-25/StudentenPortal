@@ -1,5 +1,8 @@
 <div class="group-settings-page">
-  <button type="button" class="group-settings-page__back" (click)="backToGroups()">{{ 'groups.back' | translate }}</button>
+  <button type="button" class="group-settings-page__back" (click)="backToGroups()">
+    <span class="group-settings-page__back-arrow" aria-hidden="true">←</span>
+    {{ 'groups.back' | translate }}
+  </button>
 
   @if (_error()) {
     <p class="group-settings-page__state group-settings-page__state--error">{{ _error() }}</p>
@@ -24,146 +27,182 @@
     }
 
     <div class="group-settings-layout">
-      <section class="settings-block" [attr.aria-label]="'groups.settingsBehavior' | translate">
-        <header>
-          <h3>{{ 'groups.rules' | translate }}</h3>
-          <p>{{ groupOwnerLabel(group) }} · {{ groupAudience(group) }}</p>
-        </header>
+      @if (_canEditSettings()) {
+        <section class="settings-block" [attr.aria-label]="'groups.settingsBehavior' | translate">
+          <header>
+            <h3>{{ 'groups.rules' | translate }}</h3>
+            <p>{{ groupOwnerLabel(group) }} · {{ groupAudience(group) }}</p>
+          </header>
 
-        <div class="settings-block__controls">
-          <label>
-            <span>{{ 'groups.policy.studentPosts' | translate }}</span>
-            <input
-              type="checkbox"
-              [checked]="group.settings.allowStudentPosts"
-              [disabled]="!!_savingSetting()"
-              (change)="updateSetting('allowStudentPosts', $any($event.target).checked)">
-          </label>
-
-          <label>
-            <span>{{ 'groups.policy.comments' | translate }}</span>
-            <input
-              type="checkbox"
-              [checked]="group.settings.allowComments"
-              [disabled]="!!_savingSetting()"
-              (change)="updateSetting('allowComments', $any($event.target).checked)">
-          </label>
-
-          <label>
-            <span>{{ 'groups.policy.approval' | translate }}</span>
-            <input
-              type="checkbox"
-              [checked]="group.settings.requiresApproval"
-              [disabled]="!!_savingSetting()"
-              (change)="updateSetting('requiresApproval', $any($event.target).checked)">
-          </label>
-
-          <label>
-            <span>{{ 'groups.discoverable' | translate }}</span>
-            <input
-              type="checkbox"
-              [checked]="group.settings.isDiscoverable"
-              [disabled]="!!_savingSetting()"
-              (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
-          </label>
-        </div>
-
-        @if (_savingSetting()) {
-          <p class="settings-block__hint">{{ 'groups.settingSaving' | translate }}</p>
-        }
-      </section>
-
-      <section class="settings-block" [attr.aria-label]="'groups.accountAssignments' | translate">
-        <header>
-          <h3>{{ 'groups.accounts' | translate }}</h3>
-          <p>{{ 'groups.accountsVisible' | translate:{ assigned: _selectedAccountCount(), visible: _filteredAccounts().length } }}</p>
-        </header>
-
-        @if (_assignmentsLocked()) {
-          <p class="settings-block__hint">{{ 'groups.assignmentLocked' | translate }}</p>
-        }
-
-        <div class="account-toolbar" [attr.aria-label]="'groups.accountSearch' | translate">
-          <label>
-            <span>{{ 'common.search' | translate }}</span>
-            <input
-              type="search"
-              [placeholder]="'groups.accountSearchPlaceholder' | translate"
-              [value]="_accountSearch()"
-              (input)="updateAccountSearch($any($event.target).value)">
-          </label>
-
-          <label>
-            <span>{{ 'common.filter' | translate }}</span>
-            <select [value]="_accountFilter()" (change)="updateAccountFilter($any($event.target).value)">
-              <option value="All">{{ 'groups.accountFilter.all' | translate }}</option>
-              <option value="Assigned">{{ 'groups.accountFilter.assigned' | translate }}</option>
-              <option value="Unassigned">{{ 'groups.accountFilter.unassigned' | translate }}</option>
-              <option value="Student">{{ roleLabel('Student') }}</option>
-              <option value="Lecturer">{{ roleLabel('Lecturer') }}</option>
-              <option value="Management">{{ roleLabel('Management') }}</option>
-              <option value="Admin">{{ roleLabel('Admin') }}</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="account-table" [attr.aria-label]="'groups.accountAssignments' | translate">
-          <div class="account-table__head">
-            <span>{{ 'common.status' | translate }}</span>
-            <span>{{ 'common.name' | translate }}</span>
-            <span>{{ 'common.role' | translate }}</span>
-            <span>{{ 'common.course' | translate }}</span>
-            <span>{{ 'groups.rights' | translate }}</span>
-          </div>
-
-          @for (account of _filteredAccounts(); track account.id) {
-            <div class="account-row" [class.account-row--owner]="isOwner(account)">
+          <div class="settings-block__controls">
+            <label>
+              <span>{{ 'groups.policy.studentPosts' | translate }}</span>
               <input
                 type="checkbox"
-                [checked]="isAccountSelected(account)"
-                [disabled]="isOwner(account) || _savingAssignments() || _assignmentsLocked()"
-                [title]="'groups.accountAssignments' | translate"
-                [attr.aria-label]="'groups.accountAssignments' | translate"
-                (change)="toggleAccount(account, $any($event.target).checked)">
-              <span>
-                <strong>{{ account.displayName }}</strong>
-                <small>{{ account.email }}{{ isOwner(account) ? ' · ' + ('groups.ownerSuffix' | translate) : '' }}</small>
-                <small class="account-row__group-role">{{ 'groups.role.label' | translate }}: {{ groupRoleLabel(accountGroupRole(account)) }}</small>
+                [checked]="group.settings.allowStudentPosts"
+                [disabled]="!!_savingSetting()"
+                (change)="updateSetting('allowStudentPosts', $any($event.target).checked)">
+            </label>
+
+            <label>
+              <span>{{ 'groups.policy.comments' | translate }}</span>
+              <input
+                type="checkbox"
+                [checked]="group.settings.allowComments"
+                [disabled]="!!_savingSetting()"
+                (change)="updateSetting('allowComments', $any($event.target).checked)">
+            </label>
+
+            <label>
+              <span>{{ 'groups.policy.approval' | translate }}</span>
+              <input
+                type="checkbox"
+                [checked]="group.settings.requiresApproval"
+                [disabled]="!!_savingSetting()"
+                (change)="updateSetting('requiresApproval', $any($event.target).checked)">
+            </label>
+
+            <label>
+              <span>{{ 'groups.discoverable' | translate }}</span>
+              <input
+                type="checkbox"
+                [checked]="group.settings.isDiscoverable"
+                [disabled]="!!_savingSetting()"
+                (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
+            </label>
+          </div>
+
+          @if (_savingSetting()) {
+            <p class="settings-block__hint">{{ 'groups.settingSaving' | translate }}</p>
+          }
+        </section>
+      }
+
+      <section class="settings-block" [attr.aria-label]="'groups.members' | translate">
+        <header>
+          <h3>{{ 'groups.members' | translate }}</h3>
+          <p>{{ 'groups.membersCount' | translate:{ count: _members().length } }}</p>
+        </header>
+
+        @if (_isCourseManaged()) {
+          <p class="settings-block__hint">{{ 'groups.courseManagedNote' | translate }}</p>
+        }
+
+        <ul class="member-list">
+          @for (member of _members(); track member.id) {
+            <li class="member-row" [class.member-row--owner]="member.isOwner">
+              <span class="member-row__identity">
+                <strong>{{ member.displayName }}</strong>
+                <small>{{ member.email }}</small>
+                <small class="member-row__meta">{{ roleLabel(member.role) }}{{ member.course ? ' · ' + member.course : '' }}</small>
               </span>
-              <em>{{ roleLabel(account.role) }}</em>
-              <em>{{ account.course || ('common.noCourse' | translate) }}</em>
-              <label class="account-row__permission">
-                <span class="visually-hidden">{{ 'groups.rights' | translate }} {{ account.displayName }}</span>
-                <select
-                  [value]="permissionFor(account)"
-                  [disabled]="!isAccountSelected(account) || isOwner(account) || _savingPermissions()"
-                  (change)="updateMemberPermission(account, $any($event.target).value)">
-                  <option value="ReadOnly">{{ permissionLabel('ReadOnly') }}</option>
-                  <option value="ReadWrite">{{ permissionLabel('ReadWrite') }}</option>
-                  <option value="Manage" [disabled]="!canAppointModeratorFor(account)">{{ permissionLabel('Manage') }}</option>
+
+              @if (member.isOwner) {
+                <span class="member-row__role-badge member-row__role-badge--owner">{{ groupRoleLabel('Owner') }}</span>
+              } @else if (canEditMemberRole(member)) {
+                <label class="member-row__role">
+                  <span class="visually-hidden">{{ 'groups.role.label' | translate }} {{ member.displayName }}</span>
+                  <select
+                    [value]="member.groupRole"
+                    [disabled]="isMemberBusy(member)"
+                    (change)="changeMemberRole(member, $any($event.target).value)">
+                    <option value="Member">{{ groupRoleLabel('Member') }}</option>
+                    <option value="Moderator" [disabled]="!canAssignModeratorRole(member)">{{ groupRoleLabel('Moderator') }}</option>
+                  </select>
+                </label>
+              } @else {
+                <span class="member-row__role-badge">{{ groupRoleLabel(member.groupRole) }}</span>
+              }
+
+              @if (!member.isOwner && _canManageMembers() && !_isCourseManaged()) {
+                <button
+                  type="button"
+                  class="member-row__remove"
+                  [disabled]="isMemberBusy(member)"
+                  (click)="removeMember(member)"
+                  [attr.aria-label]="'groups.removeMember' | translate">
+                  ×
+                </button>
+              }
+            </li>
+          } @empty {
+            <li class="member-list__empty">{{ 'groups.membersEmpty' | translate }}</li>
+          }
+        </ul>
+      </section>
+
+      @if (_canManageMembers() && !_isCourseManaged()) {
+        <section class="settings-block" [attr.aria-label]="'groups.addMembers' | translate">
+          <header>
+            <h3>{{ 'groups.addMembers' | translate }}</h3>
+            <p>{{ 'groups.addMembersBody' | translate }}</p>
+          </header>
+
+          <div class="member-search">
+            <label>
+              <span>{{ 'groups.searchMembers' | translate }}</span>
+              <input
+                type="search"
+                [placeholder]="'groups.searchMembersPlaceholder' | translate"
+                [value]="_searchTerm()"
+                (input)="updateSearchTerm($any($event.target).value)"
+                (keyup.enter)="searchCandidates()">
+            </label>
+            <button type="button" class="member-search__button" [disabled]="_searching()" (click)="searchCandidates()">
+              @if (_searching()) {
+                {{ 'common.searching' | translate }}
+              } @else {
+                {{ 'common.search' | translate }}
+              }
+            </button>
+          </div>
+
+          <ul class="candidate-list">
+            @for (candidate of _candidates(); track candidate.id) {
+              <li class="candidate-row">
+                <span class="candidate-row__identity">
+                  <strong>{{ candidate.displayName }}</strong>
+                  <small>{{ candidate.email }}</small>
+                  <small class="candidate-row__meta">{{ roleLabel(candidate.role) }}{{ candidate.course ? ' · ' + candidate.course : '' }}</small>
+                </span>
+                <button type="button" class="candidate-row__add" [disabled]="isCandidateBusy(candidate)" (click)="addMember(candidate)">
+                  {{ 'groups.add' | translate }}
+                </button>
+              </li>
+            } @empty {
+              @if (_hasSearched()) {
+                <li class="candidate-list__empty">{{ 'groups.candidatesEmpty' | translate }}</li>
+              } @else {
+                <li class="candidate-list__empty">{{ 'groups.candidatesHint' | translate }}</li>
+              }
+            }
+          </ul>
+
+          <div class="course-add">
+            <h4>{{ 'groups.addCourse' | translate }}</h4>
+            <p>{{ 'groups.addCourseBody' | translate }}</p>
+            <div class="course-add__controls">
+              <label>
+                <span class="visually-hidden">{{ 'groups.selectCourse' | translate }}</span>
+                <select [value]="_selectedCourseCode()" (change)="updateSelectedCourse($any($event.target).value)">
+                  <option value="">{{ 'groups.selectCourse' | translate }}</option>
+                  @for (course of _courses(); track course.code) {
+                    <option [value]="course.code">{{ course.code }} · {{ course.studyProgram }}</option>
+                  }
                 </select>
               </label>
+              <button type="button" class="course-add__button" [disabled]="!_selectedCourseCode() || _addingCourse()" (click)="addCourse()">
+                @if (_addingCourse()) {
+                  {{ 'common.saving' | translate }}
+                } @else {
+                  {{ 'groups.addCourseButton' | translate }}
+                }
+              </button>
             </div>
-          } @empty {
-            <p class="account-table__empty">{{ 'groups.accountsEmpty' | translate }}</p>
-          }
-        </div>
-
-        <button type="button" class="settings-block__save" [disabled]="_assignmentsLocked() || !_hasAssignmentChanges() || _savingAssignments()" (click)="saveAssignments()">
-          @if (_savingAssignments()) {
-            {{ 'common.saving' | translate }}
-          } @else {
-            {{ 'groups.assignmentsSave' | translate }}
-          }
-        </button>
-        <button class="settings-block__save" type="button" [disabled]="!_hasPermissionChanges() || _hasAssignmentChanges() || _savingPermissions()" (click)="savePermissions()">
-          @if (_savingPermissions()) {
-            {{ 'groups.permissionsSaving' | translate }}
-          } @else {
-            {{ 'groups.permissionsSave' | translate }}
-          }
-        </button>
-      </section>
+          </div>
+        </section>
+      }
     </div>
   }
 </div>
+

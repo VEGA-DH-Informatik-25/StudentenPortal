@@ -235,7 +235,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   protected canReactToPost(post: FeedPost): boolean {
-    return post.group.canManage || (post.group.isAssigned && (post.group.memberPermission === 'ReadWrite' || post.group.memberPermission === 'Manage'));
+    return post.group.canInteract;
   }
 
   protected groupTypeLabel(type: GroupType): string {
@@ -266,11 +266,11 @@ export class GroupDetailPage implements OnInit {
       return group.canJoin ? this._i18n.translate('groups.permission.public') : this._i18n.translate('groups.permission.none');
     }
 
-    if (group.memberPermission === 'Manage' || group.canManage) {
+    if (group.canManage) {
       return this._i18n.translate('groups.permission.manage');
     }
 
-    return group.memberPermission === 'ReadWrite' ? this._i18n.translate('groups.permission.write') : this._i18n.translate('groups.permission.read');
+    return group.canPost ? this._i18n.translate('groups.permission.write') : this._i18n.translate('groups.permission.read');
   }
 
   protected commentPolicyLabel(group: CampusGroup): string {

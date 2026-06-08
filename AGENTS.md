@@ -184,7 +184,7 @@ Persisted entities currently include:
 - Grades
 - ExamEntries
 
-Structured JSON columns currently store feed comments, feed reactions, group settings, assigned user IDs, and group member permissions.
+Structured JSON columns currently store feed comments, feed reactions, group settings, assigned user IDs, and group member roles.
 
 Repository registrations currently use entity-backed EF repositories for users, courses, feed, groups, grades, and exams. Legacy in-memory repository classes still exist but are not the normal runtime registrations.
 
@@ -277,8 +277,11 @@ Implemented endpoints:
 | POST | `/api/groups` | User |
 | GET | `/api/groups/{id}/settings` | User with group-management permission |
 | PUT | `/api/groups/{id}/settings` | User with group-management permission |
-| PUT | `/api/groups/{id}/assignments` | User with group-management permission |
-| PUT | `/api/groups/{id}/member-permissions` | User with group-management permission |
+| GET | `/api/groups/{id}/candidates` | User with group-management permission |
+| POST | `/api/groups/{id}/members` | User with group-management permission |
+| POST | `/api/groups/{id}/members/course` | User with group-management permission |
+| DELETE | `/api/groups/{id}/members/{userId}` | User with group-management permission |
+| PUT | `/api/groups/{id}/members/{userId}/role` | User with group-management permission |
 | POST | `/api/groups/{id}/join` | User |
 
 When adding, removing, or changing endpoints, update `CampusConnect/docs/api.md` and add focused API tests.

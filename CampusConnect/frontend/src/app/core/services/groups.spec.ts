@@ -80,12 +80,46 @@ describe('Groups', () => {
     request.flush({});
   });
 
-  it('should update group assignments', () => {
-    service.updateAssignments('group-1', { userIds: ['user-1', 'user-2'] }).subscribe();
+  it('should search candidates for a group', () => {
+    service.searchCandidates('group-1', 'bob').subscribe();
 
-    const request = http.expectOne('/api/groups/group-1/assignments');
-    expect(request.request.method).toBe('PUT');
+    const request = http.expectOne('/api/groups/group-1/candidates?query=bob');
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
+
+  it('should add members to a group', () => {
+    service.addMembers('group-1', { userIds: ['user-1', 'user-2'] }).subscribe();
+
+    const request = http.expectOne('/api/groups/group-1/members');
+    expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ userIds: ['user-1', 'user-2'] });
+    request.flush({});
+  });
+
+  it('should add a whole course to a group', () => {
+    service.addCourse('group-1', { courseCode: 'TIF25A' }).subscribe();
+
+    const request = http.expectOne('/api/groups/group-1/members/course');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ courseCode: 'TIF25A' });
+    request.flush({});
+  });
+
+  it('should remove a member from a group', () => {
+    service.removeMember('group-1', 'user-2').subscribe();
+
+    const request = http.expectOne('/api/groups/group-1/members/user-2');
+    expect(request.request.method).toBe('DELETE');
+    request.flush({});
+  });
+
+  it('should set a member role', () => {
+    service.setMemberRole('group-1', 'user-2', { role: 'Moderator' }).subscribe();
+
+    const request = http.expectOne('/api/groups/group-1/members/user-2/role');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ role: 'Moderator' });
     request.flush({});
   });
 });

@@ -75,15 +75,19 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
-    public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+    public Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
     {
         lock (_syncRoot)
         {
             if (_store.TryGetValue(id, out var group))
             {
                 var updated = Clone(group);
-                updated.AssignedUserIds = assignedUserIds.ToHashSet();
-                SyncMemberPermissions(updated);
+                var assigned = updated.AssignedUserIds.ToHashSet();
+                foreach (var userId in userIds)
+                    assigned.Add(userId);
+
+                updated.AssignedUserIds = assigned;
+                SyncMemberRoles(updated);
                 _store[id] = updated;
             }
         }
@@ -91,17 +95,34 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
-    public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+    public Task RemoveMemberAsync(Guid id, Guid userId)
     {
         lock (_syncRoot)
         {
             if (_store.TryGetValue(id, out var group))
             {
                 var updated = Clone(group);
-                updated.MemberPermissions = updated.AssignedUserIds
-                    .ToDictionary(
-                        userId => userId,
-                        userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                var assigned = updated.AssignedUserIds.ToHashSet();
+                assigned.Remove(userId);
+                updated.AssignedUserIds = assigned;
+                updated.MemberRoles.Remove(userId);
+                SyncMemberRoles(updated);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group) && group.AssignedUserIds.Contains(userId))
+            {
+                var updated = Clone(group);
+                updated.MemberRoles[userId] = role;
+                SyncMemberRoles(updated);
                 _store[id] = updated;
             }
         }
@@ -122,7 +143,7 @@ public class InMemoryGroupRepository : IGroupRepository
             {
                 var updated = Clone(group);
                 updated.AssignedUserIds = assignedUserIds.ToHashSet();
-                SyncMemberPermissions(updated);
+                SyncMemberRoles(updated);
                 _store[updated.Id] = updated;
             }
         }
@@ -157,15 +178,19 @@ public class InMemoryGroupRepository : IGroupRepository
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
         AssignedUserIds = group.AssignedUserIds.ToHashSet(),
-        MemberPermissions = group.MemberPermissions.ToDictionary(item => item.Key, item => item.Value)
+        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value)
     };
 
-    private static void SyncMemberPermissions(CampusGroup group)
+    private static void SyncMemberRoles(CampusGroup group)
     {
-        group.MemberPermissions = group.AssignedUserIds
+        var ownerId = group.OwnerUserId;
+        group.MemberRoles = group.AssignedUserIds
+            .Where(userId => userId != ownerId)
             .ToDictionary(
                 userId => userId,
-                userId => group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                userId => group.MemberRoles.TryGetValue(userId, out var role) && role is GroupRole.Moderator or GroupRole.Member
+                    ? role
+                    : GroupRole.Member);
     }
 
     private static GroupSettings Clone(GroupSettings settings) => new()

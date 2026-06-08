@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 
 import { GroupSettingsPage } from './group-settings-page';
 import { Groups } from '../../../core/services/groups';
+import { Courses } from '../../../core/services/courses';
 import { GroupSettingsDetails } from '../../../core/models/group.model';
 
 describe('GroupSettingsPage', () => {
@@ -22,20 +23,23 @@ describe('GroupSettingsPage', () => {
       ownerLabel: 'Alice',
       iconLabel: 'LW',
       accentColor: '#2563eb',
-      assignedUserCount: 1,
-      canManage: true,
+      assignedUserCount: 2,
       isAssigned: true,
+      canManage: true,
+      canEditSettings: true,
+      canManageMembers: true,
+      canAppointModerator: true,
       canPost: true,
+      canInteract: true,
       canJoin: false,
-      memberPermission: 'ReadWrite',
       groupRole: 'Owner',
       isSystemAdminAccess: false,
-      canAppointModerator: true,
+      isCourseManaged: false,
       settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
     },
-    accounts: [
-      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true, permission: 'ReadWrite', groupRole: 'Member' },
-      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false, permission: 'ReadWrite', groupRole: 'None' },
+    members: [
+      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', groupRole: 'Owner', isOwner: true },
+      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', groupRole: 'Member', isOwner: false },
     ],
   };
 
@@ -53,8 +57,17 @@ describe('GroupSettingsPage', () => {
           useValue: {
             getSettings: () => of(details),
             updateSettings: () => of(details.group),
-            updateAssignments: () => of(details),
-            updateMemberPermissions: () => of(details),
+            searchCandidates: () => of([]),
+            addMembers: () => of(details),
+            addCourse: () => of(details),
+            removeMember: () => of(details),
+            setMemberRole: () => of(details),
+          },
+        },
+        {
+          provide: Courses,
+          useValue: {
+            getCourses: () => of([]),
           },
         },
       ],
@@ -69,30 +82,21 @@ describe('GroupSettingsPage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('filters assignment rows by search text', () => {
-    (component as any)._accountSearch.set('bob');
+  it('lists current members with their group role', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Alice');
     expect(text).toContain('Bob');
-    expect(text).not.toContain('alice@dhbw-loerrach.de');
   });
 
-  it('derives group roles from ownership and permissions', async () => {
+  it('allows role editing for non-owner members only', () => {
     fixture.detectChanges();
-    await fixture.whenStable();
 
-    const owner = details.accounts[0];
-    const other = details.accounts[1];
+    const owner = details.members[0];
+    const member = details.members[1];
 
-    expect((component as any).accountGroupRole(owner)).toBe('Owner');
-    expect((component as any).accountGroupRole(other)).toBe('None');
-
-    (component as any)._selectedAccountIds.set(['user-2']);
-    (component as any)._selectedPermissions.set({ 'user-2': 'Manage' });
-    expect((component as any).accountGroupRole(other)).toBe('Moderator');
-
-    (component as any)._selectedPermissions.set({ 'user-2': 'ReadWrite' });
-    expect((component as any).accountGroupRole(other)).toBe('Member');
+    expect((component as any).canEditMemberRole(owner)).toBe(false);
+    expect((component as any).canEditMemberRole(member)).toBe(true);
   });
 });

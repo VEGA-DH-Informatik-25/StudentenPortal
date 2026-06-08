@@ -64,11 +64,8 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
 
         if (!GroupDtoMapper.CanPost(user, group))
         {
-            if (GroupDtoMapper.IsAssigned(user, group) && !GroupDtoMapper.CanWrite(user, group))
-                return Result<FeedPostDto>.Failure("You only have read access in this group.");
-
-            if (GroupDtoMapper.IsAssigned(user, group) && user.Role == UserRole.Student && !group.Settings.AllowStudentPosts)
-                return Result<FeedPostDto>.Failure("Students are not allowed to publish posts in this group.");
+            if (GroupDtoMapper.IsAssigned(user, group) && !group.Settings.AllowStudentPosts)
+                return Result<FeedPostDto>.Failure("Members are not allowed to publish posts in this group.");
 
             return Result<FeedPostDto>.Failure("You can only post in groups assigned to you.");
         }
@@ -268,7 +265,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
         }
     }
 
-    private static bool CanParticipate(User user, CampusGroup group) => GroupDtoMapper.CanWrite(user, group);
+    private static bool CanParticipate(User user, CampusGroup group) => GroupDtoMapper.CanInteract(user, group);
 
     private static bool IsSupportedEmoji(string emoji)
     {

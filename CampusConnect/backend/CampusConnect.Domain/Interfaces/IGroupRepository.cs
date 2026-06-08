@@ -10,7 +10,8 @@ public interface IGroupRepository
     Task<CampusGroup> EnsureCourseGroupAsync(string courseCode, string? studyProgram = null);
     Task AddAsync(CampusGroup group);
     Task UpdateSettingsAsync(Guid id, GroupSettings settings);
-    Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds);
-    Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions);
+    Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds);
+    Task RemoveMemberAsync(Guid id, Guid userId);
+    Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role);
     Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds);
 }

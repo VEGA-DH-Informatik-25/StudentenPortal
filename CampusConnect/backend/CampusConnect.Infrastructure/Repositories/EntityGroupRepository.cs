@@ -70,27 +70,50 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+    public async Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
     {
         var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
         if (group is null)
             return;
 
-        group.AssignedUserIds = assignedUserIds.ToHashSet();
-        SyncMemberPermissions(group);
+        var assigned = group.AssignedUserIds.ToHashSet();
+        foreach (var userId in userIds)
+            assigned.Add(userId);
+
+        group.AssignedUserIds = assigned;
+        SyncMemberRoles(group);
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+    public async Task RemoveMemberAsync(Guid id, Guid userId)
     {
         var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
         if (group is null)
             return;
 
-        group.MemberPermissions = group.AssignedUserIds
-            .ToDictionary(
-                userId => userId,
-                userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+        var assigned = group.AssignedUserIds.ToHashSet();
+        assigned.Remove(userId);
+        group.AssignedUserIds = assigned;
+
+        var roles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value);
+        roles.Remove(userId);
+        group.MemberRoles = roles;
+
+        SyncMemberRoles(group);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null || !group.AssignedUserIds.Contains(userId))
+            return;
+
+        var roles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value);
+        roles[userId] = role;
+        group.MemberRoles = roles;
+
+        SyncMemberRoles(group);
         await dbContext.SaveChangesAsync();
     }
 
@@ -104,7 +127,7 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
             return;
 
         group.AssignedUserIds = assignedUserIds.ToHashSet();
-        SyncMemberPermissions(group);
+        SyncMemberRoles(group);
         await dbContext.SaveChangesAsync();
     }
 
@@ -134,8 +157,8 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         target.AccentColor = source.AccentColor;
         target.Settings = Clone(source.Settings);
         target.AssignedUserIds = source.AssignedUserIds.ToHashSet();
-        target.MemberPermissions = source.MemberPermissions.ToDictionary(item => item.Key, item => item.Value);
-        SyncMemberPermissions(target);
+        target.MemberRoles = source.MemberRoles.ToDictionary(item => item.Key, item => item.Value);
+        SyncMemberRoles(target);
     }
 
     private static CampusGroup Clone(CampusGroup group) => new()
@@ -152,15 +175,19 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
         AssignedUserIds = group.AssignedUserIds.ToHashSet(),
-        MemberPermissions = group.MemberPermissions.ToDictionary(item => item.Key, item => item.Value)
+        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value)
     };
 
-    private static void SyncMemberPermissions(CampusGroup group)
+    private static void SyncMemberRoles(CampusGroup group)
     {
-        group.MemberPermissions = group.AssignedUserIds
+        var ownerId = group.OwnerUserId;
+        group.MemberRoles = group.AssignedUserIds
+            .Where(userId => userId != ownerId)
             .ToDictionary(
                 userId => userId,
-                userId => group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                userId => group.MemberRoles.TryGetValue(userId, out var role) && role is GroupRole.Moderator or GroupRole.Member
+                    ? role
+                    : GroupRole.Member);
     }
 
     private static GroupSettings Clone(GroupSettings settings) => new()

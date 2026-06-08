@@ -61,7 +61,7 @@ public class FeedServiceTests
         var result = await service.CreatePostAsync(new CreatePostCommand(user.Id, group.Id, "Please publish this"));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("Students are not allowed to publish posts in this group.", result.Error);
+        Assert.Equal("Members are not allowed to publish posts in this group.", result.Error);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class FeedServiceTests
     }
 
     [Fact]
-    public async Task CreatePostAsync_RejectsReadOnlyGroupMembers()
+    public async Task CreatePostAsync_RejectsMembersWhenStudentPostsDisabled()
     {
         var owner = new User
         {
@@ -117,13 +117,13 @@ public class FeedServiceTests
         };
         var group = SocialGroup(owner.Id, isDiscoverable: true);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
+        group.Settings = new GroupSettings { AllowStudentPosts = false, AllowComments = true, RequiresApproval = false, IsDiscoverable = true };
         var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
-        var result = await service.CreatePostAsync(new CreatePostCommand(member.Id, group.Id, "Read only?"));
+        var result = await service.CreatePostAsync(new CreatePostCommand(member.Id, group.Id, "Can I post?"));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("You only have read access in this group.", result.Error);
+        Assert.Equal("Members are not allowed to publish posts in this group.", result.Error);
     }
 
     [Fact]
@@ -211,7 +211,7 @@ public class FeedServiceTests
     }
 
     [Fact]
-    public async Task AddCommentAsync_RejectsReadOnlyGroupMembers()
+    public async Task AddCommentAsync_RejectsNonMembers()
     {
         var owner = new User
         {
@@ -232,8 +232,6 @@ public class FeedServiceTests
             Role = UserRole.Student
         };
         var group = SocialGroup(owner.Id, isDiscoverable: true);
-        group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
         var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Room available" };
         var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
@@ -270,7 +268,7 @@ public class FeedServiceTests
     }
 
     [Fact]
-    public async Task ToggleReactionAsync_RejectsReadOnlyGroupMembers()
+    public async Task ToggleReactionAsync_RejectsNonMembers()
     {
         var owner = new User
         {
@@ -291,8 +289,6 @@ public class FeedServiceTests
             Role = UserRole.Student
         };
         var group = SocialGroup(owner.Id, isDiscoverable: true);
-        group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadOnly;
         var post = new FeedPost { AuthorId = owner.Id, AuthorName = owner.DisplayName, GroupId = group.Id, Content = "Room available" };
         var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
@@ -458,17 +454,33 @@ public class FeedServiceTests
             return Task.CompletedTask;
         }
 
-        public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+        public Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
         {
             var group = _groups.First(group => group.Id == id);
-            group.AssignedUserIds = assignedUserIds.ToHashSet();
+            var assigned = group.AssignedUserIds.ToHashSet();
+            foreach (var userId in userIds)
+                assigned.Add(userId);
+            group.AssignedUserIds = assigned;
             return Task.CompletedTask;
         }
 
-        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+        public Task RemoveMemberAsync(Guid id, Guid userId)
         {
             var group = _groups.First(group => group.Id == id);
-            group.MemberPermissions = permissions.ToDictionary(item => item.Key, item => item.Value);
+            var assigned = group.AssignedUserIds.ToHashSet();
+            assigned.Remove(userId);
+            group.AssignedUserIds = assigned;
+            group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+        {
+            var group = _groups.First(group => group.Id == id);
+            if (role == GroupRole.Moderator)
+                group.MemberRoles[userId] = GroupRole.Moderator;
+            else
+                group.MemberRoles.Remove(userId);
             return Task.CompletedTask;
         }
 

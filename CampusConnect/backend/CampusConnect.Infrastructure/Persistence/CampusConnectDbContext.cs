@@ -71,11 +71,12 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
                 value => Serialize(value),
                 value => Deserialize(value, () => new HashSet<Guid>()))
             .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
-        group.Property(entity => entity.MemberPermissions)
+        group.Property(entity => entity.MemberRoles)
+            .HasColumnName("MemberPermissions")
             .HasConversion(
                 value => Serialize(value),
-                value => Deserialize(value, () => new Dictionary<Guid, GroupMemberPermission>()))
-            .Metadata.SetValueComparer(JsonComparer<Dictionary<Guid, GroupMemberPermission>>());
+                value => Deserialize(value, () => new Dictionary<Guid, GroupRole>()))
+            .Metadata.SetValueComparer(JsonComparer<Dictionary<Guid, GroupRole>>());
 
         var feedPost = modelBuilder.Entity<FeedPost>();
         feedPost.ToTable("FeedPosts");

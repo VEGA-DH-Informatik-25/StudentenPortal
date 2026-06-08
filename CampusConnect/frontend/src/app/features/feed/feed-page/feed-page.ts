@@ -221,7 +221,7 @@ export class FeedPage implements OnInit {
   }
 
   protected canReactToPost(post: FeedPost): boolean {
-    return post.group.canManage || (post.group.isAssigned && (post.group.memberPermission === 'ReadWrite' || post.group.memberPermission === 'Manage'));
+    return post.group.canInteract;
   }
 
   protected groupTypeLabel(type: GroupType): string {

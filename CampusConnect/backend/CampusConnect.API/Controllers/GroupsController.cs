@@ -78,31 +78,70 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpPut("{id:guid}/assignments")]
-    public async Task<IActionResult> UpdateAssignments(Guid id, [FromBody] UpdateGroupAssignmentsRequest request)
+    [HttpGet("{id:guid}/candidates")]
+    public async Task<IActionResult> SearchCandidates(Guid id, [FromQuery] string? query)
     {
         var userId = GetCurrentUserId();
         if (userId is null)
             return Unauthorized(new { error = "User could not be resolved from the token." });
 
-        var result = await groupsService.UpdateAssignmentsAsync(id, userId.Value, new UpdateGroupAssignmentsCommand(request.UserIds));
+        var result = await groupsService.SearchCandidatesAsync(id, userId.Value, query);
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
         return Ok(result.Value);
     }
 
-    [HttpPut("{id:guid}/member-permissions")]
-    public async Task<IActionResult> UpdateMemberPermissions(Guid id, [FromBody] UpdateGroupMemberPermissionsRequest request)
+    [HttpPost("{id:guid}/members")]
+    public async Task<IActionResult> AddMembers(Guid id, [FromBody] AddGroupMembersRequest request)
     {
         var userId = GetCurrentUserId();
         if (userId is null)
             return Unauthorized(new { error = "User could not be resolved from the token." });
 
-        var permissions = request.Permissions
-            .Select(item => new UpdateGroupMemberPermissionCommand(item.UserId, item.Permission))
-            .ToList();
-        var result = await groupsService.UpdateMemberPermissionsAsync(id, userId.Value, new UpdateGroupMemberPermissionsCommand(permissions));
+        var result = await groupsService.AddMembersAsync(id, userId.Value, new AddGroupMembersCommand(request.UserIds));
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("{id:guid}/members/course")]
+    public async Task<IActionResult> AddCourseMembers(Guid id, [FromBody] AddGroupCourseRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.AddCourseMembersAsync(id, userId.Value, new AddGroupCourseCommand(request.CourseCode));
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{id:guid}/members/{userId:guid}")]
+    public async Task<IActionResult> RemoveMember(Guid id, Guid userId)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.RemoveMemberAsync(id, currentUserId.Value, userId);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpPut("{id:guid}/members/{userId:guid}/role")]
+    public async Task<IActionResult> SetMemberRole(Guid id, Guid userId, [FromBody] SetGroupMemberRoleRequest request)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.SetMemberRoleAsync(id, currentUserId.Value, userId, new SetGroupMemberRoleCommand(request.Role));
         if (!result.IsSuccess)
             return ToFailureResult(result.Error);
 
