@@ -2,7 +2,7 @@
 
 ## Systemüberblick
 
-CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine SQLite-Datenbank als aktuelle Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
+CampusConnect besteht aus einer Angular-Single-Page-Application und einem ASP.NET-Core-Backend in Clean-Architecture-Aufteilung. Das Backend trennt Domain, Application, Infrastructure und API. SQLite ist die aktuelle Persistenz. Die API ist HTTP-Grenze und Composition-Root und referenziert deshalb Application sowie Infrastructure.
 
 ## Frontend-Architektur
 
@@ -14,7 +14,20 @@ Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenstän
 - **Functional Guards**: Der Auth-Guard ist als `CanActivateFn`-Funktion implementiert (kein Interface-basiertes Klassen-Guard mehr).
 - **Functional Interceptors**: `authTokenInterceptor` und `errorHandlerInterceptor` sind als `HttpInterceptorFn`-Funktionen implementiert und werden über `provideHttpClient(withInterceptors([...]))` registriert.
 - **`withComponentInputBinding()`**: Ermöglicht das direkte Binden von Route-Parametern an Component-Inputs.
-- **`shared/ui`** enthält wiederverwendbare, rein präsentationale Komponenten (`LoadingSpinner`, `ErrorMessage`).
+- **`shared/ui`** enthält wiederverwendbare, rein präsentationale Komponenten, beispielsweise `LoadingSpinner`, `ErrorMessage` und `ProfileHoverCard`.
+
+### Internationalisierung
+
+Das Frontend besitzt eine eigene, signalbasierte Englisch-/Deutsch-Übersetzungsschicht unter `src/app/core/i18n/`:
+
+- `translations.ts` definiert die zulässigen Übersetzungsschlüssel und beide Sprachwerte.
+- Der standalone `TranslatePipe` wird für übersetzte Template-Texte importiert.
+- Der `I18n`-Service übersetzt Texte in TypeScript und liefert mit `locale()` die Locale für `Intl`-Formatierung.
+- Die Sprachauswahl wird als nicht sensible UI-Präferenz unter `campusconnect.language` in `localStorage` gespeichert.
+- Die Startsprache folgt einer gespeicherten Auswahl oder der Browsersprache.
+- `app.config.ts` registriert deutsche und englische Locale-Daten, verwendet für Angulars statisches `LOCALE_ID` aber `en-US`. Dynamisch lokalisierte Datums- und Zahlenformate verwenden deshalb `I18n.locale()`.
+
+Neue nutzerseitige Texte werden nicht direkt in Templates oder Komponenten geschrieben, sondern als englischer und deutscher Schlüssel ergänzt.
 
 ## Backend-Architektur
 
@@ -24,10 +37,10 @@ Das Backend folgt der **Clean Architecture** mit vier Schichten:
 |---|---|---|
 | Domain | `CampusConnect.Domain` | *(keine)* |
 | Application | `CampusConnect.Application` | Domain |
-| Infrastructure | `CampusConnect.Infrastructure` | Application |
-| API | `CampusConnect.API` | Application |
+| Infrastructure | `CampusConnect.Infrastructure` | Application *(Domain transitiv)* |
+| API | `CampusConnect.API` | Application und Infrastructure |
 
-Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und API implementieren Interfaces, die in der Application-Schicht definiert sind.
+Domain besitzt keine Projektabhängigkeit. Application referenziert Domain. Infrastructure implementiert Persistenz und externe Dienste hinter den in den inneren Schichten definierten Schnittstellen. Die API bindet Application und Infrastructure über Dependency Injection ein; Controller bleiben von Repositories und DbContext getrennt.
 
 ## Persistenz und Repository-Strategie
 

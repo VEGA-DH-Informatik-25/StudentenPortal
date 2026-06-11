@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the repo-level operating guide for AI agents working on CampusConnect. It reflects the current workspace state as of 2026-05-07. Prefer live code and configuration over older prose docs when they disagree, and update this file when project-wide facts change.
+This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-11. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
 
 ## Project Identity
 
@@ -19,7 +19,7 @@ Core product areas:
 - Contact book for campus contacts and profile details.
 - Admin user and course management.
 
-Keep user-facing app text in German unless the surrounding feature already uses English.
+The interface supports German and English. Add both translations for new user-facing text; use German terminology as the product-language reference when choosing labels.
 
 ## Repository Shape
 
@@ -30,9 +30,10 @@ The Git repository root is this workspace root. The main application lives in `C
   README.md
   projektbeschreibung.md
   AGENTS.md
+  .github/
+    copilot-instructions.md
   CampusConnect/
     .github/
-      copilot-instructions.md
       workflows/ci.yml
     CONTRIBUTING.md
     README.md
@@ -73,7 +74,7 @@ Important source documents:
 - `CampusConnect/docs/api.md`: current API surface and domain behavior.
 - `CampusConnect/docs/testing.md`: current testing conventions.
 - `CampusConnect/CONTRIBUTING.md`: branch, commit, PR, and test conventions.
-- `CampusConnect/.github/copilot-instructions.md`: project-specific Copilot rules.
+- `.github/copilot-instructions.md`: short GitHub Copilot entry point that defers to this file.
 
 ## Current Stack
 
@@ -84,6 +85,7 @@ Frontend:
 - Signals for component-local state where practical.
 - Zoneless change detection through `provideZonelessChangeDetection()`.
 - Functional guards and functional HTTP interceptors.
+- A custom English/German translation layer under `core/i18n/`.
 - SCSS component styles.
 - npm 11.6.2 package manager metadata.
 - TypeScript 5.9, RxJS 7.8, Zone.js 0.15.
@@ -117,7 +119,7 @@ Respect dependency direction:
 
 - `CampusConnect.Domain` has no project dependencies.
 - `CampusConnect.Application` depends on Domain.
-- `CampusConnect.Infrastructure` depends on Application and Domain.
+- `CampusConnect.Infrastructure` depends on Application and reaches Domain transitively through Application.
 - `CampusConnect.API` is the HTTP and composition boundary and references Application and Infrastructure.
 
 Projects:
@@ -328,9 +330,18 @@ Frontend implementation rules:
 - Match the existing application shell and operational UI style. Avoid marketing-style landing pages inside the app.
 - Use accessible labels, focus states, semantic HTML, and responsive layouts.
 
+Frontend internationalization rules:
+
+- User-facing interface text uses translation keys from `core/i18n/translations.ts`; do not hard-code new labels, messages, button text, or accessibility text in templates or components.
+- Import the standalone `TranslatePipe` in components that render translated template text and use `{{ 'translation.key' | translate }}`.
+- Use the injected `I18n` service for translated text or locale-sensitive formatting in TypeScript.
+- Add both English and German values for every new `TranslationKey`.
+- The selected language is a non-sensitive UI preference stored under `campusconnect.language` in `localStorage`. This does not relax the prohibition on storing authentication tokens in browser storage.
+- The initial language follows the saved preference or browser language. `LOCALE_ID` remains `en-US`; runtime date and number formatting that follows the selected language uses `I18n.locale()`.
+
 Frontend configuration facts:
 
-- `app.config.ts` registers `de-DE`, zoneless change detection, router input binding, and auth/error interceptors.
+- `app.config.ts` registers German and English locale data, sets the static Angular `LOCALE_ID` to `en-US`, and enables zoneless change detection, router input binding, and auth/error interceptors.
 - `proxy.conf.json` proxies `/api` to `http://localhost:5135`.
 - Start the API before using API-backed frontend pages locally.
 

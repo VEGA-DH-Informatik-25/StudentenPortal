@@ -2,6 +2,8 @@
 
 Stand: 2026-05-07
 
+> **Status: Markt- und Strategieanalyse.** Dieses Dokument beschreibt Wettbewerbsumfeld und Produktpositionierung, nicht den aktuellen technischen Implementierungsstand.
+
 ## Kurzfazit
 
 CampusConnect liegt in einem Markt zwischen Campus-App, Hochschul-Portal, Lernplattform und studentischer Community. Die nächsten direkten Wettbewerber sind UniNow und Studo für die All-in-one-Campus-App, Studydrive und StudySmarter für Lernmaterial und Community, sowie Stud.IP, Moodle und ILIAS für das formale Lernmanagement.

@@ -3,6 +3,12 @@
 Review date: 2026-05-04  
 Scope: CampusConnect backend, frontend, configuration, docs, and validation commands.
 
+> **Historical review snapshot:** This file records findings as observed on 2026-05-04. It is not the current source of truth for architecture, test counts, or implementation status, and an item must not be treated as still open without rechecking the current code. Current technical behavior is documented in `architecture.md`, `api.md`, and `testing.md`.
+
+## Current Verification Note
+
+On 2026-06-11, the full backend test run passed with 102 tests, the frontend passed 88 tests across 31 test files, and the production frontend build passed. This newer validation supersedes the counts and locked-file result in the historical validation section below. The individual security and product findings have not all been re-audited; their original wording is retained as review evidence rather than an active backlog.
+
 This report lists verified weaknesses, bugs, and risk areas found during a code review. Severity reflects likely impact if the project were exposed beyond a trusted local development/demo setting.
 
 ## Critical
@@ -132,7 +138,7 @@ This report lists verified weaknesses, bugs, and risk areas found during a code 
 - Risk: Developers may see failing validation even though tests pass, which slows reviews and CI-like local checks.
 - Recommendation: Document the stop-server step next to the test command or use a workflow that avoids rebuilding the running API output directory.
 
-## Validation Performed
+## Historical Validation Performed On 2026-05-04
 
 - `dotnet test .\CampusConnect.slnx` from `CampusConnect/backend`: 47 tests passed, but command exited failed because a running `CampusConnect.API` process locked copied DLLs.
 - `npm run build` from `CampusConnect/frontend`: passed.
