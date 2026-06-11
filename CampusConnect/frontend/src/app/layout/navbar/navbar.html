@@ -24,7 +24,7 @@
         }
       </select>
     </label>
-    <details class="navbar__profile-menu">
+    <details #profileMenu class="navbar__profile-menu">
       <summary class="navbar__profile-trigger" [attr.aria-label]="'nav.profileMenu' | translate">
         <span class="navbar__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
         <span class="navbar__identity">

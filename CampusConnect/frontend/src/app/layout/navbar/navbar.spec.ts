@@ -49,4 +49,13 @@ describe('Navbar', () => {
     expect(text).toContain('TIF25A · Semester 3');
     expect(text).toContain('Edit profile');
   });
+  it('should close the profile menu when clicking outside it', () => {
+    fixture.detectChanges();
+    const menu = fixture.nativeElement.querySelector('.navbar__profile-menu') as HTMLDetailsElement;
+
+    menu.open = true;
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(menu.open).toBe(false);
+  });
 });
