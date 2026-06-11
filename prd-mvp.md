@@ -42,12 +42,13 @@
 | Kontaktbuch                             | • Nutzer kann Personen suchen (Name/E‑Mail/Kurs/Studiengang/Ort) und Kontaktdaten einsehen<br>• Sichtbar: Name, E‑Mail, Kurs, Studiengang, Semester, Telefon, Standort (keine Profilnotiz)                                                             |
 | Admin‑Bereich                           | • Admin kann Nutzer verwalten (Rolle/Kurs ändern, löschen, Passwort zurücksetzen) und Kurse anlegen/listen<br>• Admin‑Zugriff ist geschützt (nur `Admin`)                                                                                               |
 | Onboarding‑Feed/Guided Start            | • Spezifikation siehe onboarding.md             |
+| Anpassung auf Laptop und Ipad           | - Website soll auf Laptop als auch Ipad zugeschnitten werden|
 
 <!-- Weitere Features bei Bedarf … -->
 
 ## Could Haves
 
-- Anpassung auf Laptop und Ipad,  eventuell noch Handy wenn noch Zeit
+- Anpassung fürs Handy wenn noch Zeit
 - Darkmode
 - Prüfungskalender in den eigene Prüfungen eingetragen werden können
 
