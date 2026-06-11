@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { CampusGroup, GroupJoinRule, GroupType } from '../../../core/models/group.model';
+import { Auth } from '../../../core/services/auth';
 import { Groups } from '../../../core/services/groups';
 
 type GroupTab = 'All' | 'Explore' | GroupType;
@@ -25,6 +26,7 @@ interface GroupTabItem {
 })
 export class GroupsPage implements OnInit {
   private readonly _groupsService = inject(Groups);
+  private readonly _auth = inject(Auth);
   protected readonly _i18n = inject(I18n);
   private readonly _router = inject(Router);
 
@@ -52,8 +54,8 @@ export class GroupsPage implements OnInit {
   protected readonly _officialGroups = computed(() => this._groups().filter(group => group.type === 'Official'));
   protected readonly _courseGroups = computed(() => this._groups().filter(group => group.type === 'Course'));
   protected readonly _socialGroups = computed(() => this._groups().filter(group => group.type === 'Campus'));
-  protected readonly _directoryGroups = computed(() => this._groups().filter(group => !group.canJoin));
-  protected readonly _exploreGroups = computed(() => this._groups().filter(group => group.canJoin));
+  protected readonly _directoryGroups = computed(() => this._groups().filter(group => group.isAssigned || group.canManage));
+  protected readonly _exploreGroups = computed(() => this._groups().filter(group => !group.isAssigned && !group.canManage));
   protected readonly _directoryFilteredGroups = computed(() => this._directoryGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
   protected readonly _exploreFilteredGroups = computed(() => this._exploreGroups().filter(group => this._matchesSearch(group) && this._matchesPolicy(group)));
   protected readonly _tabs = computed<GroupTabItem[]>(() => [
@@ -77,6 +79,7 @@ export class GroupsPage implements OnInit {
     this._createName().trim().length > 0 &&
     this._createDescription().trim().length > 0 &&
     this._createAudience().trim().length > 0 &&
+    this.canCreateGroupType(this._createType()) &&
     (this._createType() !== 'Course' || this._createCourseCode().trim().length > 0) &&
     (this._createType() !== 'Official' || this._createOfficialCategory().trim().length > 0) &&
     !this._isCreating()
@@ -102,6 +105,10 @@ export class GroupsPage implements OnInit {
   }
 
   protected openCreateMenu(): void {
+    if (!this.canCreateGroupType(this._createType())) {
+      this._createType.set('Campus');
+    }
+
     this._isCreateMenuOpen.set(true);
   }
 
@@ -122,7 +129,22 @@ export class GroupsPage implements OnInit {
   }
 
   protected updateCreateType(value: GroupType): void {
-    this._createType.set(value);
+    if (this.canCreateGroupType(value)) {
+      this._createType.set(value);
+    }
+  }
+
+  protected canCreateGroupType(type: GroupType): boolean {
+    const role = this._auth.userRole();
+
+    switch (type) {
+      case 'Campus':
+        return true;
+      case 'Course':
+        return role === 'Lecturer' || role === 'Management' || role === 'Admin';
+      case 'Official':
+        return role === 'Management' || role === 'Admin';
+    }
   }
 
   protected updateCreateJoinRule(value: GroupJoinRule): void {

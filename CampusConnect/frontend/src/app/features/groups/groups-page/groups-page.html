@@ -86,26 +86,30 @@
                     <strong>{{ 'groups.type.social' | translate }}</strong>
                     <small>{{ 'groups.tab.campus' | translate }}</small>
                   </button>
-                  <button
-                    type="button"
-                    class="create-type-card"
-                    [class.create-type-card--active]="_createType() === 'Course'"
-                    [attr.aria-pressed]="_createType() === 'Course'"
-                    (click)="updateCreateType('Course')">
-                    <span>KU</span>
-                    <strong>{{ 'groups.type.course' | translate }}</strong>
-                    <small>{{ 'groups.tab.courses' | translate }}</small>
-                  </button>
-                  <button
-                    type="button"
-                    class="create-type-card"
-                    [class.create-type-card--active]="_createType() === 'Official'"
-                    [attr.aria-pressed]="_createType() === 'Official'"
-                    (click)="updateCreateType('Official')">
-                    <span>OF</span>
-                    <strong>{{ 'groups.type.official' | translate }}</strong>
-                    <small>{{ 'groups.tab.official' | translate }}</small>
-                  </button>
+                  @if (canCreateGroupType('Course')) {
+                    <button
+                      type="button"
+                      class="create-type-card"
+                      [class.create-type-card--active]="_createType() === 'Course'"
+                      [attr.aria-pressed]="_createType() === 'Course'"
+                      (click)="updateCreateType('Course')">
+                      <span>KU</span>
+                      <strong>{{ 'groups.type.course' | translate }}</strong>
+                      <small>{{ 'groups.tab.courses' | translate }}</small>
+                    </button>
+                  }
+                  @if (canCreateGroupType('Official')) {
+                    <button
+                      type="button"
+                      class="create-type-card"
+                      [class.create-type-card--active]="_createType() === 'Official'"
+                      [attr.aria-pressed]="_createType() === 'Official'"
+                      (click)="updateCreateType('Official')">
+                      <span>OF</span>
+                      <strong>{{ 'groups.type.official' | translate }}</strong>
+                      <small>{{ 'groups.tab.official' | translate }}</small>
+                    </button>
+                  }
                 </aside>
 
                 <div class="create-group-dialog__fields">
