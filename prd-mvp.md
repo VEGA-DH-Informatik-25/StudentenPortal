@@ -45,6 +45,12 @@
 
 <!-- Weitere Features bei Bedarf … -->
 
+## Could Haves
+
+- Anpassung auf Laptop und Ipad,  eventuell noch Handy wenn noch Zeit
+- Darkmode
+- Prüfungskalender in den eigene Prüfungen eingetragen werden können
+
 ## 6. Nicht‑Ziele
 
 - Native Mobile App (kein iOS/Android).
