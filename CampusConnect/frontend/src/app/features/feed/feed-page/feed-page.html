@@ -72,6 +72,13 @@
             }
           </div>
 
+          @if (_selectedGroup()?.settings?.allowComments) {
+            <label class="composer__comment-setting">
+              <input type="checkbox" [ngModel]="_allowComments()" (ngModelChange)="updateAllowComments($event)" name="feed-allow-comments">
+              <span>{{ 'feed.allowCommentsForPost' | translate }}</span>
+            </label>
+          }
+
           <label class="visually-hidden" for="feed-content">{{ 'feed.composeLabel' | translate }}</label>
           <textarea
             id="feed-content"
@@ -96,6 +103,10 @@
 
       @if (_error()) {
         <p class="feed-page__state feed-page__state--error">{{ _error() }}</p>
+      }
+
+      @if (_notice()) {
+        <p class="feed-page__state">{{ _notice() }}</p>
       }
 
       @if (_isLoading()) {

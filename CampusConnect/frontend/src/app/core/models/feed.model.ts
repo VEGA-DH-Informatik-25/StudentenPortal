@@ -8,6 +8,8 @@ export interface FeedPost {
   group: CampusGroup;
   content: string;
   createdAt: string;
+  status: 'Pending' | 'Published';
+  allowComments: boolean;
   canDelete: boolean;
   canComment: boolean;
   comments: FeedComment[];
@@ -17,6 +19,7 @@ export interface FeedPost {
 export interface CreatePostRequest {
   content: string;
   groupId?: string | null;
+  allowComments?: boolean;
 }
 
 export interface FeedComment {

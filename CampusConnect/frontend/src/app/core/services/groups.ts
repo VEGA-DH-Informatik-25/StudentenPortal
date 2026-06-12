@@ -1,7 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CampusGroup, CreateGroupRequest, GroupSettingsDetails, UpdateGroupAssignmentsRequest, UpdateGroupMemberPermissionsRequest, UpdateGroupSettingsRequest } from '../models/group.model';
+import {
+  AddGroupCourseRequest,
+  AddGroupMembersRequest,
+  CampusGroup,
+  CreateGroupRequest,
+  GroupCandidate,
+  GroupSettingsDetails,
+  InviteGroupMembersRequest,
+  SetGroupMemberRoleRequest,
+  UpdateGroupSettingsRequest,
+} from '../models/group.model';
 
 @Injectable({ providedIn: 'root' })
 export class Groups {
@@ -23,15 +33,56 @@ export class Groups {
     return this._http.put<CampusGroup>(`/api/groups/${id}/settings`, req);
   }
 
-  updateAssignments(id: string, req: UpdateGroupAssignmentsRequest): Observable<GroupSettingsDetails> {
-    return this._http.put<GroupSettingsDetails>(`/api/groups/${id}/assignments`, req);
+  deleteGroup(id: string): Observable<void> {
+    return this._http.delete<void>(`/api/groups/${id}`);
   }
 
-  updateMemberPermissions(id: string, req: UpdateGroupMemberPermissionsRequest): Observable<GroupSettingsDetails> {
-    return this._http.put<GroupSettingsDetails>(`/api/groups/${id}/member-permissions`, req);
+  searchCandidates(id: string, query: string): Observable<GroupCandidate[]> {
+    const params = query ? `?query=${encodeURIComponent(query)}` : '';
+    return this._http.get<GroupCandidate[]>(`/api/groups/${id}/candidates${params}`);
+  }
+
+  addMembers(id: string, req: AddGroupMembersRequest): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/members`, req);
+  }
+
+  addCourse(id: string, req: AddGroupCourseRequest): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/members/course`, req);
+  }
+
+  removeMember(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.delete<GroupSettingsDetails>(`/api/groups/${id}/members/${userId}`);
+  }
+
+  setMemberRole(id: string, userId: string, req: SetGroupMemberRoleRequest): Observable<GroupSettingsDetails> {
+    return this._http.put<GroupSettingsDetails>(`/api/groups/${id}/members/${userId}/role`, req);
   }
 
   joinGroup(id: string): Observable<CampusGroup> {
     return this._http.post<CampusGroup>(`/api/groups/${id}/join`, {});
+  }
+
+  approveRequest(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/requests/${userId}/approve`, {});
+  }
+
+  rejectRequest(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/requests/${userId}/reject`, {});
+  }
+
+  inviteMembers(id: string, req: InviteGroupMembersRequest): Observable<GroupSettingsDetails> {
+    return this._http.post<GroupSettingsDetails>(`/api/groups/${id}/invitations`, req);
+  }
+
+  cancelInvitation(id: string, userId: string): Observable<GroupSettingsDetails> {
+    return this._http.delete<GroupSettingsDetails>(`/api/groups/${id}/invitations/${userId}`);
+  }
+
+  acceptInvitation(id: string): Observable<CampusGroup> {
+    return this._http.post<CampusGroup>(`/api/groups/${id}/invitations/accept`, {});
+  }
+
+  declineInvitation(id: string): Observable<CampusGroup> {
+    return this._http.post<CampusGroup>(`/api/groups/${id}/invitations/decline`, {});
   }
 }

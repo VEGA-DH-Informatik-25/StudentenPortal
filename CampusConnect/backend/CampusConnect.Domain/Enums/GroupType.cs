@@ -4,5 +4,5 @@ public enum GroupType
 {
     Course,
     Official,
-    Social
+    Campus
 }

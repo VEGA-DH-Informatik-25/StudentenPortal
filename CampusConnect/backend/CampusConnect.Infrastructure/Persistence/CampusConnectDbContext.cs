@@ -58,6 +58,7 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
             .IsRequired();
         group.Property(entity => entity.Audience).HasMaxLength(80).IsRequired();
         group.Property(entity => entity.CourseCode).HasMaxLength(40);
+        group.Property(entity => entity.OfficialCategory).HasMaxLength(80);
         group.Property(entity => entity.OwnerLabel).HasMaxLength(120).IsRequired();
         group.Property(entity => entity.IconLabel).HasMaxLength(8).IsRequired();
         group.Property(entity => entity.AccentColor).HasMaxLength(16).IsRequired();
@@ -71,11 +72,23 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
                 value => Serialize(value),
                 value => Deserialize(value, () => new HashSet<Guid>()))
             .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
-        group.Property(entity => entity.MemberPermissions)
+        group.Property(entity => entity.MemberRoles)
+            .HasColumnName("MemberPermissions")
             .HasConversion(
                 value => Serialize(value),
-                value => Deserialize(value, () => new Dictionary<Guid, GroupMemberPermission>()))
-            .Metadata.SetValueComparer(JsonComparer<Dictionary<Guid, GroupMemberPermission>>());
+                value => Deserialize(value, () => new Dictionary<Guid, GroupRole>()))
+            .Metadata.SetValueComparer(JsonComparer<Dictionary<Guid, GroupRole>>());
+
+        group.Property(entity => entity.PendingJoinRequests)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize(value, () => new HashSet<Guid>()))
+            .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
+        group.Property(entity => entity.Invitations)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize(value, () => new HashSet<Guid>()))
+            .Metadata.SetValueComparer(JsonComparer<HashSet<Guid>>());
 
         var feedPost = modelBuilder.Entity<FeedPost>();
         feedPost.ToTable("FeedPosts");
@@ -84,6 +97,11 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
         feedPost.HasIndex(entity => entity.GroupId);
         feedPost.Property(entity => entity.AuthorName).HasMaxLength(120).IsRequired();
         feedPost.Property(entity => entity.Content).HasMaxLength(4000).IsRequired();
+        feedPost.Property(entity => entity.Status)
+            .HasConversion(status => status.ToString(), value => Enum.Parse<FeedPostStatus>(value))
+            .HasMaxLength(16)
+            .IsRequired();
+        feedPost.Property(entity => entity.AllowComments).IsRequired();
         feedPost.Property(entity => entity.CreatedAt).IsRequired();
         feedPost.Property(entity => entity.Comments)
             .HasConversion(

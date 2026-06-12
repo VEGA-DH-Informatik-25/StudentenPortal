@@ -9,8 +9,15 @@ public interface IGroupRepository
     Task<CampusGroup?> FindByIdAsync(Guid id);
     Task<CampusGroup> EnsureCourseGroupAsync(string courseCode, string? studyProgram = null);
     Task AddAsync(CampusGroup group);
+    Task DeleteAsync(Guid id) =>
+        throw new NotSupportedException();
     Task UpdateSettingsAsync(Guid id, GroupSettings settings);
-    Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds);
-    Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions);
+    Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds);
+    Task RemoveMemberAsync(Guid id, Guid userId);
+    Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role);
+    Task AddJoinRequestAsync(Guid id, Guid userId);
+    Task RemoveJoinRequestAsync(Guid id, Guid userId);
+    Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds);
+    Task RemoveInvitationAsync(Guid id, Guid userId);
     Task SyncCourseAssignmentsAsync(string courseCode, IReadOnlyCollection<Guid> assignedUserIds);
 }

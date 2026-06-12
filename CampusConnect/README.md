@@ -130,10 +130,13 @@ Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung;
 | GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen | Ja |
 | GET | `/api/groups` | Kursgruppen, offizielle Gruppen und Campusgruppen auflisten | Ja |
 | POST | `/api/groups` | Campus-, offizielle oder Kursgruppe gemäß globaler Rolle erstellen | Ja |
-| GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive zuweisbarer Konten abrufen | Ja |
-| PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe und Schreibrechte ändern | Ja |
-| PUT | `/api/groups/{id}/assignments` | Konten einer bearbeitbaren Gruppe zuweisen | Ja |
-| PUT | `/api/groups/{id}/member-permissions` | Berechtigungen zugewiesener Gruppenmitglieder setzen | Ja |
+| GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive aktueller Mitgliederliste abrufen | Ja |
+| PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe und Sichtbarkeit ändern | Ja |
+| GET | `/api/groups/{id}/candidates` | Personen für die Aufnahme suchen (`query` optional) | Ja |
+| POST | `/api/groups/{id}/members` | Eine oder mehrere Personen als Mitglieder hinzufügen | Ja |
+| POST | `/api/groups/{id}/members/course` | Alle Mitglieder eines Kurses einmalig übernehmen | Ja |
+| DELETE | `/api/groups/{id}/members/{userId}` | Ein Mitglied aus der Gruppe entfernen | Ja |
+| PUT | `/api/groups/{id}/members/{userId}/role` | Gruppenrolle eines Mitglieds setzen | Ja |
 | POST | `/api/groups/{id}/join` | Einer öffentlichen Campusgruppe beitreten | Ja |
 
 > **Hinweis:** Externe API-Clients authentifizieren sich weiterhin mit folgendem HTTP-Header:

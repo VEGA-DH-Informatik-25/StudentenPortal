@@ -15,6 +15,14 @@ export class Feed {
     return this._http.post<FeedPost>('/api/feed', req);
   }
 
+  getPendingPosts(groupId: string): Observable<FeedPost[]> {
+    return this._http.get<FeedPost[]>(`/api/groups/${groupId}/pending-posts`);
+  }
+
+  approvePost(id: string): Observable<FeedPost> {
+    return this._http.post<FeedPost>(`/api/feed/${id}/approve`, {});
+  }
+
   deletePost(id: string): Observable<void> {
     return this._http.delete<void>(`/api/feed/${id}`);
   }

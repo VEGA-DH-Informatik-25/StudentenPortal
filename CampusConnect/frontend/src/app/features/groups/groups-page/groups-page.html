@@ -18,155 +18,27 @@
   @if (_isLoading()) {
     <p class="groups-page__state">{{ 'groups.loading' | translate }}</p>
   } @else {
-    <section class="groups-overview" [attr.aria-label]="'groups.header' | translate">
-      <div>
-        <span>{{ 'groups.tab.official' | translate }}</span>
-        <strong>{{ _officialGroups().length }}</strong>
-      </div>
-      <div>
-        <span>{{ 'groups.tab.courses' | translate }}</span>
-        <strong>{{ _courseGroups().length }}</strong>
-      </div>
-      <div>
-        <span>Campus</span>
-        <strong>{{ _socialGroups().length }}</strong>
-      </div>
-    </section>
+    <div class="groups-layout">
+      <aside class="groups-navigation" [attr.aria-label]="'groups.header' | translate">
+        <div class="section-heading">
+          <span>{{ 'groups.heroLabel' | translate }}</span>
+          <strong>{{ 'groups.directory' | translate }}</strong>
+        </div>
 
-    <section class="group-directory" [attr.aria-label]="'groups.directory' | translate">
-      <div class="group-directory__create-row">
-        <button
-          type="button"
-          class="group-directory__create-toggle"
-          [attr.aria-expanded]="_isCreateMenuOpen()"
-          (click)="_isCreateMenuOpen() ? closeCreateMenu() : openCreateMenu()">
-          @if (_isCreateMenuOpen()) {
-            {{ 'groups.createMenuClose' | translate }}
-          } @else {
-            {{ 'groups.createMenuOpen' | translate }}
-          }
-        </button>
-        <p>{{ _createPolicySummary() }}</p>
-      </div>
-
-      @if (_isCreateMenuOpen()) {
-        <section class="create-group-menu" [attr.aria-label]="'groups.createHeader' | translate">
-          <header>
-            <p>{{ 'groups.createLabel' | translate }}</p>
-            <h3>{{ 'groups.createHeader' | translate }}</h3>
-            <span>{{ 'groups.createBody' | translate }}</span>
-          </header>
-
-          <form (ngSubmit)="createGroup()">
-            <div class="create-group-menu__grid">
-              <label>
-                <span>{{ 'groups.type' | translate }}</span>
-                <select
-                  name="group-type"
-                  [ngModel]="_createType()"
-                  (ngModelChange)="updateCreateType($any($event))">
-                  <option value="Social">{{ 'groups.type.social' | translate }}</option>
-                  <option value="Official">{{ 'groups.type.official' | translate }}</option>
-                  <option value="Course">{{ 'groups.type.course' | translate }}</option>
-                </select>
-              </label>
-
-              <label>
-                <span>{{ 'common.name' | translate }}</span>
-                <input
-                  type="text"
-                  maxlength="80"
-                  name="group-name"
-                  [ngModel]="_createName()"
-                  (ngModelChange)="_createName.set($event)">
-              </label>
-
-              <label>
-                <span>{{ 'groups.targetAudience' | translate }}</span>
-                <input
-                  type="text"
-                  maxlength="80"
-                  name="group-audience"
-                  [ngModel]="_createAudience()"
-                  (ngModelChange)="_createAudience.set($event)">
-              </label>
-
-              @if (_createType() === 'Course') {
-                <label>
-                  <span>{{ 'common.courseCode' | translate }}</span>
-                  <input
-                    type="text"
-                    maxlength="40"
-                    name="group-course-code"
-                    [ngModel]="_createCourseCode()"
-                    (ngModelChange)="_createCourseCode.set($event)">
-                </label>
-              }
-            </div>
-
-            <label>
-              <span>{{ 'groups.description' | translate }}</span>
-              <textarea
-                rows="4"
-                maxlength="240"
-                name="group-description"
-                [ngModel]="_createDescription()"
-                (ngModelChange)="_createDescription.set($event)"></textarea>
-            </label>
-
-            <div class="create-group-menu__policies" [attr.aria-label]="'groups.memberRights' | translate">
-              <h4>{{ 'groups.memberRights' | translate }}</h4>
-
-              <label>
-                <span>{{ 'groups.policy.studentPosts' | translate }}</span>
-                <input
-                  type="checkbox"
-                  name="create-allow-student-posts"
-                  [ngModel]="_createAllowStudentPosts()"
-                  (ngModelChange)="_createAllowStudentPosts.set($event)">
-              </label>
-
-              <label>
-                <span>{{ 'groups.policy.comments' | translate }}</span>
-                <input
-                  type="checkbox"
-                  name="create-allow-comments"
-                  [ngModel]="_createAllowComments()"
-                  (ngModelChange)="_createAllowComments.set($event)">
-              </label>
-
-              <label>
-                <span>{{ 'groups.policy.approval' | translate }}</span>
-                <input
-                  type="checkbox"
-                  name="create-requires-approval"
-                  [ngModel]="_createRequiresApproval()"
-                  (ngModelChange)="_createRequiresApproval.set($event)">
-              </label>
-
-              <label>
-                <span>{{ 'groups.discoverable' | translate }}</span>
-                <input
-                  type="checkbox"
-                  name="create-is-discoverable"
-                  [ngModel]="_createIsDiscoverable()"
-                  (ngModelChange)="_createIsDiscoverable.set($event)">
-              </label>
-            </div>
-
-            <div class="create-group-menu__actions">
-              <button type="button" class="create-group-menu__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">{{ 'common.cancel' | translate }}</button>
-              <button type="submit" [disabled]="!_canCreate()">
-                @if (_isCreating()) {
-                  {{ 'groups.creating' | translate }}
-                } @else {
-                  {{ 'groups.create' | translate }}
-                }
-              </button>
-            </div>
-          </form>
+        <section class="groups-overview">
+          <div>
+            <span>{{ 'groups.tab.official' | translate }}</span>
+            <strong>{{ _officialGroups().length }}</strong>
+          </div>
+          <div>
+            <span>{{ 'groups.tab.courses' | translate }}</span>
+            <strong>{{ _courseGroups().length }}</strong>
+          </div>
+          <div>
+            <span>{{ 'groups.tab.campus' | translate }}</span>
+            <strong>{{ _socialGroups().length }}</strong>
+          </div>
         </section>
-      }
 
         <div class="group-tabs" role="tablist" [attr.aria-label]="'groups.filter.allRules' | translate">
           @for (tab of _tabs(); track tab.id) {
@@ -182,6 +54,249 @@
             </button>
           }
         </div>
+      </aside>
+
+      <section class="group-directory" [attr.aria-label]="'groups.directory' | translate">
+        <div class="group-directory__create-row">
+          <div>
+            <span>{{ 'groups.directory' | translate }}</span>
+            <strong>{{ _filteredGroups().length }} {{ 'groups.header' | translate }}</strong>
+          </div>
+          <button
+          type="button"
+          class="group-directory__create-toggle"
+          [attr.aria-expanded]="_isCreateMenuOpen()"
+          (click)="_isCreateMenuOpen() ? closeCreateMenu() : openCreateMenu()">
+          @if (_isCreateMenuOpen()) {
+            {{ 'groups.createMenuClose' | translate }}
+          } @else {
+            {{ 'groups.createMenuOpen' | translate }}
+          }
+          </button>
+        </div>
+
+      @if (_isCreateMenuOpen()) {
+        <div class="create-group-modal" role="presentation" (click)="closeCreateMenu()">
+          <section
+            class="create-group-dialog"
+            role="dialog"
+            aria-modal="true"
+            [attr.aria-label]="'groups.createHeader' | translate"
+            (click)="$event.stopPropagation()">
+            <header class="create-group-dialog__header">
+              <div>
+                <p>{{ 'groups.createLabel' | translate }}</p>
+                <h3>{{ 'groups.createHeader' | translate }}</h3>
+                <span>{{ 'groups.createBody' | translate }}</span>
+              </div>
+              <button
+                type="button"
+                class="create-group-dialog__close"
+                [disabled]="_isCreating()"
+                (click)="closeCreateMenu()"
+                [attr.aria-label]="'common.cancel' | translate">
+                ×
+              </button>
+            </header>
+
+            <form class="create-group-dialog__form" (ngSubmit)="createGroup()">
+              <div class="create-group-dialog__body">
+                <section class="create-group-dialog__type-section" [attr.aria-label]="'groups.type' | translate">
+                  <div class="create-group-dialog__section-heading">
+                    <span>{{ 'groups.type' | translate }}</span>
+                    <strong>{{ groupTypeLabel(_createType()) }}</strong>
+                  </div>
+
+                  <div class="create-group-dialog__type-panel">
+                    <button
+                      type="button"
+                      class="create-type-card"
+                      [class.create-type-card--active]="_createType() === 'Campus'"
+                      [attr.aria-pressed]="_createType() === 'Campus'"
+                      (click)="updateCreateType('Campus')">
+                      <span class="create-type-card__marker">CA</span>
+                      <span class="create-type-card__copy">
+                        <strong>{{ 'groups.type.social' | translate }}</strong>
+                        <small>{{ 'groups.tab.campus' | translate }}</small>
+                      </span>
+                    </button>
+
+                    @if (canCreateGroupType('Course')) {
+                      <button
+                        type="button"
+                        class="create-type-card"
+                        [class.create-type-card--active]="_createType() === 'Course'"
+                        [attr.aria-pressed]="_createType() === 'Course'"
+                        (click)="updateCreateType('Course')">
+                        <span class="create-type-card__marker">KU</span>
+                        <span class="create-type-card__copy">
+                          <strong>{{ 'groups.type.course' | translate }}</strong>
+                          <small>{{ 'groups.tab.courses' | translate }}</small>
+                        </span>
+                      </button>
+                    }
+                    @if (canCreateGroupType('Official')) {
+                      <button
+                        type="button"
+                        class="create-type-card"
+                        [class.create-type-card--active]="_createType() === 'Official'"
+                        [attr.aria-pressed]="_createType() === 'Official'"
+                        (click)="updateCreateType('Official')">
+                        <span class="create-type-card__marker">OF</span>
+                        <span class="create-type-card__copy">
+                          <strong>{{ 'groups.type.official' | translate }}</strong>
+                          <small>{{ 'groups.tab.official' | translate }}</small>
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </section>
+
+                <div class="create-group-dialog__content">
+                  <section class="create-group-dialog__panel">
+                    <div class="create-group-dialog__section-heading">
+                      <span>{{ 'groups.description' | translate }}</span>
+                      <strong>{{ 'groups.createHeader' | translate }}</strong>
+                    </div>
+
+                    <div class="create-group-dialog__grid">
+                      <label>
+                        <span>{{ 'common.name' | translate }}</span>
+                        <input
+                          type="text"
+                          maxlength="80"
+                          name="group-name"
+                          [ngModel]="_createName()"
+                          (ngModelChange)="_createName.set($event)">
+                      </label>
+
+                      <label>
+                        <span>{{ 'groups.targetAudience' | translate }}</span>
+                        <input
+                          type="text"
+                          maxlength="80"
+                          name="group-audience"
+                          [ngModel]="_createAudience()"
+                          (ngModelChange)="_createAudience.set($event)">
+                      </label>
+
+                      <label>
+                        <span>{{ 'groups.joinRule' | translate }}</span>
+                        <select
+                          name="group-join-rule"
+                          [ngModel]="_createJoinRule()"
+                          (ngModelChange)="updateCreateJoinRule($any($event))">
+                          <option value="Open">{{ 'groups.joinRule.open' | translate }}</option>
+                          <option value="RequestRequired">{{ 'groups.joinRule.request' | translate }}</option>
+                          <option value="InviteOnly">{{ 'groups.joinRule.invite' | translate }}</option>
+                        </select>
+                      </label>
+
+                      @if (_createType() === 'Course') {
+                        <label>
+                          <span>{{ 'common.courseCode' | translate }}</span>
+                          <input
+                            type="text"
+                            maxlength="40"
+                            name="group-course-code"
+                            [ngModel]="_createCourseCode()"
+                            (ngModelChange)="_createCourseCode.set($event)">
+                        </label>
+                      }
+
+                      @if (_createType() === 'Official') {
+                        <label>
+                          <span>{{ 'groups.officialCategory' | translate }}</span>
+                          <input
+                            type="text"
+                            maxlength="80"
+                            name="group-official-category"
+                            [placeholder]="'groups.officialCategoryPlaceholder' | translate"
+                            [ngModel]="_createOfficialCategory()"
+                            (ngModelChange)="_createOfficialCategory.set($event)">
+                        </label>
+                      }
+                    </div>
+
+                    <label class="create-group-dialog__description">
+                      <span>{{ 'groups.description' | translate }}</span>
+                      <textarea
+                        rows="3"
+                        maxlength="240"
+                        name="group-description"
+                        [ngModel]="_createDescription()"
+                        (ngModelChange)="_createDescription.set($event)"></textarea>
+                    </label>
+                  </section>
+
+                  <section class="create-group-dialog__panel create-group-dialog__policies" [attr.aria-label]="'groups.memberRights' | translate">
+                    <div class="create-group-dialog__section-heading">
+                      <span>{{ 'groups.rights' | translate }}</span>
+                      <strong>{{ 'groups.memberRights' | translate }}</strong>
+                    </div>
+
+                    <div class="create-group-dialog__policy-list">
+                      <label>
+                        <span>{{ 'groups.policy.studentPosts' | translate }}</span>
+                        <input
+                          type="checkbox"
+                          name="create-allow-student-posts"
+                          [ngModel]="_createAllowStudentPosts()"
+                          (ngModelChange)="_createAllowStudentPosts.set($event)">
+                        <span class="create-group-dialog__switch" aria-hidden="true"></span>
+                      </label>
+
+                      <label>
+                        <span>{{ 'groups.policy.comments' | translate }}</span>
+                        <input
+                          type="checkbox"
+                          name="create-allow-comments"
+                          [ngModel]="_createAllowComments()"
+                          (ngModelChange)="_createAllowComments.set($event)">
+                        <span class="create-group-dialog__switch" aria-hidden="true"></span>
+                      </label>
+
+                      <label>
+                        <span>{{ 'groups.policy.approval' | translate }}</span>
+                        <input
+                          type="checkbox"
+                          name="create-requires-approval"
+                          [ngModel]="_createRequiresApproval()"
+                          (ngModelChange)="_createRequiresApproval.set($event)">
+                        <span class="create-group-dialog__switch" aria-hidden="true"></span>
+                      </label>
+
+                      <label>
+                        <span>{{ 'groups.discoverable' | translate }}</span>
+                        <input
+                          type="checkbox"
+                          name="create-is-discoverable"
+                          [ngModel]="_createIsDiscoverable()"
+                          (ngModelChange)="_createIsDiscoverable.set($event)">
+                        <span class="create-group-dialog__switch" aria-hidden="true"></span>
+                      </label>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <footer class="create-group-dialog__actions">
+                <p>{{ _createPolicySummary() }}</p>
+                <div>
+                  <button type="button" class="create-group-dialog__cancel" [disabled]="_isCreating()" (click)="closeCreateMenu()">{{ 'common.cancel' | translate }}</button>
+                  <button type="submit" class="create-group-dialog__submit" [disabled]="!_canCreate()">
+                    @if (_isCreating()) {
+                      {{ 'groups.creating' | translate }}
+                    } @else {
+                      {{ 'groups.create' | translate }}
+                    }
+                  </button>
+                </div>
+              </footer>
+            </form>
+          </section>
+        </div>
+      }
 
         <div class="group-directory__toolbar" [attr.aria-label]="'groups.searchAndFilter' | translate">
           <label>
@@ -220,13 +335,32 @@
 
                     <div class="group-card__actions">
                       <button type="button" class="group-card__open" (click)="openGroup(group)">{{ 'common.open' | translate }}</button>
-                      @if (group.canJoin) {
+                      @if (group.hasPendingInvitation) {
+                        <button type="button" class="group-card__join" [disabled]="isJoining(group.id)" (click)="acceptInvitation(group)">
+                          {{ 'groups.acceptInvitation' | translate }}
+                        </button>
+                        <button type="button" class="group-card__settings" [disabled]="isJoining(group.id)" (click)="declineInvitation(group)">
+                          {{ 'groups.declineInvitation' | translate }}
+                        </button>
+                      } @else if (group.canJoin) {
                         <button type="button" class="group-card__join" [disabled]="isJoining(group.id)" (click)="joinGroup(group)">
                           @if (isJoining(group.id)) {
                             {{ 'groups.joining' | translate }}
                           } @else {
                             {{ 'groups.join' | translate }}
                           }
+                        </button>
+                      } @else if (group.canRequestJoin) {
+                        <button type="button" class="group-card__join" [disabled]="isJoining(group.id)" (click)="requestJoin(group)">
+                          @if (isJoining(group.id)) {
+                            {{ 'groups.joining' | translate }}
+                          } @else {
+                            {{ 'groups.requestJoin' | translate }}
+                          }
+                        </button>
+                      } @else if (group.hasPendingJoinRequest) {
+                        <button type="button" class="group-card__settings" disabled>
+                          {{ 'groups.requestPending' | translate }}
                         </button>
                       } @else if (group.canManage) {
                         <button type="button" class="group-card__settings" (click)="openSettings(group)">
@@ -237,6 +371,11 @@
                   </div>
 
                   <p>{{ groupDescription(group) }}</p>
+                  <div class="group-card__meta">
+                    <span>{{ group.audience }}</span>
+                    <span>{{ joinRuleLabel(group.settings.joinRule) }}</span>
+                    <span>{{ 'groups.membersCount' | translate:{ count: group.assignedUserCount } }}</span>
+                  </div>
                 </div>
               </article>
             }
@@ -244,6 +383,7 @@
         } @else {
           <p class="groups-page__state">{{ 'groups.emptyFilter' | translate }}</p>
         }
-    </section>
+      </section>
+    </div>
   }
 </div>

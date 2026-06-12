@@ -1,12 +1,13 @@
-export type GroupType = 'Course' | 'Official' | 'Social';
-export type GroupMemberPermission = 'ReadOnly' | 'ReadWrite' | 'Manage';
+export type GroupType = 'Course' | 'Official' | 'Campus';
 export type GroupRole = 'None' | 'Member' | 'Moderator' | 'Owner';
+export type GroupJoinRule = 'Open' | 'RequestRequired' | 'InviteOnly';
 
 export interface GroupSettings {
   allowStudentPosts: boolean;
   allowComments: boolean;
   requiresApproval: boolean;
   isDiscoverable: boolean;
+  joinRule: GroupJoinRule;
 }
 
 export interface CampusGroup {
@@ -16,19 +17,28 @@ export interface CampusGroup {
   type: GroupType;
   audience: string;
   courseCode: string | null;
+  officialCategory: string | null;
   ownerUserId: string | null;
   ownerLabel: string;
   iconLabel: string;
   accentColor: string;
   assignedUserCount: number;
-  canManage: boolean;
   isAssigned: boolean;
+  canManage: boolean;
+  canEditSettings: boolean;
+  canManageMembers: boolean;
+  canAppointModerator: boolean;
   canPost: boolean;
+  canInteract: boolean;
   canJoin: boolean;
-  memberPermission: GroupMemberPermission;
+  canRequestJoin: boolean;
+  hasPendingJoinRequest: boolean;
+  hasPendingInvitation: boolean;
+  pendingJoinRequestCount: number;
+  canDelete: boolean;
   groupRole: GroupRole;
   isSystemAdminAccess: boolean;
-  canAppointModerator: boolean;
+  isCourseManaged: boolean;
   settings: GroupSettings;
 }
 
@@ -38,39 +48,61 @@ export interface CreateGroupRequest {
   type: GroupType;
   audience: string;
   courseCode: string | null;
+  officialCategory: string | null;
   allowStudentPosts: boolean;
   allowComments: boolean;
   requiresApproval: boolean;
   isDiscoverable: boolean;
+  joinRule: GroupJoinRule;
 }
 
 export interface UpdateGroupSettingsRequest extends GroupSettings {}
 
-export interface GroupAccount {
+export interface GroupMember {
   id: string;
   displayName: string;
   email: string;
   role: string;
   course: string;
-  isAssigned: boolean;
-  permission: GroupMemberPermission;
   groupRole: GroupRole;
+  isOwner: boolean;
+}
+
+export interface GroupCandidate {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  course: string;
+}
+
+export interface GroupRequest {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  course: string;
 }
 
 export interface GroupSettingsDetails {
   group: CampusGroup;
-  accounts: GroupAccount[];
+  members: GroupMember[];
+  joinRequests: GroupRequest[];
+  invitations: GroupRequest[];
 }
 
-export interface UpdateGroupAssignmentsRequest {
+export interface AddGroupMembersRequest {
   userIds: string[];
 }
 
-export interface UpdateGroupMemberPermissionItem {
-  userId: string;
-  permission: GroupMemberPermission;
+export interface InviteGroupMembersRequest {
+  userIds: string[];
 }
 
-export interface UpdateGroupMemberPermissionsRequest {
-  permissions: UpdateGroupMemberPermissionItem[];
+export interface AddGroupCourseRequest {
+  courseCode: string;
+}
+
+export interface SetGroupMemberRoleRequest {
+  role: GroupRole;
 }

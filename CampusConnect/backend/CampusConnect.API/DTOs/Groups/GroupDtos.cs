@@ -8,9 +8,12 @@ public record CreateGroupRequest(
 	bool AllowComments = true,
 	bool RequiresApproval = false,
 	bool IsDiscoverable = true,
-	string Type = "Social",
-	string? CourseCode = null);
-public record UpdateGroupSettingsRequest(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable);
-public record UpdateGroupAssignmentsRequest(IReadOnlyList<Guid> UserIds);
-public record UpdateGroupMemberPermissionRequest(Guid UserId, string Permission);
-public record UpdateGroupMemberPermissionsRequest(IReadOnlyList<UpdateGroupMemberPermissionRequest> Permissions);
+	string Type = "Campus",
+	string? CourseCode = null,
+	string JoinRule = "Open",
+	string? OfficialCategory = null);
+public record UpdateGroupSettingsRequest(bool AllowStudentPosts, bool AllowComments, bool RequiresApproval, bool IsDiscoverable, string JoinRule = "Open");
+public record AddGroupMembersRequest(IReadOnlyList<Guid> UserIds);
+public record InviteGroupMembersRequest(IReadOnlyList<Guid> UserIds);
+public record AddGroupCourseRequest(string CourseCode);
+public record SetGroupMemberRoleRequest(string Role);

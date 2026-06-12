@@ -2,9 +2,9 @@
   display: grid;
   gap: 1.5rem;
 
-  h1 { color: var(--dhbw-ink); font-size: 3.2rem; line-height: 1; margin: 0 0 0.7rem; }
-  &__eyebrow { color: var(--dhbw-red); font-size: 0.78rem; font-weight: 800; margin: 0 0 0.45rem; text-transform: uppercase; }
-  &__state { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 8px; box-shadow: var(--dhbw-shadow); color: var(--dhbw-text-muted); margin: 0; padding: 1rem; text-align: center; }
+  h1 { color: var(--dhbw-ink); font-size: var(--type-page-title); line-height: 1; margin: 0 0 0.7rem; }
+  &__eyebrow { color: var(--dhbw-red); font-size: var(--type-page-eyebrow); font-weight: 800; margin: 0 0 0.45rem; text-transform: uppercase; }
+  &__state { box-shadow: var(--dhbw-shadow); color: var(--dhbw-text-muted); margin: 0; padding: 1rem; text-align: center; }
   &__state--error { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
 }
 
@@ -19,7 +19,7 @@
 }
 
 .timetable-hero { align-items: end; border-bottom: 1px solid var(--dhbw-border); display: flex; gap: 1rem; justify-content: space-between; padding: 0.4rem 0 1.35rem; }
-.timetable-hero p:not(.timetable-page__eyebrow) { color: var(--dhbw-text-muted); margin: 0; }
+.timetable-hero p:not(.timetable-page__eyebrow) { color: var(--dhbw-text-muted); font-size: var(--type-page-body); margin: 0; }
 .course-setup { display: grid; gap: 1.5rem; }
 .course-panel { display: grid; gap: 1rem; }
 .course-picker { align-items: end; display: grid; gap: 0.75rem; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr) 2.7rem; padding: 1rem; width: 100%; }
@@ -58,7 +58,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 .day-section__header { align-items: center; border-bottom: 1px solid var(--dhbw-border); display: flex; justify-content: space-between; padding: 0.8rem 1rem; }
 .day-section__weekday { color: var(--dhbw-red); font-size: 0.76rem; font-weight: 800; text-transform: uppercase; }
-.day-section h3 { font-size: 1rem; margin: 0.1rem 0 0; }
+.day-section h3,
+.lecture-card h4 { font-size: 1rem; }
+.day-section h3 { margin: 0.1rem 0 0; }
 .day-section__badge,
 .lecture-card__chip { border-radius: 999px; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.45rem; }
 .day-section__badge { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); }
@@ -69,7 +71,7 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .lecture-card__time small { color: var(--dhbw-text-muted); font-size: 0.72rem; font-weight: 700; }
 .lecture-card__body { min-width: 0; }
 .lecture-card__title-row { align-items: flex-start; display: flex; gap: 0.5rem; justify-content: space-between; }
-.lecture-card h4 { font-size: 0.98rem; line-height: 1.35; margin: 0; overflow-wrap: anywhere; }
+.lecture-card h4 { line-height: 1.35; margin: 0; overflow-wrap: anywhere; }
 .lecture-card__chip { background: #dbeafe; color: #1d4ed8; flex: 0 0 auto; }
 .lecture-card__meta { color: var(--dhbw-text-muted); display: flex; flex-direction: column; font-size: 0.82rem; gap: 0.2rem; margin-top: 0.35rem; overflow-wrap: anywhere; }
 
@@ -114,7 +116,6 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 @media (max-width: 720px) {
   .timetable-hero,
   .schedule-actions { align-items: stretch; flex-direction: column; }
-  .timetable-page h1 { font-size: 2.25rem; }
   .course-picker { grid-template-columns: 1fr; }
   .course-field { min-width: 0; }
   .lecture-card { gap: 0.45rem; grid-template-columns: 1fr; }

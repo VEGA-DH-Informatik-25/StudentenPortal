@@ -44,7 +44,7 @@ public class GroupsServiceTests
         var result = await service.UpdateSettingsAsync(group.Id, user.Id, new UpdateGroupSettingsCommand(false, false, true, true));
 
         Assert.False(result.IsSuccess);
-        Assert.Equal("You are not allowed to edit these group settings.", result.Error);
+        Assert.Equal(GroupsService.PermissionError, result.Error);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class GroupsServiceTests
         var result = await service.CreateGroupAsync(new CreateGroupCommand(user.Id, "Web study group", "Shared preparation", "Interested students"));
 
         Assert.True(result.IsSuccess);
-        Assert.Equal("Social", result.Value!.Type);
+        Assert.Equal("Campus", result.Value!.Type);
         Assert.Equal(user.Id, result.Value.OwnerUserId);
         Assert.True(result.Value.CanManage);
         Assert.Equal(1, result.Value.AssignedUserCount);
@@ -74,7 +74,7 @@ public class GroupsServiceTests
     [Theory]
     [InlineData("Official")]
     [InlineData("Course")]
-    [InlineData("Social")]
+    [InlineData("Campus")]
     public async Task CreateGroupAsync_AllowsManagementToCreateEveryGroupType(string type)
     {
         var user = new User
@@ -95,7 +95,8 @@ public class GroupsServiceTests
             "Organizational group",
             "Campus",
             Type: type,
-            CourseCode: type == "Course" ? "tif25a" : null));
+            CourseCode: type == "Course" ? "tif25a" : null,
+            OfficialCategory: type == "Official" ? "Verwaltung" : null));
 
         Assert.True(result.IsSuccess);
         Assert.Equal(type, result.Value!.Type);
@@ -136,16 +137,16 @@ public class GroupsServiceTests
     [Theory]
     [InlineData(UserRole.Student, "Official", false)]
     [InlineData(UserRole.Student, "Course", false)]
-    [InlineData(UserRole.Student, "Social", true)]
+    [InlineData(UserRole.Student, "Campus", true)]
     [InlineData(UserRole.Lecturer, "Official", false)]
     [InlineData(UserRole.Lecturer, "Course", true)]
-    [InlineData(UserRole.Lecturer, "Social", true)]
+    [InlineData(UserRole.Lecturer, "Campus", true)]
     [InlineData(UserRole.Management, "Official", true)]
     [InlineData(UserRole.Management, "Course", true)]
-    [InlineData(UserRole.Management, "Social", true)]
+    [InlineData(UserRole.Management, "Campus", true)]
     [InlineData(UserRole.Admin, "Official", true)]
     [InlineData(UserRole.Admin, "Course", true)]
-    [InlineData(UserRole.Admin, "Social", true)]
+    [InlineData(UserRole.Admin, "Campus", true)]
     public async Task CreateGroupAsync_UsesGlobalRolePermissionMatrix(UserRole role, string type, bool canCreate)
     {
         var user = new User
@@ -165,7 +166,8 @@ public class GroupsServiceTests
             "Organizational group",
             "Campus",
             Type: type,
-            CourseCode: type == "Course" ? "TIF25A" : null));
+            CourseCode: type == "Course" ? "TIF25A" : null,
+            OfficialCategory: type == "Official" ? "Verwaltung" : null));
 
         Assert.Equal(canCreate, result.IsSuccess);
         if (canCreate)
@@ -300,6 +302,161 @@ public class GroupsServiceTests
     }
 
     [Fact]
+    public async Task CreateGroupAsync_StoresJoinRuleAndOfficialCategory()
+    {
+        var user = new User
+        {
+            DisplayName = "Vera Management",
+            Email = "vera@dhbw-loerrach.de",
+            StudyProgram = "Campus Management",
+            Semester = 1,
+            Course = "ADM25A",
+            Role = UserRole.Management
+        };
+        var service = new GroupsService(new FakeGroupRepository(), new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            "Exam office",
+            "Official exam notices",
+            "All students",
+            Type: "Official",
+            JoinRule: "RequestRequired",
+            OfficialCategory: "Prüfungsamt"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Prüfungsamt", result.Value!.OfficialCategory);
+        Assert.Equal("RequestRequired", result.Value.Settings.JoinRule);
+    }
+
+    [Fact]
+    public async Task CreateGroupAsync_RejectsOfficialWithoutCategory()
+    {
+        var user = new User
+        {
+            DisplayName = "Vera Management",
+            Email = "vera@dhbw-loerrach.de",
+            StudyProgram = "Campus Management",
+            Semester = 1,
+            Course = "ADM25A",
+            Role = UserRole.Management
+        };
+        var service = new GroupsService(new FakeGroupRepository(), new FakeUserRepository(user));
+
+        var result = await service.CreateGroupAsync(new CreateGroupCommand(
+            user.Id,
+            "Exam office",
+            "Official exam notices",
+            "All students",
+            Type: "Official"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Enter an official category for the official group.", result.Error);
+    }
+
+    [Fact]
+    public async Task JoinGroupAsync_RequestRequired_CreatesPendingRequestWithoutMembership()
+    {
+        var user = new User
+        {
+            DisplayName = "Nora",
+            Email = "nora@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Oskar",
+            Email = "oskar@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.Settings.JoinRule = GroupJoinRule.RequestRequired;
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(user, owner));
+
+        var result = await service.JoinGroupAsync(group.Id, user.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value!.IsAssigned);
+        Assert.True(result.Value.HasPendingJoinRequest);
+    }
+
+    [Fact]
+    public async Task ApproveJoinRequestAsync_AddsRequestingUserAsMember()
+    {
+        var user = new User
+        {
+            DisplayName = "Nora",
+            Email = "nora@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Oskar",
+            Email = "oskar@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.Settings.JoinRule = GroupJoinRule.RequestRequired;
+        group.PendingJoinRequests.Add(user.Id);
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(user, owner));
+
+        var result = await service.ApproveJoinRequestAsync(group.Id, owner.Id, user.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains(result.Value!.Members, member => member.Id == user.Id);
+        Assert.Empty(result.Value.JoinRequests);
+    }
+
+    [Fact]
+    public async Task InviteAndAccept_MakesInvitedUserAMember()
+    {
+        var user = new User
+        {
+            DisplayName = "Nora",
+            Email = "nora@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Semester = 2,
+            Course = "TIF25A",
+            Role = UserRole.Student
+        };
+        var owner = new User
+        {
+            DisplayName = "Oskar",
+            Email = "oskar@dhbw-loerrach.de",
+            StudyProgram = "BWL",
+            Semester = 2,
+            Course = "BWL25A",
+            Role = UserRole.Student
+        };
+        var group = SocialGroup(owner.Id);
+        group.Settings.JoinRule = GroupJoinRule.InviteOnly;
+        var groups = new FakeGroupRepository(group);
+        var service = new GroupsService(groups, new FakeUserRepository(user, owner));
+
+        var invite = await service.InviteMembersAsync(group.Id, owner.Id, new InviteGroupMembersCommand([user.Id]));
+        Assert.True(invite.IsSuccess);
+        Assert.Contains(invite.Value!.Invitations, invitation => invitation.Id == user.Id);
+
+        var accept = await service.RespondToInvitationAsync(group.Id, user.Id, accept: true);
+
+        Assert.True(accept.IsSuccess);
+        Assert.True(accept.Value!.IsAssigned);
+        Assert.False(accept.Value.HasPendingInvitation);
+    }
+
+    [Fact]
     public async Task GetSettingsDetailsAsync_RejectsUnownedSocialGroup()
     {
         var user = new User
@@ -321,7 +478,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task UpdateAssignmentsAsync_AssignsExistingAccountsAndKeepsOwner()
+    public async Task AddMembersAsync_AddsExistingAccountsAsMembers()
     {
         var owner = new User
         {
@@ -345,57 +502,36 @@ public class GroupsServiceTests
         var groups = new FakeGroupRepository(group);
         var service = new GroupsService(groups, new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateAssignmentsAsync(group.Id, owner.Id, new UpdateGroupAssignmentsCommand([member.Id]));
+        var result = await service.AddMembersAsync(group.Id, owner.Id, new AddGroupMembersCommand([member.Id]));
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == owner.Id && account.IsAssigned);
-        Assert.Contains(result.Value.Accounts, account => account.Id == member.Id && account.IsAssigned);
+        Assert.Contains(result.Value!.Members, account => account.Id == owner.Id && account.IsOwner);
+        Assert.Contains(result.Value.Members, account => account.Id == member.Id && account.GroupRole == "Member");
         Assert.Equal(2, result.Value.Group.AssignedUserCount);
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_CanSetMemberReadOnly()
+    public async Task RemoveMemberAsync_RemovesMemberButNotOwner()
     {
-        var owner = new User
-        {
-            DisplayName = "Gina",
-            Email = "gina@dhbw-loerrach.de",
-            StudyProgram = "Computer Science",
-            Semester = 2,
-            Course = "TIF25A",
-            Role = UserRole.Student
-        };
-        var member = new User
-        {
-            DisplayName = "Hannes",
-            Email = "hannes@dhbw-loerrach.de",
-            StudyProgram = "Business Informatics",
-            Semester = 2,
-            Course = "WWI25A",
-            Role = UserRole.Student
-        };
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(member.Id);
-        var groups = new FakeGroupRepository(group);
-        var service = new GroupsService(groups, new FakeUserRepository(owner, member));
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            owner.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "ReadOnly")]));
+        var ownerRemoval = await service.RemoveMemberAsync(group.Id, owner.Id, owner.Id);
+        Assert.False(ownerRemoval.IsSuccess);
+        Assert.Equal("The group owner cannot be removed.", ownerRemoval.Error);
+
+        var result = await service.RemoveMemberAsync(group.Id, owner.Id, member.Id);
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.Permission == "ReadOnly");
-
-        var memberGroups = await service.GetGroupsForUserAsync(member.Id);
-        var memberGroup = Assert.Single(memberGroups, item => item.Id == group.Id);
-        Assert.True(memberGroup.IsAssigned);
-        Assert.False(memberGroup.CanPost);
-        Assert.Equal("ReadOnly", memberGroup.MemberPermission);
+        Assert.DoesNotContain(result.Value!.Members, account => account.Id == member.Id);
+        Assert.Equal(1, result.Value.Group.AssignedUserCount);
     }
 
     [Fact]
-    public async Task GetSettingsDetailsAsync_AllowsAssignedMemberWithManagePermission()
+    public async Task GetSettingsDetailsAsync_AllowsAssignedModerator()
     {
         var owner = new User
         {
@@ -417,7 +553,7 @@ public class GroupsServiceTests
         };
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(manager.Id);
-        group.MemberPermissions[manager.Id] = GroupMemberPermission.Manage;
+        group.MemberRoles[manager.Id] = GroupRole.Moderator;
 
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, manager));
 
@@ -427,7 +563,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task GetSettingsDetailsAsync_RejectsAssignedMemberWithReadWritePermission()
+    public async Task GetSettingsDetailsAsync_RejectsPlainMember()
     {
         var owner = new User
         {
@@ -449,7 +585,6 @@ public class GroupsServiceTests
         };
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
 
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
@@ -468,8 +603,7 @@ public class GroupsServiceTests
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(moderator.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
-        group.MemberPermissions[member.Id] = GroupMemberPermission.ReadWrite;
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
 
         var ownerGroup = Assert.Single(await service.GetGroupsForUserAsync(owner.Id), item => item.Id == group.Id);
@@ -506,7 +640,7 @@ public class GroupsServiceTests
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_OwnerCanAppointModerator()
+    public async Task SetMemberRoleAsync_OwnerCanAppointModerator()
     {
         var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
         var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
@@ -514,17 +648,14 @@ public class GroupsServiceTests
         group.AssignedUserIds.Add(member.Id);
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            owner.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+        var result = await service.SetMemberRoleAsync(group.Id, owner.Id, member.Id, new SetGroupMemberRoleCommand("Moderator"));
 
         Assert.True(result.IsSuccess);
-        Assert.Contains(result.Value!.Accounts, account => account.Id == member.Id && account.GroupRole == "Moderator");
+        Assert.Contains(result.Value!.Members, account => account.Id == member.Id && account.GroupRole == "Moderator");
     }
 
     [Fact]
-    public async Task UpdateMemberPermissionsAsync_ModeratorCannotAppointAnotherModerator()
+    public async Task SetMemberRoleAsync_ModeratorCannotAppointAnotherModerator()
     {
         var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
         var moderator = StudentUser("Iris", "iris@dhbw-loerrach.de");
@@ -532,16 +663,62 @@ public class GroupsServiceTests
         var group = SocialGroup(owner.Id);
         group.AssignedUserIds.Add(moderator.Id);
         group.AssignedUserIds.Add(member.Id);
-        group.MemberPermissions[moderator.Id] = GroupMemberPermission.Manage;
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
         var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
 
-        var result = await service.UpdateMemberPermissionsAsync(
-            group.Id,
-            moderator.Id,
-            new UpdateGroupMemberPermissionsCommand([new UpdateGroupMemberPermissionCommand(member.Id, "Manage")]));
+        var result = await service.SetMemberRoleAsync(group.Id, moderator.Id, member.Id, new SetGroupMemberRoleCommand("Moderator"));
 
         Assert.False(result.IsSuccess);
         Assert.Equal("Only the group owner can appoint moderators.", result.Error);
+    }
+
+    [Fact]
+    public async Task DeleteGroupAsync_OwnerDeletesCampusGroupAndItsPosts()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        var groups = new FakeGroupRepository(group);
+        var feed = new FakeFeedRepository(group.Id);
+        var service = new GroupsService(groups, new FakeUserRepository(owner), feed);
+
+        var result = await service.DeleteGroupAsync(group.Id, owner.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(await groups.FindByIdAsync(group.Id));
+        Assert.Contains(group.Id, feed.DeletedGroupIds);
+    }
+
+    [Fact]
+    public async Task DeleteGroupAsync_CourseGroupRequiresAdmin()
+    {
+        var lecturer = new User
+        {
+            DisplayName = "Lecturer",
+            Email = "lecturer@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            Role = UserRole.Lecturer
+        };
+        var admin = new User
+        {
+            DisplayName = "Admin",
+            Email = "admin@dhbw-loerrach.de",
+            StudyProgram = "Administration",
+            Course = "ADMIN",
+            Role = UserRole.Admin
+        };
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(lecturer.Id);
+        var groups = new FakeGroupRepository(group);
+        var feed = new FakeFeedRepository(group.Id);
+        var service = new GroupsService(groups, new FakeUserRepository(lecturer, admin), feed);
+
+        var denied = await service.DeleteGroupAsync(group.Id, lecturer.Id);
+        var deleted = await service.DeleteGroupAsync(group.Id, admin.Id);
+
+        Assert.False(denied.IsSuccess);
+        Assert.Equal(GroupsService.PermissionError, denied.Error);
+        Assert.True(deleted.IsSuccess);
     }
 
     private static User StudentUser(string displayName, string email) => new()
@@ -569,7 +746,7 @@ public class GroupsServiceTests
     {
         Name = "Web study group",
         Description = "Shared preparation",
-        Type = GroupType.Social,
+        Type = GroupType.Campus,
         Audience = "Interested students",
         OwnerUserId = ownerId,
         OwnerLabel = "Community",
@@ -603,6 +780,12 @@ public class GroupsServiceTests
             return Task.CompletedTask;
         }
 
+        public Task DeleteAsync(Guid id)
+        {
+            _groups.RemoveAll(group => group.Id == id);
+            return Task.CompletedTask;
+        }
+
         public Task UpdateSettingsAsync(Guid id, GroupSettings settings)
         {
             var group = _groups.First(group => group.Id == id);
@@ -610,17 +793,68 @@ public class GroupsServiceTests
             return Task.CompletedTask;
         }
 
-        public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+        public Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
         {
             var group = _groups.First(group => group.Id == id);
-            group.AssignedUserIds = assignedUserIds.ToHashSet();
+            var assigned = group.AssignedUserIds.ToHashSet();
+            foreach (var userId in userIds)
+            {
+                assigned.Add(userId);
+                group.PendingJoinRequests.Remove(userId);
+                group.Invitations.Remove(userId);
+            }
+            group.AssignedUserIds = assigned;
             return Task.CompletedTask;
         }
 
-        public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+        public Task RemoveMemberAsync(Guid id, Guid userId)
         {
             var group = _groups.First(group => group.Id == id);
-            group.MemberPermissions = permissions.ToDictionary(item => item.Key, item => item.Value);
+            var assigned = group.AssignedUserIds.ToHashSet();
+            assigned.Remove(userId);
+            group.AssignedUserIds = assigned;
+            group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+        {
+            var group = _groups.First(group => group.Id == id);
+            if (role == GroupRole.Moderator)
+                group.MemberRoles[userId] = GroupRole.Moderator;
+            else
+                group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task AddJoinRequestAsync(Guid id, Guid userId)
+        {
+            var group = _groups.First(group => group.Id == id);
+            if (!group.AssignedUserIds.Contains(userId))
+                group.PendingJoinRequests.Add(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveJoinRequestAsync(Guid id, Guid userId)
+        {
+            _groups.First(group => group.Id == id).PendingJoinRequests.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds)
+        {
+            var group = _groups.First(group => group.Id == id);
+            foreach (var userId in userIds)
+            {
+                if (!group.AssignedUserIds.Contains(userId))
+                    group.Invitations.Add(userId);
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveInvitationAsync(Guid id, Guid userId)
+        {
+            _groups.First(group => group.Id == id).Invitations.Remove(userId);
             return Task.CompletedTask;
         }
 
@@ -630,6 +864,28 @@ public class GroupsServiceTests
             if (group is not null)
                 group.AssignedUserIds = assignedUserIds.ToHashSet();
 
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeFeedRepository(params Guid[] groupIds) : IFeedRepository
+    {
+        public List<Guid> DeletedGroupIds { get; } = [];
+
+        public Task<IReadOnlyList<FeedPost>> GetAllAsync(int page, int pageSize) =>
+            Task.FromResult<IReadOnlyList<FeedPost>>([]);
+
+        public Task<FeedPost?> FindByIdAsync(Guid id) => Task.FromResult<FeedPost?>(null);
+        public Task AddAsync(FeedPost post) => Task.CompletedTask;
+        public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment) => Task.FromResult<FeedPost?>(null);
+        public Task<FeedPost?> DeleteCommentAsync(Guid postId, Guid commentId) => Task.FromResult<FeedPost?>(null);
+        public Task<FeedPost?> ToggleReactionAsync(Guid postId, string emoji, Guid userId) => Task.FromResult<FeedPost?>(null);
+        public Task DeleteAsync(Guid id) => Task.CompletedTask;
+
+        public Task DeleteByGroupAsync(Guid groupId)
+        {
+            Assert.Contains(groupId, groupIds);
+            DeletedGroupIds.Add(groupId);
             return Task.CompletedTask;
         }
     }

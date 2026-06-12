@@ -12,14 +12,14 @@
 
     h1 {
       color: var(--dhbw-ink);
-      font-size: 3.2rem;
+      font-size: var(--type-page-title);
       line-height: 1;
       margin: 0 0 0.7rem;
     }
 
     .profile-page__eyebrow {
       color: var(--dhbw-red);
-      font-size: 0.78rem;
+      font-size: var(--type-page-eyebrow);
       font-weight: 800;
       margin: 0 0 0.45rem;
       text-transform: uppercase;
@@ -27,6 +27,7 @@
 
     p {
       color: var(--dhbw-text-muted);
+      font-size: var(--type-page-body);
       margin: 0.25rem 0 0;
     }
   }
@@ -164,10 +165,6 @@
 }
 
 @media (max-width: 760px) {
-  .profile-page__header h1 {
-    font-size: 2.25rem;
-  }
-
   .profile-summary,
   .profile-form__grid {
     grid-template-columns: 1fr;
