@@ -104,21 +104,33 @@
     overflow-wrap: anywhere;
   }
 
+  &__email {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 0;
+  }
+
+  &__email span {
+    color: var(--dhbw-text-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
   a {
-    background: var(--dhbw-red-soft);
-    border-radius: 999px;
     color: var(--dhbw-red-dark);
-    font-size: 0.78rem;
-    font-weight: 800;
+    font-size: 0.84rem;
+    font-weight: 700;
     justify-self: start;
-    padding: 0.35rem 0.7rem;
+    overflow-wrap: anywhere;
     text-decoration: none;
+    user-select: text;
 
     &:hover,
     &:focus-visible {
-      background: var(--dhbw-red);
-      color: var(--dhbw-surface);
+      color: var(--dhbw-red);
       outline: none;
+      text-decoration: underline;
     }
   }
 }

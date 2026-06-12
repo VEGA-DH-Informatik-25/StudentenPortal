@@ -78,6 +78,7 @@ describe('ContactBookPage', () => {
 
     expect(fixture.nativeElement.querySelector('.favorites-dropdown__count')?.textContent.trim()).toBe('1');
     expect(fixture.nativeElement.textContent).toContain('Alice Example');
+    expect(fixture.nativeElement.textContent).toContain('alice@dhbw-loerrach.de');
 
     favoriteButton.click();
     fixture.detectChanges();

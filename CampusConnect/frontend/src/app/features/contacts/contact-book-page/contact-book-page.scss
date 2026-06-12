@@ -7,7 +7,7 @@
     border-bottom: 1px solid var(--dhbw-border);
     display: flex;
     gap: 1rem;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0.4rem 0 1.35rem;
 
     p {
@@ -23,15 +23,6 @@
       font-size: 3.2rem;
       line-height: 1;
       margin: 0;
-    }
-
-    > span {
-      background: var(--dhbw-surface);
-      border: 1px solid var(--dhbw-border);
-      border-radius: 8px;
-      color: var(--dhbw-red-dark);
-      font-weight: 800;
-      padding: 0.55rem 0.75rem;
     }
   }
 
