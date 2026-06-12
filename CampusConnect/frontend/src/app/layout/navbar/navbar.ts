@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { I18n } from '../../core/i18n/i18n';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
@@ -16,6 +16,7 @@ export class Navbar {
   protected readonly _auth = inject(Auth);
   protected readonly _i18n = inject(I18n);
   protected readonly _isMenuOpen = signal(false);
+  @ViewChild('profileMenu') private readonly _profileMenu?: ElementRef<HTMLDetailsElement>;
 
   protected readonly _profileInitials = computed(() => {
     const displayName = this._auth.displayName().trim();
@@ -50,6 +51,17 @@ export class Navbar {
 
   protected roleLabel(role: string): string {
     return this._i18n.roleLabel(role);
+  }
+
+  @HostListener('document:click', ['$event.target'])
+  protected closeProfileMenuOnOutsideClick(target: EventTarget | null): void {
+    const profileMenu = this._profileMenu?.nativeElement;
+
+    if (!profileMenu?.open || !(target instanceof Node) || profileMenu.contains(target)) {
+      return;
+    }
+
+    profileMenu.open = false;
   }
 }
 

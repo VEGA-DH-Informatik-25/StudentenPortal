@@ -1,5 +1,7 @@
 # CampusConnect – Projektbeschreibung
 
+> **Dokumenttyp:** Produktumfang und Projektkontext. Technische Detailangaben werden bei Abweichungen durch `AGENTS.md`, `CampusConnect/README.md`, die Dokumente unter `CampusConnect/docs/` und den Live-Code ersetzt.
+
 ## Projektidee
 
 CampusConnect ist ein webbasiertes Studierendenportal für die DHBW Lörrach. Es bündelt
@@ -88,7 +90,7 @@ Tabellen oder Notizen verwaltet.
 | Authentifizierung | JWT Bearer, Token im Frontend nur im Arbeitsspeicher |
 | Externe API | SWFR Mensa XML-API |
 | Containerisierung | Docker Compose als Platzhalter |
-| CI/CD | GitHub Actions als Platzhalter |
+| CI/CD | GitHub Actions mit Backend-Restore/-Build/-Tests und Frontend-Install/-Tests/-Build |
 | Testing | xUnit, Angular CLI/Vitest-Setup |
 
 ---

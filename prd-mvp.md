@@ -1,5 +1,7 @@
 # Produktanforderungsdokument (PRD) – MVP
 
+> **Status: Produktanforderungen und Zielbild.** Dieses Dokument ist keine Beschreibung des aktuellen Implementierungsstands. Für vorhandene Endpunkte, Datenmodelle und technische Regeln sind `AGENTS.md`, `CampusConnect/docs/api.md`, `CampusConnect/docs/architecture.md` und der Live-Code maßgeblich.
+
 ## 1. Produktvision
 
 > CampusConnect ist ein zentrales, webbasiertes Portal für Studierende, Lehrpersonen und Verwaltung der DHBW Lörrach, das Studienalltag‑Infos und Kern‑Workflows (News‑Feed, Gruppen, Mensa, Stundenplan, Noten, Kontakte) an einem Ort bündelt.
@@ -40,8 +42,15 @@
 | Kontaktbuch                             | • Nutzer kann Personen suchen (Name/E‑Mail/Kurs/Studiengang/Ort) und Kontaktdaten einsehen<br>• Sichtbar: Name, E‑Mail, Kurs, Studiengang, Semester, Telefon, Standort (keine Profilnotiz)                                                             |
 | Admin‑Bereich                           | • Admin kann Nutzer verwalten (Rolle/Kurs ändern, löschen, Passwort zurücksetzen) und Kurse anlegen/listen<br>• Admin‑Zugriff ist geschützt (nur `Admin`)                                                                                               |
 | Onboarding‑Feed/Guided Start            | • Spezifikation siehe onboarding.md             |
+| Anpassung auf Laptop und Ipad           | - Website soll auf Laptop als auch Ipad zugeschnitten werden|
 
 <!-- Weitere Features bei Bedarf … -->
+
+## Could Haves
+
+- Anpassung fürs Handy wenn noch Zeit
+- Darkmode
+- Prüfungskalender in den eigene Prüfungen eingetragen werden können
 
 ## 6. Nicht‑Ziele
 

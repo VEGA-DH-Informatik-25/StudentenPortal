@@ -1,5 +1,7 @@
 # Konzept: Gruppenfunktion in CampusConnect
 
+> **Status: Fachliches Konzept.** Teile davon sind implementiert, andere können vom aktuellen Verhalten abweichen. Für bestehende Gruppenrollen, Berechtigungen und Endpunkte sind `CampusConnect/docs/api.md` und der Live-Code maßgeblich.
+
 ## 1. Ziel der Gruppenfunktion
 
 Die Gruppenfunktion soll verschiedene Kommunikationsräume innerhalb von CampusConnect ermöglichen. Dabei sollen offizielle Informationen, kursbezogene Kommunikation und freie Campus-Gruppen sauber voneinander getrennt werden.
@@ -65,7 +67,7 @@ Darf Gruppe erstellen?
 
                         Offiziell    Kursgruppe    Campus-Gruppe
 Student                     Nein         Nein            Ja
-Lehrer                      Nein         Nein            Ja
+Lehrer                      Nein          Ja            Ja
 Management                   Ja           Ja             Ja
 Admin                        Ja           Ja             Ja
 ```
@@ -73,7 +75,7 @@ Admin                        Ja           Ja             Ja
 | Rolle | Offizielle Gruppe erstellen | Kursgruppe erstellen | Campus-Gruppe erstellen |
 |---|---:|---:|---:|
 | Student | Nein | Nein | Ja |
-| Lehrer | Nein | Nein | Ja |
+| Lehrer | Nein | Ja | Ja |
 | Management | Ja | Ja | Ja |
 | Admin | Ja | Ja | Ja |
 

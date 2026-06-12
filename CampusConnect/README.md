@@ -24,16 +24,16 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 | Frontend | Angular 21 |
 | Backend | ASP.NET Core 10 |
 | Datenbank | SQLite |
-| Authentifizierung | JWT |
+| Authentifizierung | JWT Bearer und HttpOnly-Browser-Cookie |
 | Containerisierung | Docker Compose *(Platzhalter, noch nicht produktiv eingerichtet)* |
-| CI/CD | GitHub Actions *(Platzhalter, noch nicht produktiv eingerichtet)* |
+| CI/CD | GitHub Actions *(Restore, Build und Tests für Backend und Frontend)* |
 
 ---
 
 ## Erste Schritte
 
 1. Repository klonen.
-2. Voraussetzungen installieren: Node.js und .NET 10 SDK.
+2. Voraussetzungen installieren: Node.js 24, npm 11 und .NET 10 SDK.
 3. Im Ordner `frontend/` den Befehl `npm install` ausführen.
 4. Im Ordner `backend/` den Befehl `dotnet restore .\CampusConnect.slnx` ausführen.
 5. Die API mit `dotnet run --project .\CampusConnect.API\CampusConnect.API.csproj` starten.
@@ -46,7 +46,7 @@ CampusConnect ist ein Studierendenportal für die DHBW Lörrach. Es bietet einen
 
 ### Systemüberblick
 
-CampusConnect verwendet eine Drei-Schichten-Architektur: eine Angular-Single-Page-Application als Präsentationsschicht, eine ASP.NET-Core-REST-API als Geschäfts- und Datenzugriffsschicht sowie eine SQLite-Datenbank als aktuelle Persistenzschicht. Jede Schicht kommuniziert ausschließlich mit der benachbarten Schicht.
+CampusConnect besteht aus einer Angular-Single-Page-Application und einem ASP.NET-Core-Backend in Clean-Architecture-Aufteilung. Das Backend trennt Domain, Application, Infrastructure und API; SQLite ist die aktuelle Persistenz. Die API ist zugleich HTTP- und Composition-Root und bindet Application sowie Infrastructure ein.
 
 ### Frontend-Architektur
 
@@ -57,6 +57,7 @@ Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenstän
 - **Lazy Loading**: Alle Feature-Bereiche werden über `loadComponent` erst bei Bedarf geladen.
 - **Functional Guards & Interceptors**: `CanActivateFn` und `HttpInterceptorFn`, registriert via `provideHttpClient(withInterceptors([...]))`.
 - **`withComponentInputBinding()`**: Route-Parameter direkt an Component-Inputs bindbar.
+- **Eigene Internationalisierung**: Englisch und Deutsch werden über `core/i18n/translations.ts`, den `TranslatePipe` und den `I18n`-Service bereitgestellt. Neue UI-Texte benötigen immer beide Übersetzungen.
 
 ### Backend-Architektur
 
@@ -66,10 +67,10 @@ Das Backend folgt der **Clean Architecture** mit vier Schichten:
 |---|---|---|
 | Domain | `CampusConnect.Domain` | *(keine)* |
 | Application | `CampusConnect.Application` | Domain |
-| Infrastructure | `CampusConnect.Infrastructure` | Application |
-| API | `CampusConnect.API` | Application |
+| Infrastructure | `CampusConnect.Infrastructure` | Application *(Domain transitiv)* |
+| API | `CampusConnect.API` | Application und Infrastructure |
 
-Abhängigkeiten zeigen stets nach innen zur Domain-Schicht. Infrastructure und API implementieren Interfaces, die in der Application-Schicht definiert sind.
+Domain ist unabhängig. Application referenziert Domain, Infrastructure referenziert Application und die API bindet Application und Infrastructure als HTTP- und Composition-Root ein. Controller greifen nicht direkt auf Repositories oder den DbContext zu.
 
 ### Externe APIs
 
@@ -123,6 +124,7 @@ Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung;
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
 | DELETE | `/api/calendar/{id}` | Eigenen Prüfungseintrag löschen | Ja |
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
+| GET | `/api/grades/plan` | Studienplan für den Profilkurs abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
 | GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen | Ja |
@@ -205,21 +207,23 @@ Beispiele:
 ### Tests ausführen
 
 **Frontend:**
-```bash
+```powershell
 cd frontend
-ng test
+npm test
 ```
 
 **Backend:**
-```bash
+```powershell
 cd backend
-dotnet test
+dotnet test .\CampusConnect.slnx
 ```
 
 ---
 
 ## Links
 
-- [GitHub-Projects-Board](#) *(Platzhalter)*
 - [API-Dokumentation](docs/api.md)
-- [SWFR-Mensa-API](#) *(Platzhalter – swfr.de/apispeiseplan)*
+- [Architektur](docs/architecture.md)
+- [Testkonventionen](docs/testing.md)
+- [Demo-Daten](docs/demo-data.md)
+- [SWFR-Speiseplan-API](https://www.swfr.de/apispeiseplan)

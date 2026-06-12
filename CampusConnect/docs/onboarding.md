@@ -1,5 +1,7 @@
 # Onboarding für CampusConnect
 
+> **Status: Produktkonzept, nicht vollständig implementiert.** Der aktuelle Code besitzt keinen vollständigen Guided-Tour-Flow und kein persistiertes Feld `onboarding_completed`. Dieses Dokument beschreibt ein mögliches Zielbild, nicht den aktuellen API- oder Datenbankstand.
+
 ## Ziel
 Neue Studierende in unter 5 Minuten produktiv machen.
 
@@ -43,7 +45,7 @@ Neue Studierende in unter 5 Minuten produktiv machen.
 - 3 vorgeschlagene Gruppen basierend auf Studiengang
 - "Beitreten" Button für jede
 - Skip möglich
-
+- Eine Gruppen-Chat-Funktion gehört nicht zum aktuellen Produktumfang und ist nicht Bestandteil dieses Konzepts.
 
 ---
 
@@ -64,5 +66,5 @@ Neue Studierende in unter 5 Minuten produktiv machen.
 
 ## Technische Anmerkungen
 
-- **Onboarding-Status speichern** im Backend (User-Flag `onboarding_completed`)
+- **Mögliche spätere Umsetzung:** Onboarding-Status im Backend speichern. Dafür wären ein bewusstes Schema- und API-Design, eine EF-Migration, Tests sowie Aktualisierungen an `api.md` und `architecture.md` erforderlich.
 - **Auto-Retry**: Falls Hochschul-Daten nicht laden, nicht blockieren – später neu versuchen
