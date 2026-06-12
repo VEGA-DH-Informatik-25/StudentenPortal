@@ -42,6 +42,7 @@ describe('GroupsPage', () => {
     hasPendingJoinRequest: false,
     hasPendingInvitation: false,
     pendingJoinRequestCount: 0,
+    canDelete: false,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: true,

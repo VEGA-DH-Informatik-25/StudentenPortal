@@ -34,7 +34,9 @@ export class GroupDetailPage implements OnInit {
   protected readonly _isLoading = signal(false);
   protected readonly _isJoining = signal(false);
   protected readonly _error = signal('');
+  protected readonly _notice = signal('');
   protected readonly _newContent = signal('');
+  protected readonly _allowComments = signal(true);
   protected readonly _commentDrafts = signal<Record<string, string>>({});
   protected readonly _openCommentPostIds = signal<string[]>([]);
   protected readonly _commentingPostIds = signal<string[]>([]);
@@ -97,12 +99,16 @@ export class GroupDetailPage implements OnInit {
     }
 
     this._error.set('');
-    this._feedService.createPost({ content, groupId: group.id }).subscribe({
+    this._notice.set('');
+    this._feedService.createPost({ content, groupId: group.id, allowComments: group.settings.allowComments && this._allowComments() }).subscribe({
       next: post => {
-        if (post.group.id === group.id) {
+        if (post.group.id === group.id && post.status === 'Published') {
           this._posts.update(posts => [post, ...posts]);
+        } else if (post.status === 'Pending') {
+          this._notice.set(this._i18n.translate('feed.pendingNotice'));
         }
         this._newContent.set('');
+        this._allowComments.set(true);
       },
       error: () => this._error.set(this._i18n.translate('feed.createPostError')),
     });
@@ -174,6 +180,10 @@ export class GroupDetailPage implements OnInit {
 
   protected updateContent(value: string): void {
     this._newContent.set(value);
+  }
+
+  protected updateAllowComments(value: boolean): void {
+    this._allowComments.set(value);
   }
 
   protected updateCommentDraft(postId: string, value: string): void {

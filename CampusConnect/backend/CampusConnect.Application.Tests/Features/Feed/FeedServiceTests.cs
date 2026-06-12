@@ -127,6 +127,88 @@ public class FeedServiceTests
     }
 
     [Fact]
+    public async Task CreatePostAsync_WhenApprovalIsRequired_LeavesMemberPostPending()
+    {
+        var owner = Student("Owner", "owner@dhbw-loerrach.de");
+        var member = Student("Member", "member@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(member.Id);
+        group.Settings.RequiresApproval = true;
+        var feed = new FakeFeedRepository();
+        var service = new FeedService(feed, new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(member.Id, group.Id, "Please review", AllowComments: false));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Pending", result.Value!.Status);
+        Assert.False(result.Value.AllowComments);
+        Assert.Equal(FeedPostStatus.Pending, feed.Posts.Single().Status);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_WhenApprovalIsRequired_PublishesModeratorPostImmediately()
+    {
+        var owner = Student("Owner", "owner@dhbw-loerrach.de");
+        var moderator = Student("Moderator", "moderator@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(moderator.Id);
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
+        group.Settings.RequiresApproval = true;
+        var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(owner, moderator));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(moderator.Id, group.Id, "Published now"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Published", result.Value!.Status);
+    }
+
+    [Fact]
+    public async Task GetFeedAsync_HidesPendingPosts()
+    {
+        var owner = Student("Owner", "owner@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        var pending = new FeedPost
+        {
+            AuthorId = owner.Id,
+            AuthorName = owner.DisplayName,
+            GroupId = group.Id,
+            Content = "Waiting",
+            Status = FeedPostStatus.Pending
+        };
+        var service = new FeedService(new FakeFeedRepository(pending), new FakeGroupRepository(group), new FakeUserRepository(owner));
+
+        var result = await service.GetFeedAsync(owner.Id);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task ApprovePostAsync_AllowsModeratorAndPublishesPost()
+    {
+        var owner = Student("Owner", "owner@dhbw-loerrach.de");
+        var moderator = Student("Moderator", "moderator@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.Add(moderator.Id);
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
+        var post = new FeedPost
+        {
+            AuthorId = owner.Id,
+            AuthorName = owner.DisplayName,
+            GroupId = group.Id,
+            Content = "Waiting",
+            Status = FeedPostStatus.Pending
+        };
+        var feed = new FakeFeedRepository(post);
+        var service = new FeedService(feed, new FakeGroupRepository(group), new FakeUserRepository(owner, moderator));
+
+        var result = await service.ApprovePostAsync(post.Id, moderator.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Published", result.Value!.Status);
+        Assert.Equal(FeedPostStatus.Published, (await feed.FindByIdAsync(post.Id))!.Status);
+    }
+
+    [Fact]
     public async Task GetFeedAsync_HidesPrivateUnassignedGroupPosts()
     {
         var user = new User
@@ -208,6 +290,47 @@ public class FeedServiceTests
         Assert.Equal("I am in.", comment.Content);
         Assert.Equal("alice@dhbw-loerrach.de", comment.Author?.Email);
         Assert.True(comment.CanDelete);
+    }
+
+    [Fact]
+    public async Task AddCommentAsync_WhenPostDisablesComments_RejectsComment()
+    {
+        var user = Student("Alice", "alice@dhbw-loerrach.de");
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(user.Id);
+        var post = new FeedPost
+        {
+            AuthorId = user.Id,
+            AuthorName = user.DisplayName,
+            GroupId = group.Id,
+            Content = "Read only",
+            AllowComments = false
+        };
+        var service = new FeedService(new FakeFeedRepository(post), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.AddCommentAsync(new CreateCommentCommand(post.Id, user.Id, "No comment"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Comments are closed in this group.", result.Error);
+    }
+
+    [Fact]
+    public async Task DeletePostAsync_AllowsGroupModeratorToRemoveForeignPost()
+    {
+        var owner = Student("Owner", "owner@dhbw-loerrach.de");
+        var moderator = Student("Moderator", "moderator@dhbw-loerrach.de");
+        var member = Student("Member", "member@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id, isDiscoverable: true);
+        group.AssignedUserIds.UnionWith([moderator.Id, member.Id]);
+        group.MemberRoles[moderator.Id] = GroupRole.Moderator;
+        var post = new FeedPost { AuthorId = member.Id, AuthorName = member.DisplayName, GroupId = group.Id, Content = "Remove me" };
+        var feed = new FakeFeedRepository(post);
+        var service = new FeedService(feed, new FakeGroupRepository(group), new FakeUserRepository(owner, moderator, member));
+
+        var result = await service.DeletePostAsync(post.Id, moderator.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.Empty(feed.Posts);
     }
 
     [Fact]
@@ -351,6 +474,16 @@ public class FeedServiceTests
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = false }
     };
 
+    private static User Student(string displayName, string email) => new()
+    {
+        DisplayName = displayName,
+        Email = email,
+        StudyProgram = "Computer Science",
+        Semester = 2,
+        Course = "TIF25A",
+        Role = UserRole.Student
+    };
+
     private static CampusGroup SocialGroup(Guid ownerId, bool isDiscoverable) => new()
     {
         Name = "Housing in Loerrach",
@@ -374,10 +507,21 @@ public class FeedServiceTests
 
         public Task<FeedPost?> FindByIdAsync(Guid id) => Task.FromResult(_posts.FirstOrDefault(post => post.Id == id));
 
+        public Task<IReadOnlyList<FeedPost>> GetByGroupAsync(Guid groupId) =>
+            Task.FromResult<IReadOnlyList<FeedPost>>(_posts.Where(post => post.GroupId == groupId).ToList());
+
         public Task AddAsync(FeedPost post)
         {
             _posts.Add(post);
             return Task.CompletedTask;
+        }
+
+        public Task<FeedPost?> SetStatusAsync(Guid id, FeedPostStatus status)
+        {
+            var post = _posts.FirstOrDefault(post => post.Id == id);
+            if (post is not null)
+                post.Status = status;
+            return Task.FromResult(post);
         }
 
         public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment)
@@ -418,6 +562,12 @@ public class FeedServiceTests
         public Task DeleteAsync(Guid id)
         {
             _posts.RemoveAll(post => post.Id == id);
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteByGroupAsync(Guid groupId)
+        {
+            _posts.RemoveAll(post => post.GroupId == groupId);
             return Task.CompletedTask;
         }
     }

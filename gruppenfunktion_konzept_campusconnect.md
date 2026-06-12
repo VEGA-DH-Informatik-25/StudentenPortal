@@ -381,3 +381,22 @@ Gruppeneinstellungen entscheiden, wie offen oder moderiert eine Gruppe funktioni
 ```
 
 Damit bleibt das System flexibel genug für offizielle Hochschulkommunikation, Kursorganisation und freie Campus-Community-Gruppen.
+
+---
+
+## 18. Umsetzungsstand des MVP
+
+Der beschriebene MVP ist umgesetzt. Dazu gehören Gruppentypen und Erstellrechte, Gruppenrollen, zentrale Gruppeneinstellungen, Mitgliederverwaltung, Beitrittsanfragen, Einladungen und die Trennung von globalem Admin-Zugriff und sichtbarer Gruppenrolle.
+
+Für moderierte Gruppen gilt:
+
+- Beiträge normaler Mitglieder erhalten bei aktivierter Freigabe zunächst den Status `Pending`.
+- Besitzer, Moderatoren, berechtigte Kurslehrende und Admins veröffentlichen direkt.
+- Ausstehende Beiträge erscheinen in der Moderationskarte der Gruppeneinstellungen und können dort freigegeben oder endgültig abgelehnt werden.
+- Der normale Feed zeigt ausschließlich veröffentlichte Beiträge.
+
+Kommentare werden zweistufig gesteuert. Die Gruppe muss Kommentare grundsätzlich erlauben; zusätzlich entscheidet der Autor beim Erstellen, ob der einzelne Beitrag kommentierbar ist.
+
+Besitzer und Moderatoren dürfen Inhalte ihrer Gruppe moderieren. Besitzer dürfen eigene Campus- und offizielle Gruppen löschen. Kursgruppen dürfen ausschließlich von Admins gelöscht werden und können durch die automatische Kurssynchronisierung später erneut entstehen. Beim Löschen einer Gruppe werden ihre Beiträge ebenfalls gelöscht.
+
+Weiterhin nicht Bestandteil des MVP sind Beitragsbearbeitung, Meldungen, Gruppenbilder, Archivierung und die Umwandlung eines Gruppentyps.

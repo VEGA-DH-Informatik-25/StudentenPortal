@@ -35,6 +35,7 @@ export interface CampusGroup {
   hasPendingJoinRequest: boolean;
   hasPendingInvitation: boolean;
   pendingJoinRequestCount: number;
+  canDelete: boolean;
   groupRole: GroupRole;
   isSystemAdminAccess: boolean;
   isCourseManaged: boolean;

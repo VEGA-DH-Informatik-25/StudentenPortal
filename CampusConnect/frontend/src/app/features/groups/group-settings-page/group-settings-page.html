@@ -1,82 +1,69 @@
 <div class="group-settings-page">
-  <button type="button" class="group-settings-page__back" (click)="backToGroups()">
-    <span class="group-settings-page__back-arrow" aria-hidden="true">←</span>
-    {{ 'groups.back' | translate }}
-  </button>
+  <nav class="settings-nav" [attr.aria-label]="'groups.back' | translate">
+    <button type="button" (click)="backToGroups()"><span aria-hidden="true">&larr;</span>{{ 'groups.back' | translate }}</button>
+  </nav>
 
   @if (_error()) {
-    <p class="group-settings-page__state group-settings-page__state--error">{{ _error() }}</p>
+    <p class="settings-state settings-state--error">{{ _error() }}</p>
   }
 
   @if (_isLoading()) {
-    <p class="group-settings-page__state">{{ 'groups.settingsLoad' | translate }}</p>
+    <p class="settings-state">{{ 'groups.settingsLoad' | translate }}</p>
   } @else if (_group(); as group) {
-    <header class="group-settings-page__header" [style.border-left-color]="group.accentColor">
-      <span class="group-settings-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
-      <div>
+    <header class="settings-hero" [style.border-left-color]="group.accentColor">
+      <span class="settings-hero__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
+      <div class="settings-hero__copy">
         <p>{{ 'groups.settingsHeader' | translate }}</p>
-        <h2>{{ groupName(group) }}</h2>
+        <h1>{{ groupName(group) }}</h1>
         <span>{{ groupDescription(group) }}</span>
+        <div class="settings-hero__meta">
+          <span>{{ groupAudience(group) }}</span>
+          <span>{{ groupOwnerLabel(group) }}</span>
+          <span>{{ joinRuleLabel(group.settings.joinRule) }}</span>
+        </div>
       </div>
     </header>
 
     @if (_isSystemAdminAccess()) {
-      <p class="group-settings-page__state group-settings-page__admin-note">
-        <strong>{{ 'groups.role.adminAccess' | translate }}</strong> · {{ 'groups.role.adminAccessNote' | translate }}
+      <p class="settings-state settings-state--note">
+        <strong>{{ 'groups.role.adminAccess' | translate }}</strong>
+        <span>{{ 'groups.role.adminAccessNote' | translate }}</span>
       </p>
     }
 
-    <div class="group-settings-layout">
+    <div class="settings-grid settings-grid--primary">
       @if (_canEditSettings()) {
-        <section class="settings-block" [attr.aria-label]="'groups.settingsBehavior' | translate">
-          <header>
-            <h3>{{ 'groups.rules' | translate }}</h3>
-            <p>{{ groupOwnerLabel(group) }} · {{ groupAudience(group) }}</p>
+        <section class="settings-card" [attr.aria-label]="'groups.settingsBehavior' | translate">
+          <header class="settings-card__head">
+            <span>{{ 'groups.settingsBehavior' | translate }}</span>
+            <h2>{{ 'groups.rules' | translate }}</h2>
+            <p>{{ groupOwnerLabel(group) }} &middot; {{ groupAudience(group) }}</p>
           </header>
 
-          <div class="settings-block__controls">
-            <label>
+          <div class="rule-list">
+            <label class="rule-row">
               <span>{{ 'groups.policy.studentPosts' | translate }}</span>
-              <input
-                type="checkbox"
-                [checked]="group.settings.allowStudentPosts"
-                [disabled]="!!_savingSetting()"
-                (change)="updateSetting('allowStudentPosts', $any($event.target).checked)">
+              <input type="checkbox" [checked]="group.settings.allowStudentPosts" [disabled]="!!_savingSetting()" (change)="updateSetting('allowStudentPosts', $any($event.target).checked)">
+              <i aria-hidden="true"></i>
             </label>
-
-            <label>
+            <label class="rule-row">
               <span>{{ 'groups.policy.comments' | translate }}</span>
-              <input
-                type="checkbox"
-                [checked]="group.settings.allowComments"
-                [disabled]="!!_savingSetting()"
-                (change)="updateSetting('allowComments', $any($event.target).checked)">
+              <input type="checkbox" [checked]="group.settings.allowComments" [disabled]="!!_savingSetting()" (change)="updateSetting('allowComments', $any($event.target).checked)">
+              <i aria-hidden="true"></i>
             </label>
-
-            <label>
+            <label class="rule-row">
               <span>{{ 'groups.policy.approval' | translate }}</span>
-              <input
-                type="checkbox"
-                [checked]="group.settings.requiresApproval"
-                [disabled]="!!_savingSetting()"
-                (change)="updateSetting('requiresApproval', $any($event.target).checked)">
+              <input type="checkbox" [checked]="group.settings.requiresApproval" [disabled]="!!_savingSetting()" (change)="updateSetting('requiresApproval', $any($event.target).checked)">
+              <i aria-hidden="true"></i>
             </label>
-
-            <label>
+            <label class="rule-row">
               <span>{{ 'groups.discoverable' | translate }}</span>
-              <input
-                type="checkbox"
-                [checked]="group.settings.isDiscoverable"
-                [disabled]="!!_savingSetting()"
-                (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
+              <input type="checkbox" [checked]="group.settings.isDiscoverable" [disabled]="!!_savingSetting()" (change)="updateSetting('isDiscoverable', $any($event.target).checked)">
+              <i aria-hidden="true"></i>
             </label>
-
-            <label class="settings-block__select">
+            <label class="rule-select">
               <span>{{ 'groups.joinRule' | translate }}</span>
-              <select
-                [value]="group.settings.joinRule"
-                [disabled]="!!_savingSetting()"
-                (change)="updateJoinRule($any($event.target).value)">
+              <select [value]="group.settings.joinRule" [disabled]="!!_savingSetting()" (change)="updateJoinRule($any($event.target).value)">
                 <option value="Open">{{ 'groups.joinRule.open' | translate }}</option>
                 <option value="RequestRequired">{{ 'groups.joinRule.request' | translate }}</option>
                 <option value="InviteOnly">{{ 'groups.joinRule.invite' | translate }}</option>
@@ -85,200 +72,192 @@
           </div>
 
           @if (group.officialCategory) {
-            <p class="settings-block__hint">{{ 'groups.officialCategory' | translate }}: <strong>{{ group.officialCategory }}</strong></p>
+            <p class="settings-card__hint">{{ 'groups.officialCategory' | translate }}: <strong>{{ group.officialCategory }}</strong></p>
           }
-
           @if (_savingSetting()) {
-            <p class="settings-block__hint">{{ 'groups.settingSaving' | translate }}</p>
+            <p class="settings-card__hint">{{ 'groups.settingSaving' | translate }}</p>
           }
         </section>
       }
 
-      <section class="settings-block" [attr.aria-label]="'groups.members' | translate">
-        <header>
-          <h3>{{ 'groups.members' | translate }}</h3>
+      <section class="settings-card" [attr.aria-label]="'groups.members' | translate">
+        <header class="settings-card__head">
+          <span>{{ 'groups.settingsHeader' | translate }}</span>
+          <h2>{{ 'groups.members' | translate }}</h2>
           <p>{{ 'groups.membersCount' | translate:{ count: _members().length } }}</p>
         </header>
 
         @if (_isCourseManaged()) {
-          <p class="settings-block__hint">{{ 'groups.courseManagedNote' | translate }}</p>
+          <p class="settings-card__hint">{{ 'groups.courseManagedNote' | translate }}</p>
         }
 
-        <ul class="member-list">
+        <ul class="compact-list">
           @for (member of _members(); track member.id) {
-            <li class="member-row" [class.member-row--owner]="member.isOwner">
-              <span class="member-row__identity">
+            <li class="person-row" [class.person-row--owner]="member.isOwner">
+              <span class="person-row__identity">
                 <strong>{{ member.displayName }}</strong>
                 <small>{{ member.email }}</small>
-                <small class="member-row__meta">{{ roleLabel(member.role) }}{{ member.course ? ' · ' + member.course : '' }}</small>
+                <small>{{ roleLabel(member.role) }}{{ member.course ? ' · ' + member.course : '' }}</small>
               </span>
-
               @if (member.isOwner) {
-                <span class="member-row__role-badge member-row__role-badge--owner">{{ groupRoleLabel('Owner') }}</span>
+                <span class="role-badge role-badge--owner">{{ groupRoleLabel('Owner') }}</span>
               } @else if (canEditMemberRole(member)) {
-                <label class="member-row__role">
+                <label class="role-select">
                   <span class="visually-hidden">{{ 'groups.role.label' | translate }} {{ member.displayName }}</span>
-                  <select
-                    [value]="member.groupRole"
-                    [disabled]="isMemberBusy(member)"
-                    (change)="changeMemberRole(member, $any($event.target).value)">
+                  <select [value]="member.groupRole" [disabled]="isMemberBusy(member)" (change)="changeMemberRole(member, $any($event.target).value)">
                     <option value="Member">{{ groupRoleLabel('Member') }}</option>
                     <option value="Moderator" [disabled]="!canAssignModeratorRole(member)">{{ groupRoleLabel('Moderator') }}</option>
                   </select>
                 </label>
               } @else {
-                <span class="member-row__role-badge">{{ groupRoleLabel(member.groupRole) }}</span>
+                <span class="role-badge">{{ groupRoleLabel(member.groupRole) }}</span>
               }
-
               @if (!member.isOwner && _canManageMembers() && !_isCourseManaged()) {
-                <button
-                  type="button"
-                  class="member-row__remove"
-                  [disabled]="isMemberBusy(member)"
-                  (click)="removeMember(member)"
-                  [attr.aria-label]="'groups.removeMember' | translate">
-                  ×
-                </button>
+                <button type="button" class="icon-button" [disabled]="isMemberBusy(member)" (click)="removeMember(member)" [attr.aria-label]="'groups.removeMember' | translate">&times;</button>
               }
             </li>
           } @empty {
-            <li class="member-list__empty">{{ 'groups.membersEmpty' | translate }}</li>
+            <li class="empty-row">{{ 'groups.membersEmpty' | translate }}</li>
           }
         </ul>
       </section>
+    </div>
 
-      @if (_canManageMembers() && !_isCourseManaged()) {
-        <section class="settings-block" [attr.aria-label]="'groups.joinRequests' | translate">
-          <header>
-            <h3>{{ 'groups.joinRequests' | translate }}</h3>
+    <section class="settings-card settings-card--wide" [attr.aria-label]="'groups.moderation' | translate">
+      <header class="settings-card__head settings-card__head--inline">
+        <div>
+          <span>{{ 'groups.moderationLabel' | translate }}</span>
+          <h2>{{ 'groups.moderation' | translate }}</h2>
+          <p>{{ 'groups.moderationBody' | translate }}</p>
+        </div>
+        <strong class="count-badge">{{ _pendingPosts().length }}</strong>
+      </header>
+
+      <ul class="compact-list moderation-list">
+        @for (post of _pendingPosts(); track post.id) {
+          <li class="moderation-row">
+            <div>
+              <span class="moderation-row__meta">{{ post.authorName }} &middot; {{ post.createdAt | date:'short':'':_i18n.locale() }}</span>
+              <p>{{ post.content }}</p>
+              <small>{{ post.allowComments ? ('groups.commentPolicy.open' | translate) : ('groups.commentPolicy.closed' | translate) }}</small>
+            </div>
+            <span class="row-actions">
+              <button type="button" class="primary-action" [disabled]="isPostBusy(post)" (click)="approvePost(post)">{{ 'groups.approve' | translate }}</button>
+              <button type="button" class="secondary-action" [disabled]="isPostBusy(post)" (click)="rejectPost(post)">{{ 'groups.reject' | translate }}</button>
+            </span>
+          </li>
+        } @empty {
+          <li class="empty-row">{{ 'groups.moderationEmpty' | translate }}</li>
+        }
+      </ul>
+    </section>
+
+    @if (_canManageMembers() && !_isCourseManaged()) {
+      <div class="settings-grid">
+        <section class="settings-card" [attr.aria-label]="'groups.joinRequests' | translate">
+          <header class="settings-card__head">
+            <span>{{ 'groups.settingsHeader' | translate }}</span>
+            <h2>{{ 'groups.joinRequests' | translate }}</h2>
             <p>{{ 'groups.joinRequestsBody' | translate }}</p>
           </header>
-
-          <ul class="candidate-list">
+          <ul class="compact-list">
             @for (request of _joinRequests(); track request.id) {
-              <li class="candidate-row">
-                <span class="candidate-row__identity">
-                  <strong>{{ request.displayName }}</strong>
-                  <small>{{ request.email }}</small>
-                  <small class="candidate-row__meta">{{ roleLabel(request.role) }}{{ request.course ? ' · ' + request.course : '' }}</small>
-                </span>
-                <span class="candidate-row__actions">
-                  <button type="button" class="candidate-row__add" [disabled]="isRequestBusy(request)" (click)="approveRequest(request)">
-                    {{ 'groups.approve' | translate }}
-                  </button>
-                  <button type="button" class="member-row__remove" [disabled]="isRequestBusy(request)" (click)="rejectRequest(request)" [attr.aria-label]="'groups.reject' | translate">
-                    ×
-                  </button>
+              <li class="person-row">
+                <span class="person-row__identity"><strong>{{ request.displayName }}</strong><small>{{ request.email }}</small><small>{{ roleLabel(request.role) }}{{ request.course ? ' · ' + request.course : '' }}</small></span>
+                <span class="row-actions">
+                  <button type="button" class="primary-action" [disabled]="isRequestBusy(request)" (click)="approveRequest(request)">{{ 'groups.approve' | translate }}</button>
+                  <button type="button" class="icon-button" [disabled]="isRequestBusy(request)" (click)="rejectRequest(request)" [attr.aria-label]="'groups.reject' | translate">&times;</button>
                 </span>
               </li>
             } @empty {
-              <li class="candidate-list__empty">{{ 'groups.joinRequestsEmpty' | translate }}</li>
+              <li class="empty-row">{{ 'groups.joinRequestsEmpty' | translate }}</li>
             }
           </ul>
         </section>
 
-        <section class="settings-block" [attr.aria-label]="'groups.invitations' | translate">
-          <header>
-            <h3>{{ 'groups.invitations' | translate }}</h3>
+        <section class="settings-card" [attr.aria-label]="'groups.invitations' | translate">
+          <header class="settings-card__head">
+            <span>{{ 'groups.settingsHeader' | translate }}</span>
+            <h2>{{ 'groups.invitations' | translate }}</h2>
             <p>{{ 'groups.invitationsBody' | translate }}</p>
           </header>
-
-          <ul class="candidate-list">
+          <ul class="compact-list">
             @for (invitation of _invitations(); track invitation.id) {
-              <li class="candidate-row">
-                <span class="candidate-row__identity">
-                  <strong>{{ invitation.displayName }}</strong>
-                  <small>{{ invitation.email }}</small>
-                  <small class="candidate-row__meta">{{ roleLabel(invitation.role) }}{{ invitation.course ? ' · ' + invitation.course : '' }}</small>
-                </span>
-                <button type="button" class="member-row__remove" [disabled]="isRequestBusy(invitation)" (click)="cancelInvitation(invitation)" [attr.aria-label]="'groups.cancelInvitation' | translate">
-                  ×
-                </button>
+              <li class="person-row">
+                <span class="person-row__identity"><strong>{{ invitation.displayName }}</strong><small>{{ invitation.email }}</small><small>{{ roleLabel(invitation.role) }}{{ invitation.course ? ' · ' + invitation.course : '' }}</small></span>
+                <button type="button" class="icon-button" [disabled]="isRequestBusy(invitation)" (click)="cancelInvitation(invitation)" [attr.aria-label]="'groups.cancelInvitation' | translate">&times;</button>
               </li>
             } @empty {
-              <li class="candidate-list__empty">{{ 'groups.invitationsEmpty' | translate }}</li>
+              <li class="empty-row">{{ 'groups.invitationsEmpty' | translate }}</li>
             }
           </ul>
         </section>
-      }
+      </div>
 
-      @if (_canManageMembers() && !_isCourseManaged()) {
-        <section class="settings-block" [attr.aria-label]="'groups.addMembers' | translate">
-          <header>
-            <h3>{{ 'groups.addMembers' | translate }}</h3>
-            <p>{{ 'groups.addMembersBody' | translate }}</p>
-          </header>
+      <section class="settings-card settings-card--wide" [attr.aria-label]="'groups.addMembers' | translate">
+        <header class="settings-card__head">
+          <span>{{ 'groups.settingsHeader' | translate }}</span>
+          <h2>{{ 'groups.addMembers' | translate }}</h2>
+          <p>{{ 'groups.addMembersBody' | translate }}</p>
+        </header>
 
-          <div class="member-search">
-            <label>
-              <span>{{ 'groups.searchMembers' | translate }}</span>
-              <input
-                type="search"
-                [placeholder]="'groups.searchMembersPlaceholder' | translate"
-                [value]="_searchTerm()"
-                (input)="updateSearchTerm($any($event.target).value)"
-                (keyup.enter)="searchCandidates()">
-            </label>
-            <button type="button" class="member-search__button" [disabled]="_searching()" (click)="searchCandidates()">
-              @if (_searching()) {
-                {{ 'common.searching' | translate }}
-              } @else {
-                {{ 'common.search' | translate }}
+        <div class="search-row">
+          <label>
+            <span>{{ 'groups.searchMembers' | translate }}</span>
+            <input type="search" [placeholder]="'groups.searchMembersPlaceholder' | translate" [value]="_searchTerm()" (input)="updateSearchTerm($any($event.target).value)" (keyup.enter)="searchCandidates()">
+          </label>
+          <button type="button" class="primary-action" [disabled]="_searching()" (click)="searchCandidates()">{{ (_searching() ? 'common.searching' : 'common.search') | translate }}</button>
+        </div>
+
+        <ul class="compact-list candidate-results">
+          @for (candidate of _candidates(); track candidate.id) {
+            <li class="person-row">
+              <span class="person-row__identity"><strong>{{ candidate.displayName }}</strong><small>{{ candidate.email }}</small><small>{{ roleLabel(candidate.role) }}{{ candidate.course ? ' · ' + candidate.course : '' }}</small></span>
+              <span class="row-actions">
+                <button type="button" class="primary-action" [disabled]="isCandidateBusy(candidate)" (click)="addMember(candidate)">{{ 'groups.add' | translate }}</button>
+                <button type="button" class="secondary-action" [disabled]="isCandidateBusy(candidate)" (click)="inviteCandidate(candidate)">{{ 'groups.invite' | translate }}</button>
+              </span>
+            </li>
+          } @empty {
+            <li class="empty-row">{{ (_hasSearched() ? 'groups.candidatesEmpty' : 'groups.candidatesHint') | translate }}</li>
+          }
+        </ul>
+
+        <div class="course-add">
+          <div><h3>{{ 'groups.addCourse' | translate }}</h3><p>{{ 'groups.addCourseBody' | translate }}</p></div>
+          <label>
+            <span class="visually-hidden">{{ 'groups.selectCourse' | translate }}</span>
+            <select [value]="_selectedCourseCode()" (change)="updateSelectedCourse($any($event.target).value)">
+              <option value="">{{ 'groups.selectCourse' | translate }}</option>
+              @for (course of _courses(); track course.code) {
+                <option [value]="course.code">{{ course.code }} &middot; {{ course.studyProgram }}</option>
               }
-            </button>
-          </div>
+            </select>
+          </label>
+          <button type="button" class="secondary-action" [disabled]="!_selectedCourseCode() || _addingCourse()" (click)="addCourse()">{{ (_addingCourse() ? 'common.saving' : 'groups.addCourseButton') | translate }}</button>
+        </div>
+      </section>
+    }
 
-          <ul class="candidate-list">
-            @for (candidate of _candidates(); track candidate.id) {
-              <li class="candidate-row">
-                <span class="candidate-row__identity">
-                  <strong>{{ candidate.displayName }}</strong>
-                  <small>{{ candidate.email }}</small>
-                  <small class="candidate-row__meta">{{ roleLabel(candidate.role) }}{{ candidate.course ? ' · ' + candidate.course : '' }}</small>
-                </span>
-                <span class="candidate-row__actions">
-                  <button type="button" class="candidate-row__add" [disabled]="isCandidateBusy(candidate)" (click)="addMember(candidate)">
-                    {{ 'groups.add' | translate }}
-                  </button>
-                  <button type="button" class="member-search__button" [disabled]="isCandidateBusy(candidate)" (click)="inviteCandidate(candidate)">
-                    {{ 'groups.invite' | translate }}
-                  </button>
-                </span>
-              </li>
-            } @empty {
-              @if (_hasSearched()) {
-                <li class="candidate-list__empty">{{ 'groups.candidatesEmpty' | translate }}</li>
-              } @else {
-                <li class="candidate-list__empty">{{ 'groups.candidatesHint' | translate }}</li>
-              }
-            }
-          </ul>
-
-          <div class="course-add">
-            <h4>{{ 'groups.addCourse' | translate }}</h4>
-            <p>{{ 'groups.addCourseBody' | translate }}</p>
-            <div class="course-add__controls">
-              <label>
-                <span class="visually-hidden">{{ 'groups.selectCourse' | translate }}</span>
-                <select [value]="_selectedCourseCode()" (change)="updateSelectedCourse($any($event.target).value)">
-                  <option value="">{{ 'groups.selectCourse' | translate }}</option>
-                  @for (course of _courses(); track course.code) {
-                    <option [value]="course.code">{{ course.code }} · {{ course.studyProgram }}</option>
-                  }
-                </select>
-              </label>
-              <button type="button" class="course-add__button" [disabled]="!_selectedCourseCode() || _addingCourse()" (click)="addCourse()">
-                @if (_addingCourse()) {
-                  {{ 'common.saving' | translate }}
-                } @else {
-                  {{ 'groups.addCourseButton' | translate }}
-                }
-              </button>
-            </div>
+    @if (_canDelete()) {
+      <section class="danger-card" [attr.aria-label]="'groups.dangerZone' | translate">
+        <div>
+          <span>{{ 'groups.dangerZone' | translate }}</span>
+          <h2>{{ 'groups.deleteGroup' | translate }}</h2>
+          <p>{{ group.type === 'Course' ? ('groups.deleteCourseWarning' | translate) : ('groups.deleteWarning' | translate) }}</p>
+        </div>
+        @if (_deleteConfirmationOpen()) {
+          <div class="danger-card__confirm">
+            <strong>{{ 'groups.deleteConfirm' | translate }}</strong>
+            <span class="row-actions">
+              <button type="button" class="secondary-action" [disabled]="_deletingGroup()" (click)="closeDeleteConfirmation()">{{ 'common.cancel' | translate }}</button>
+              <button type="button" class="danger-action" [disabled]="_deletingGroup()" (click)="deleteGroup()">{{ (_deletingGroup() ? 'groups.deleting' : 'groups.deletePermanently') | translate }}</button>
+            </span>
           </div>
-        </section>
-      }
-    </div>
+        } @else {
+          <button type="button" class="danger-action" (click)="openDeleteConfirmation()">{{ 'groups.deleteGroup' | translate }}</button>
+        }
+      </section>
+    }
   }
 </div>
-

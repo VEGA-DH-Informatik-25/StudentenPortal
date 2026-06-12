@@ -25,11 +25,23 @@ describe('Feed', () => {
   });
 
   it('should send the selected group when creating a post', () => {
-    service.createPost({ content: 'Hello course', groupId: 'group-1' }).subscribe();
+    service.createPost({ content: 'Hello course', groupId: 'group-1', allowComments: false }).subscribe();
 
     const request = http.expectOne('/api/feed');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ content: 'Hello course', groupId: 'group-1' });
+    expect(request.request.body).toEqual({ content: 'Hello course', groupId: 'group-1', allowComments: false });
     request.flush({});
+  });
+
+  it('should load and approve pending posts', () => {
+    service.getPendingPosts('group-1').subscribe();
+    const pending = http.expectOne('/api/groups/group-1/pending-posts');
+    expect(pending.request.method).toBe('GET');
+    pending.flush([]);
+
+    service.approvePost('post-1').subscribe();
+    const approve = http.expectOne('/api/feed/post-1/approve');
+    expect(approve.request.method).toBe('POST');
+    approve.flush({});
   });
 });

@@ -54,6 +54,7 @@ describe('FeedPage', () => {
     hasPendingJoinRequest: false,
     hasPendingInvitation: false,
     pendingJoinRequestCount: 0,
+    canDelete: false,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: true,
@@ -61,7 +62,7 @@ describe('FeedPage', () => {
   };
 
   beforeEach(async () => {
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
     feedApi = {
       getFeed: vi.fn(() => of([])),
       createPost: vi.fn(() => of(post)),
@@ -141,7 +142,7 @@ describe('FeedPage', () => {
 
   it('opens the comment composer from the compact comment button', () => {
     fixture.detectChanges();
-    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] }]);
+    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published', allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] }]);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).toBeNull();
@@ -154,7 +155,7 @@ describe('FeedPage', () => {
 
   it('submits a picked emoji reaction', () => {
     fixture.detectChanges();
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
     (component as any)._posts.set([post]);
 
     (component as any).onPickReaction(post, '🚀');

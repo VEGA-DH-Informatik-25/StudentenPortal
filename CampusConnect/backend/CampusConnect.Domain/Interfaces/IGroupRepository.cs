@@ -9,6 +9,8 @@ public interface IGroupRepository
     Task<CampusGroup?> FindByIdAsync(Guid id);
     Task<CampusGroup> EnsureCourseGroupAsync(string courseCode, string? studyProgram = null);
     Task AddAsync(CampusGroup group);
+    Task DeleteAsync(Guid id) =>
+        throw new NotSupportedException();
     Task UpdateSettingsAsync(Guid id, GroupSettings settings);
     Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds);
     Task RemoveMemberAsync(Guid id, Guid userId);

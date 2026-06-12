@@ -60,6 +60,16 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task DeleteAsync(Guid id)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null)
+            return;
+
+        dbContext.CampusGroups.Remove(group);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task UpdateSettingsAsync(Guid id, GroupSettings settings)
     {
         var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);

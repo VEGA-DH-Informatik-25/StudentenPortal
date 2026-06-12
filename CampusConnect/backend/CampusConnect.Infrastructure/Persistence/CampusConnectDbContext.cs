@@ -97,6 +97,11 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
         feedPost.HasIndex(entity => entity.GroupId);
         feedPost.Property(entity => entity.AuthorName).HasMaxLength(120).IsRequired();
         feedPost.Property(entity => entity.Content).HasMaxLength(4000).IsRequired();
+        feedPost.Property(entity => entity.Status)
+            .HasConversion(status => status.ToString(), value => Enum.Parse<FeedPostStatus>(value))
+            .HasMaxLength(16)
+            .IsRequired();
+        feedPost.Property(entity => entity.AllowComments).IsRequired();
         feedPost.Property(entity => entity.CreatedAt).IsRequired();
         feedPost.Property(entity => entity.Comments)
             .HasConversion(

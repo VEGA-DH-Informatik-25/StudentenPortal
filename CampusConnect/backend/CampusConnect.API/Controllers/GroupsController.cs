@@ -80,6 +80,20 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteGroup(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.DeleteGroupAsync(id, userId.Value);
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}/candidates")]
     public async Task<IActionResult> SearchCandidates(Guid id, [FromQuery] string? query)
     {

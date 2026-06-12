@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 import { GroupSettingsPage } from './group-settings-page';
 import { Groups } from '../../../core/services/groups';
 import { Courses } from '../../../core/services/courses';
+import { Feed } from '../../../core/services/feed';
 import { GroupSettingsDetails } from '../../../core/models/group.model';
 
 describe('GroupSettingsPage', () => {
@@ -37,6 +38,7 @@ describe('GroupSettingsPage', () => {
       hasPendingJoinRequest: false,
       hasPendingInvitation: false,
       pendingJoinRequestCount: 0,
+      canDelete: true,
       groupRole: 'Owner',
       isSystemAdminAccess: false,
       isCourseManaged: false,
@@ -63,6 +65,7 @@ describe('GroupSettingsPage', () => {
           provide: Groups,
           useValue: {
             getSettings: () => of(details),
+            deleteGroup: () => of(void 0),
             updateSettings: () => of(details.group),
             searchCandidates: () => of([]),
             addMembers: () => of(details),
@@ -75,6 +78,14 @@ describe('GroupSettingsPage', () => {
           provide: Courses,
           useValue: {
             getCourses: () => of([]),
+          },
+        },
+        {
+          provide: Feed,
+          useValue: {
+            getPendingPosts: () => of([]),
+            approvePost: () => of({}),
+            deletePost: () => of(void 0),
           },
         },
       ],
@@ -105,5 +116,37 @@ describe('GroupSettingsPage', () => {
 
     expect((component as any).canEditMemberRole(owner)).toBe(false);
     expect((component as any).canEditMemberRole(member)).toBe(true);
+  });
+
+  it('shows posts waiting for approval', () => {
+    fixture.detectChanges();
+    (component as any)._pendingPosts.set([{
+      id: 'post-1',
+      authorName: 'Bob',
+      group: details.group,
+      content: 'Bitte freigeben',
+      createdAt: '2026-06-12T10:00:00Z',
+      status: 'Pending',
+      allowComments: true,
+      canDelete: true,
+      canComment: false,
+      comments: [],
+      reactions: [],
+    }]);
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Bitte freigeben');
+  });
+
+  it('requires a second step before group deletion', () => {
+    fixture.detectChanges();
+    expect((component as any)._deleteConfirmationOpen()).toBe(false);
+
+    (component as any).openDeleteConfirmation();
+    fixture.detectChanges();
+
+    expect((component as any)._deleteConfirmationOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Delete permanently');
   });
 });

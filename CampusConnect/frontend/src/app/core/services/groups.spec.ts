@@ -86,6 +86,14 @@ describe('Groups', () => {
     request.flush({});
   });
 
+  it('should delete a group', () => {
+    service.deleteGroup('group-1').subscribe();
+
+    const request = http.expectOne('/api/groups/group-1');
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
+
   it('should search candidates for a group', () => {
     service.searchCandidates('group-1', 'bob').subscribe();
 

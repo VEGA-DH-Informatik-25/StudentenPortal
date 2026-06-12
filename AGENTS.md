@@ -184,7 +184,7 @@ Persisted entities currently include:
 - Grades
 - ExamEntries
 
-Structured JSON columns currently store feed comments, feed reactions, group settings, assigned user IDs, and group member roles.
+Structured JSON columns currently store feed comments, feed reactions, group settings, assigned user IDs, and group member roles. Feed posts also persist a publication status (`Pending` or `Published`) and their own comment setting.
 
 Repository registrations currently use entity-backed EF repositories for users, courses, feed, groups, grades, and exams. Legacy in-memory repository classes still exist but are not the normal runtime registrations.
 
@@ -261,6 +261,7 @@ Implemented endpoints:
 | GET | `/api/feed` | User |
 | POST | `/api/feed` | User |
 | DELETE | `/api/feed/{id}` | User |
+| POST | `/api/feed/{id}/approve` | User with group-management permission |
 | POST | `/api/feed/{id}/comments` | User |
 | DELETE | `/api/feed/{postId}/comments/{commentId}` | User |
 | POST | `/api/feed/{id}/reactions` | User |
@@ -277,6 +278,8 @@ Implemented endpoints:
 | POST | `/api/groups` | User |
 | GET | `/api/groups/{id}/settings` | User with group-management permission |
 | PUT | `/api/groups/{id}/settings` | User with group-management permission |
+| DELETE | `/api/groups/{id}` | Owner or Admin; course groups Admin only |
+| GET | `/api/groups/{id}/pending-posts` | User with group-management permission |
 | GET | `/api/groups/{id}/candidates` | User with group-management permission |
 | POST | `/api/groups/{id}/members` | User with group-management permission |
 | POST | `/api/groups/{id}/members/course` | User with group-management permission |

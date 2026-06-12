@@ -31,6 +31,7 @@ public record CampusGroupDto(
     bool HasPendingJoinRequest,
     bool HasPendingInvitation,
     int PendingJoinRequestCount,
+    bool CanDelete,
     string GroupRole,
     bool IsSystemAdminAccess,
     bool IsCourseManaged,
@@ -46,7 +47,7 @@ public record GroupRequestDto(Guid Id, string DisplayName, string Email, string 
 public record GroupCandidateDto(Guid Id, string DisplayName, string Email, string Role, string Course);
 public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupMemberDto> Members, IReadOnlyList<GroupRequestDto> JoinRequests, IReadOnlyList<GroupRequestDto> Invitations);
 
-public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
+public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo, IFeedRepository? feedRepo = null)
 {
     public const string PermissionError = "You are not allowed to manage this group.";
     private const string CourseManagedError = "Course group membership is managed through course assignments.";
@@ -164,6 +165,20 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo)
         await groupRepo.UpdateSettingsAsync(groupId, settings);
         var updatedGroup = await groupRepo.FindByIdAsync(groupId);
         return Result<CampusGroupDto>.Success(GroupDtoMapper.ToDto(updatedGroup!, context.Value!.User));
+    }
+
+    public async Task<Result<bool>> DeleteGroupAsync(Guid groupId, Guid userId)
+    {
+        var context = await GetGroupContextAsync(groupId, userId, GroupDtoMapper.CanDeleteGroup);
+        if (!context.IsSuccess)
+            return Result<bool>.Failure(context.Error!);
+
+        if (feedRepo is null)
+            return Result<bool>.Failure("Group deletion is not available.");
+
+        await feedRepo.DeleteByGroupAsync(groupId);
+        await groupRepo.DeleteAsync(groupId);
+        return Result<bool>.Success(true);
     }
 
     public async Task<Result<IReadOnlyList<GroupCandidateDto>>> SearchCandidatesAsync(Guid groupId, Guid userId, string? query)
@@ -587,9 +602,10 @@ public static class GroupDtoMapper
         currentUser is not null && CanJoin(currentUser, group),
         currentUser is not null && CanRequestJoin(currentUser, group),
         currentUser is not null && group.PendingJoinRequests.Contains(currentUser.Id),
-        currentUser is not null && group.Invitations.Contains(currentUser.Id),
-        CanManageMembersFor(currentUser, group) ? group.PendingJoinRequests.Count : 0,
-        currentUser is null ? GroupRole.None.ToString() : GroupRoleFor(currentUser.Id, group).ToString(),
+            currentUser is not null && group.Invitations.Contains(currentUser.Id),
+            CanManageMembersFor(currentUser, group) ? group.PendingJoinRequests.Count : 0,
+            currentUser is not null && CanDeleteGroup(currentUser, group),
+            currentUser is null ? GroupRole.None.ToString() : GroupRoleFor(currentUser.Id, group).ToString(),
         currentUser is not null && IsSystemAdminAccess(currentUser, group),
         group.Type == GroupType.Course,
         new GroupSettingsDto(
@@ -687,7 +703,7 @@ public static class GroupDtoMapper
         user.Role == UserRole.Admin && GroupRoleFor(user.Id, group) == GroupRole.None;
 
     public static bool CanDeleteGroup(User user, CampusGroup group) =>
-        user.Role == UserRole.Admin || group.OwnerUserId == user.Id;
+        user.Role == UserRole.Admin || (group.Type != GroupType.Course && group.OwnerUserId == user.Id);
 
     private static bool IsCourseLecturer(User user, CampusGroup group) =>
         user.Role == UserRole.Lecturer && group.Type == GroupType.Course && IsAssigned(user, group);

@@ -33,6 +33,10 @@ export class Groups {
     return this._http.put<CampusGroup>(`/api/groups/${id}/settings`, req);
   }
 
+  deleteGroup(id: string): Observable<void> {
+    return this._http.delete<void>(`/api/groups/${id}`);
+  }
+
   searchCandidates(id: string, query: string): Observable<GroupCandidate[]> {
     const params = query ? `?query=${encodeURIComponent(query)}` : '';
     return this._http.get<GroupCandidate[]>(`/api/groups/${id}/candidates${params}`);

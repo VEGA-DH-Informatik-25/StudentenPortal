@@ -25,7 +25,8 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
-| DELETE | `/api/feed/{id}` | Eigenen Beitrag löschen | Ja |
+| POST | `/api/feed/{id}/approve` | Ausstehenden Beitrag veröffentlichen (Gruppenverwaltung) | Ja |
+| DELETE | `/api/feed/{id}` | Eigenen oder moderierbaren Beitrag löschen | Ja |
 | POST | `/api/feed/{id}/comments` | Kommentar unter einem Beitrag erstellen | Ja |
 | DELETE | `/api/feed/{postId}/comments/{commentId}` | Eigenen Kommentar löschen | Ja |
 | POST | `/api/feed/{id}/reactions` | Emoji-Reaktion an einem Beitrag umschalten | Ja |
@@ -42,6 +43,8 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | POST | `/api/groups` | Gruppe mit Typ `Campus`, `Official` oder `Course` erstellen (Kursgruppen benötigen `courseCode`, offizielle Gruppen `officialCategory`); optional `joinRule` (`Open`, `RequestRequired`, `InviteOnly`) | Ja |
 | GET | `/api/groups/{id}/settings` | Bearbeitbare Gruppendetails inklusive Mitglieder, offener Beitrittsanfragen und Einladungen abrufen | Ja |
 | PUT | `/api/groups/{id}/settings` | Gruppeneinstellungen wie Kommentare, Freigabe, Sichtbarkeit und Beitrittsregel ändern | Ja |
+| DELETE | `/api/groups/{id}` | Gruppe samt Beiträgen löschen (Besitzer/Admin; Kursgruppen nur Admin) | Ja |
+| GET | `/api/groups/{id}/pending-posts` | Ausstehende Beiträge für die Moderation abrufen | Ja |
 | GET | `/api/groups/{id}/candidates` | Personen für die Aufnahme suchen (`query` optional, ohne Treffer für Kursgruppen) | Ja |
 | POST | `/api/groups/{id}/members` | Eine oder mehrere Personen als Mitglieder hinzufügen (`userIds`) | Ja |
 | POST | `/api/groups/{id}/members/course` | Alle aktuellen Mitglieder eines Kurses einmalig als Mitglieder übernehmen (`courseCode`) | Ja |
@@ -81,7 +84,11 @@ Der Notenbereich liest den Studienplan nicht aus einer manuell gepflegten Modull
 
 Der Feed ist gruppenbasiert. Jeder Beitrag enthält ein `group`-Objekt mit Name, Typ (`Course`, `Official`, `Campus`), Zielgruppe, Kürzel, Akzentfarbe, Besitzer-ID, Anzahl der Mitglieder, der Gruppenrolle `groupRole` (`Owner`, `Moderator`, `Member` oder `None`) und den daraus abgeleiteten Fähigkeits-Flags `isAssigned`, `canManage`, `canEditSettings`, `canManageMembers`, `canAppointModerator`, `canPost`, `canInteract`, `canJoin`, `canRequestJoin`, `hasPendingJoinRequest`, `hasPendingInvitation`, `isSystemAdminAccess`, `isCourseManaged` sowie den Einstellungen. Zusätzlich enthält ein Beitrag `canDelete`, `canComment`, `comments` und `reactions`. Neue Beiträge können optional mit `groupId` erstellt werden; ohne `groupId` wird die Kursgruppe des angemeldeten Nutzers verwendet, sofern ein Kurs im Profil hinterlegt ist.
 
-Feed-Antworten enthalten nur Beiträge aus Gruppen, für deren Beiträge der Nutzer leseberechtigt ist: Admins sehen alle Beiträge, zugewiesene Mitglieder sehen die Beiträge ihrer Gruppen. Private Gruppen erscheinen nur für Admins und zugewiesene Mitglieder; öffentliche Gruppen erscheinen zusätzlich als Entdecken-Kandidaten, geben ihre Beiträge aber erst nach Beitritt oder Zuweisung frei. Wer posten darf, ergibt sich aus der Gruppenrolle: Besitzer und Moderatoren dürfen immer posten, einfache Mitglieder nur, wenn `allowStudentPosts` aktiv ist (`canPost`). Kommentieren und Reagieren steht allen Mitgliedern offen (`canInteract`); Kommentare respektieren zusätzlich `allowComments`.
+Feed-Antworten enthalten nur veröffentlichte Beiträge aus Gruppen, für deren Beiträge der Nutzer leseberechtigt ist: Admins sehen alle veröffentlichten Beiträge, zugewiesene Mitglieder sehen die veröffentlichten Beiträge ihrer Gruppen. Private Gruppen erscheinen nur für Admins und zugewiesene Mitglieder; öffentliche Gruppen erscheinen zusätzlich als Entdecken-Kandidaten, geben ihre Beiträge aber erst nach Beitritt oder Zuweisung frei.
+
+Wer posten darf, ergibt sich aus der Gruppenrolle: Besitzer und Moderatoren dürfen immer posten, einfache Mitglieder nur, wenn `allowStudentPosts` aktiv ist (`canPost`). Ist `requiresApproval` aktiv, starten Beiträge einfacher Mitglieder mit Status `Pending`; Beiträge von Besitzern, Moderatoren, berechtigten Kurslehrenden und Admins werden direkt als `Published` gespeichert. Berechtigte Gruppenverwalter rufen die Warteschlange über `GET /api/groups/{id}/pending-posts` ab und veröffentlichen Beiträge über `POST /api/feed/{id}/approve`. Ablehnen löscht den ausstehenden Beitrag über `DELETE /api/feed/{id}`.
+
+`POST /api/feed` akzeptiert neben `content` und `groupId` das optionale Feld `allowComments`. Kommentare sind nur möglich, wenn sowohl `group.settings.allowComments` als auch `post.allowComments` aktiv sind. Besitzer, Moderatoren, berechtigte Kurslehrende und Admins dürfen fremde Beiträge und Kommentare innerhalb ihrer verwalteten Gruppen entfernen.
 
 Emoji-Reaktionen sind als Toggle modelliert: sendet derselbe Nutzer dasselbe Emoji erneut, wird die Reaktion entfernt. Es gibt keine feste Emoji-Liste; akzeptiert werden gültige Emoji-Zeichen oder Emoji-Sequenzen, nicht freier Text.
 
@@ -112,4 +119,4 @@ Zusätzlich zur globalen Rolle hat jeder Nutzer pro Gruppe eine eigene Gruppenro
 
 Die konkreten Fähigkeiten werden serverseitig aus Gruppenrolle und Gruppeneinstellungen abgeleitet und als Flags am Gruppen-Objekt geliefert (`canEditSettings`, `canManageMembers`, `canAppointModerator`, `canPost`, `canInteract`). Nur der Besitzer (oder ein systemweiter Admin) darf Moderatoren ernennen, also über `PUT /api/groups/{id}/members/{userId}/role` die Rolle `Moderator` vergeben. Versucht ein Moderator das, antwortet die API mit `403 Forbidden` und der Meldung `You are not allowed to manage this group.`. Das Gruppen-Objekt liefert hierfür `canAppointModerator`.
 
-Der systemweite Admin-Zugriff ist von der eigentlichen Gruppenrolle getrennt: Ein Admin kann jede Gruppe verwalten (`canManage = true`), erscheint dabei aber nicht als Besitzer. Ist der Admin nicht selbst Mitglied, gilt `groupRole = None` und `isSystemAdminAccess = true`, sodass das UI klar zwischen Admin-Zugriff und Gruppenrolle unterscheiden kann.
+Der systemweite Admin-Zugriff ist von der eigentlichen Gruppenrolle getrennt: Ein Admin kann jede Gruppe verwalten (`canManage = true`), erscheint dabei aber nicht als Besitzer. Ist der Admin nicht selbst Mitglied, gilt `groupRole = None` und `isSystemAdminAccess = true`, sodass das UI klar zwischen Admin-Zugriff und Gruppenrolle unterscheiden kann. `canDelete` wird ebenfalls serverseitig berechnet: Besitzer dürfen eigene Campus- und offizielle Gruppen löschen, Admins zusätzlich Kursgruppen. Beim Löschen werden alle Beiträge der Gruppe entfernt; eine Kursgruppe kann durch die Kurssynchronisierung später neu entstehen.

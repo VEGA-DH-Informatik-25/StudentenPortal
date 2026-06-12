@@ -9,7 +9,7 @@ using System.Text;
 
 namespace CampusConnect.Application.Features.Feed;
 
-public record CreatePostCommand(Guid AuthorId, Guid? GroupId, string Content);
+public record CreatePostCommand(Guid AuthorId, Guid? GroupId, string Content, bool AllowComments = true);
 public record CreateCommentCommand(Guid PostId, Guid AuthorId, string Content);
 public record ToggleReactionCommand(Guid PostId, Guid UserId, string Emoji);
 public record FeedCommentDto(Guid Id, string AuthorName, ContactProfileDto? Author, string Content, DateTime CreatedAt, bool CanDelete);
@@ -21,6 +21,8 @@ public record FeedPostDto(
     CampusGroupDto Group,
     string Content,
     DateTime CreatedAt,
+    string Status,
+    bool AllowComments,
     bool CanDelete,
     bool CanComment,
     IReadOnlyList<FeedCommentDto> Comments,
@@ -31,7 +33,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     public async Task<IReadOnlyList<FeedPostDto>> GetFeedAsync(Guid currentUserId, int page = 1, int pageSize = 20)
     {
         await SyncCourseGroupAssignmentsAsync();
-        var posts = await feedRepo.GetAllAsync(page, pageSize);
+        var posts = await feedRepo.GetPublishedAsync(page, pageSize);
         var users = await userRepo.ListAsync();
         var usersById = users.ToDictionary(user => user.Id);
         usersById.TryGetValue(currentUserId, out var currentUser);
@@ -75,7 +77,11 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             AuthorId = cmd.AuthorId,
             AuthorName = user.DisplayName,
             GroupId = group.Id,
-            Content = cmd.Content.Trim()
+            Content = cmd.Content.Trim(),
+            Status = group.Settings.RequiresApproval && GroupDtoMapper.GroupRoleFor(user.Id, group) == GroupRole.Member
+                ? FeedPostStatus.Pending
+                : FeedPostStatus.Published,
+            AllowComments = group.Settings.AllowComments && cmd.AllowComments
         };
         await feedRepo.AddAsync(post);
         return Result<FeedPostDto>.Success(await ToDtoAsync(post, group, cmd.AuthorId, user));
@@ -99,7 +105,10 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
         if (!CanParticipate(user, group))
             return Result<FeedPostDto>.Failure("Permission denied.");
 
-        if (!group.Settings.AllowComments)
+        if (post.Status != FeedPostStatus.Published)
+            return Result<FeedPostDto>.Failure("This post is waiting for approval.");
+
+        if (!group.Settings.AllowComments || !post.AllowComments)
             return Result<FeedPostDto>.Failure("Comments are closed in this group.");
 
         var comment = new FeedComment
@@ -130,11 +139,11 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
         if (currentUser is null)
             return Result<FeedPostDto>.Failure("User profile was not found.");
 
-        if (comment.AuthorId != userId && currentUser.Role != UserRole.Admin)
+        var group = await ResolvePostGroupAsync(post);
+        if (comment.AuthorId != userId && !GroupDtoMapper.CanManage(currentUser, group))
             return Result<FeedPostDto>.Failure("Permission denied.");
 
         var updatedPost = await feedRepo.DeleteCommentAsync(postId, commentId);
-        var group = await ResolvePostGroupAsync(post);
         if (updatedPost is null)
             return Result<FeedPostDto>.Failure("Post was not found.");
 
@@ -157,6 +166,9 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
 
         await SyncCourseGroupAssignmentsAsync();
         var group = await ResolvePostGroupAsync(post);
+        if (post.Status != FeedPostStatus.Published)
+            return Result<FeedPostDto>.Failure("This post is waiting for approval.");
+
         if (!CanParticipate(user, group))
             return Result<FeedPostDto>.Failure("Permission denied.");
 
@@ -171,15 +183,53 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     {
         var post = await feedRepo.FindByIdAsync(postId);
         if (post is null) return Result<bool>.Failure("Post was not found.");
-        if (post.AuthorId != userId)
-        {
-            var user = await userRepo.FindByIdAsync(userId);
-            if (user?.Role != UserRole.Admin)
-                return Result<bool>.Failure("Permission denied.");
-        }
+        var user = await userRepo.FindByIdAsync(userId);
+        if (user is null)
+            return Result<bool>.Failure("User profile was not found.");
+
+        var group = await ResolvePostGroupAsync(post);
+        if (post.AuthorId != userId && !GroupDtoMapper.CanManage(user, group))
+            return Result<bool>.Failure("Permission denied.");
 
         await feedRepo.DeleteAsync(postId);
         return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<IReadOnlyList<FeedPostDto>>> GetPendingPostsAsync(Guid groupId, Guid userId)
+    {
+        var user = await userRepo.FindByIdAsync(userId);
+        var group = await groupRepo.FindByIdAsync(groupId);
+        if (user is null || group is null)
+            return Result<IReadOnlyList<FeedPostDto>>.Failure("Group was not found.");
+
+        if (!GroupDtoMapper.CanManage(user, group))
+            return Result<IReadOnlyList<FeedPostDto>>.Failure(GroupsService.PermissionError);
+
+        var users = await userRepo.ListAsync();
+        var usersById = users.ToDictionary(account => account.Id);
+        var posts = await feedRepo.GetByGroupAsync(groupId);
+        return Result<IReadOnlyList<FeedPostDto>>.Success(posts
+            .Where(post => post.Status == FeedPostStatus.Pending)
+            .Select(post => ToDto(post, group, userId, user, usersById))
+            .ToList());
+    }
+
+    public async Task<Result<FeedPostDto>> ApprovePostAsync(Guid postId, Guid userId)
+    {
+        var user = await userRepo.FindByIdAsync(userId);
+        var post = await feedRepo.FindByIdAsync(postId);
+        if (user is null || post is null)
+            return Result<FeedPostDto>.Failure("Post was not found.");
+
+        var group = await ResolvePostGroupAsync(post);
+        if (!GroupDtoMapper.CanManage(user, group))
+            return Result<FeedPostDto>.Failure(GroupsService.PermissionError);
+
+        if (post.Status != FeedPostStatus.Pending)
+            return Result<FeedPostDto>.Failure("This post is not waiting for approval.");
+
+        var updatedPost = await feedRepo.SetStatusAsync(postId, FeedPostStatus.Published);
+        return Result<FeedPostDto>.Success(await ToDtoAsync(updatedPost!, group, userId, user));
     }
 
     private async Task<CampusGroup?> ResolveTargetGroupAsync(Guid? groupId, User user)
@@ -216,7 +266,7 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
 
     private static FeedPostDto ToDto(FeedPost post, CampusGroup group, Guid currentUserId, User? currentUser, IReadOnlyDictionary<Guid, User> usersById)
     {
-        var canModerate = currentUser?.Role == UserRole.Admin;
+        var canModerate = currentUser is not null && GroupDtoMapper.CanManage(currentUser, group);
         var comments = post.Comments
             .OrderBy(comment => comment.CreatedAt)
             .Select(comment => new FeedCommentDto(
@@ -241,8 +291,10 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             GroupDtoMapper.ToDto(group, currentUser),
             post.Content,
             post.CreatedAt,
+            post.Status.ToString(),
+            post.AllowComments,
             post.AuthorId == currentUserId || canModerate,
-            group.Settings.AllowComments && currentUser is not null && CanParticipate(currentUser, group),
+            post.Status == FeedPostStatus.Published && post.AllowComments && group.Settings.AllowComments && currentUser is not null && CanParticipate(currentUser, group),
             comments,
             reactions);
     }

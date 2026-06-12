@@ -166,6 +166,9 @@ namespace CampusConnect.Infrastructure.Migrations
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("AllowComments")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("AuthorName")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -188,6 +191,11 @@ namespace CampusConnect.Infrastructure.Migrations
 
                     b.Property<string>("Reactions")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

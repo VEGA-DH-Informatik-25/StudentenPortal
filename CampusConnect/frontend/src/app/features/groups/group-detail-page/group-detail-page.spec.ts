@@ -47,6 +47,7 @@ describe('GroupDetailPage', () => {
     hasPendingJoinRequest: false,
     hasPendingInvitation: false,
     pendingJoinRequestCount: 0,
+    canDelete: true,
     groupRole: 'Member',
     isSystemAdminAccess: false,
     isCourseManaged: false,
@@ -60,6 +61,8 @@ describe('GroupDetailPage', () => {
       group,
       content: 'Treffen um 16 Uhr',
       createdAt: '2026-01-01T10:00:00Z',
+      status: 'Published',
+      allowComments: true,
       canDelete: false,
       canComment: true,
       comments: [],
@@ -71,6 +74,8 @@ describe('GroupDetailPage', () => {
       group: { ...group, id: 'group-2', name: 'Andere Gruppe' },
       content: 'Soll nicht sichtbar sein',
       createdAt: '2026-01-01T11:00:00Z',
+      status: 'Published',
+      allowComments: true,
       canDelete: false,
       canComment: true,
       comments: [],
@@ -123,7 +128,7 @@ describe('GroupDetailPage', () => {
     const form = fixture.nativeElement.querySelector('form.composer') as HTMLFormElement;
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
-    expect(feedApi.createPost).toHaveBeenCalledWith({ content: 'Neue Info', groupId: 'group-1' });
+    expect(feedApi.createPost).toHaveBeenCalledWith({ content: 'Neue Info', groupId: 'group-1', allowComments: true });
   });
 
   it('creates comments from the comment form submit', () => {

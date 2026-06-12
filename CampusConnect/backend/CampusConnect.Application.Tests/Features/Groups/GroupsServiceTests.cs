@@ -672,6 +672,55 @@ public class GroupsServiceTests
         Assert.Equal("Only the group owner can appoint moderators.", result.Error);
     }
 
+    [Fact]
+    public async Task DeleteGroupAsync_OwnerDeletesCampusGroupAndItsPosts()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        var groups = new FakeGroupRepository(group);
+        var feed = new FakeFeedRepository(group.Id);
+        var service = new GroupsService(groups, new FakeUserRepository(owner), feed);
+
+        var result = await service.DeleteGroupAsync(group.Id, owner.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(await groups.FindByIdAsync(group.Id));
+        Assert.Contains(group.Id, feed.DeletedGroupIds);
+    }
+
+    [Fact]
+    public async Task DeleteGroupAsync_CourseGroupRequiresAdmin()
+    {
+        var lecturer = new User
+        {
+            DisplayName = "Lecturer",
+            Email = "lecturer@dhbw-loerrach.de",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            Role = UserRole.Lecturer
+        };
+        var admin = new User
+        {
+            DisplayName = "Admin",
+            Email = "admin@dhbw-loerrach.de",
+            StudyProgram = "Administration",
+            Course = "ADMIN",
+            Role = UserRole.Admin
+        };
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(lecturer.Id);
+        var groups = new FakeGroupRepository(group);
+        var feed = new FakeFeedRepository(group.Id);
+        var service = new GroupsService(groups, new FakeUserRepository(lecturer, admin), feed);
+
+        var denied = await service.DeleteGroupAsync(group.Id, lecturer.Id);
+        var deleted = await service.DeleteGroupAsync(group.Id, admin.Id);
+
+        Assert.False(denied.IsSuccess);
+        Assert.Equal(GroupsService.PermissionError, denied.Error);
+        Assert.True(deleted.IsSuccess);
+    }
+
     private static User StudentUser(string displayName, string email) => new()
     {
         DisplayName = displayName,
@@ -728,6 +777,12 @@ public class GroupsServiceTests
         public Task AddAsync(CampusGroup group)
         {
             _groups.Add(group);
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync(Guid id)
+        {
+            _groups.RemoveAll(group => group.Id == id);
             return Task.CompletedTask;
         }
 
@@ -809,6 +864,28 @@ public class GroupsServiceTests
             if (group is not null)
                 group.AssignedUserIds = assignedUserIds.ToHashSet();
 
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeFeedRepository(params Guid[] groupIds) : IFeedRepository
+    {
+        public List<Guid> DeletedGroupIds { get; } = [];
+
+        public Task<IReadOnlyList<FeedPost>> GetAllAsync(int page, int pageSize) =>
+            Task.FromResult<IReadOnlyList<FeedPost>>([]);
+
+        public Task<FeedPost?> FindByIdAsync(Guid id) => Task.FromResult<FeedPost?>(null);
+        public Task AddAsync(FeedPost post) => Task.CompletedTask;
+        public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment) => Task.FromResult<FeedPost?>(null);
+        public Task<FeedPost?> DeleteCommentAsync(Guid postId, Guid commentId) => Task.FromResult<FeedPost?>(null);
+        public Task<FeedPost?> ToggleReactionAsync(Guid postId, string emoji, Guid userId) => Task.FromResult<FeedPost?>(null);
+        public Task DeleteAsync(Guid id) => Task.CompletedTask;
+
+        public Task DeleteByGroupAsync(Guid groupId)
+        {
+            Assert.Contains(groupId, groupIds);
+            DeletedGroupIds.Add(groupId);
             return Task.CompletedTask;
         }
     }

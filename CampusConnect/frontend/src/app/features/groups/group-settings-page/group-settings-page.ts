@@ -1,16 +1,19 @@
+import { DatePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Course } from '../../../core/models/course.model';
+import { FeedPost } from '../../../core/models/feed.model';
 import { CampusGroup, GroupCandidate, GroupJoinRule, GroupMember, GroupRequest, GroupRole, GroupSettings, GroupSettingsDetails } from '../../../core/models/group.model';
 import { Courses } from '../../../core/services/courses';
+import { Feed } from '../../../core/services/feed';
 import { Groups } from '../../../core/services/groups';
 
 @Component({
   selector: 'app-group-settings-page',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [DatePipe, TranslatePipe],
   templateUrl: './group-settings-page.html',
   styleUrl: './group-settings-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +21,7 @@ import { Groups } from '../../../core/services/groups';
 export class GroupSettingsPage implements OnInit {
   private readonly _groupsService = inject(Groups);
   private readonly _coursesService = inject(Courses);
+  private readonly _feedService = inject(Feed);
   protected readonly _i18n = inject(I18n);
   private readonly _route = inject(ActivatedRoute);
   private readonly _router = inject(Router);
@@ -36,6 +40,10 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _courses = signal<Course[]>([]);
   protected readonly _selectedCourseCode = signal('');
   protected readonly _addingCourse = signal(false);
+  protected readonly _pendingPosts = signal<FeedPost[]>([]);
+  protected readonly _busyPostId = signal('');
+  protected readonly _deleteConfirmationOpen = signal(false);
+  protected readonly _deletingGroup = signal(false);
 
   protected readonly _group = computed(() => this._details()?.group ?? null);
   protected readonly _members = computed(() => this._details()?.members ?? []);
@@ -46,6 +54,7 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _canAppointModerator = computed(() => this._group()?.canAppointModerator ?? false);
   protected readonly _isCourseManaged = computed(() => this._group()?.isCourseManaged ?? false);
   protected readonly _isSystemAdminAccess = computed(() => this._group()?.isSystemAdminAccess ?? false);
+  protected readonly _canDelete = computed(() => this._group()?.canDelete ?? false);
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
@@ -198,6 +207,75 @@ export class GroupSettingsPage implements OnInit {
       error: () => {
         this._error.set(this._i18n.translate('groups.cancelInvitationError'));
         this._busyUserId.set('');
+      },
+    });
+  }
+
+  protected approvePost(post: FeedPost): void {
+    if (this._busyPostId()) {
+      return;
+    }
+
+    this._busyPostId.set(post.id);
+    this._error.set('');
+    this._feedService.approvePost(post.id).subscribe({
+      next: () => {
+        this._pendingPosts.update(posts => posts.filter(item => item.id !== post.id));
+        this._busyPostId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.moderationActionError'));
+        this._busyPostId.set('');
+      },
+    });
+  }
+
+  protected rejectPost(post: FeedPost): void {
+    if (this._busyPostId()) {
+      return;
+    }
+
+    this._busyPostId.set(post.id);
+    this._error.set('');
+    this._feedService.deletePost(post.id).subscribe({
+      next: () => {
+        this._pendingPosts.update(posts => posts.filter(item => item.id !== post.id));
+        this._busyPostId.set('');
+      },
+      error: () => {
+        this._error.set(this._i18n.translate('groups.moderationActionError'));
+        this._busyPostId.set('');
+      },
+    });
+  }
+
+  protected isPostBusy(post: FeedPost): boolean {
+    return this._busyPostId() === post.id;
+  }
+
+  protected openDeleteConfirmation(): void {
+    this._deleteConfirmationOpen.set(true);
+  }
+
+  protected closeDeleteConfirmation(): void {
+    if (!this._deletingGroup()) {
+      this._deleteConfirmationOpen.set(false);
+    }
+  }
+
+  protected deleteGroup(): void {
+    const group = this._group();
+    if (!group || !this._canDelete() || this._deletingGroup()) {
+      return;
+    }
+
+    this._deletingGroup.set(true);
+    this._error.set('');
+    this._groupsService.deleteGroup(group.id).subscribe({
+      next: () => void this._router.navigate(['/groups']),
+      error: () => {
+        this._error.set(this._i18n.translate('groups.deleteError'));
+        this._deletingGroup.set(false);
       },
     });
   }
@@ -379,6 +457,7 @@ export class GroupSettingsPage implements OnInit {
       next: details => {
         this._setDetails(details);
         this._isLoading.set(false);
+        this._loadPendingPosts(groupId);
         if (details.group.canManageMembers && !details.group.isCourseManaged) {
           this._loadCourses();
         }
@@ -395,6 +474,13 @@ export class GroupSettingsPage implements OnInit {
     this._coursesService.getCourses().subscribe({
       next: courses => this._courses.set(courses.filter(course => course.isActive)),
       error: () => this._courses.set([]),
+    });
+  }
+
+  private _loadPendingPosts(groupId: string): void {
+    this._feedService.getPendingPosts(groupId).subscribe({
+      next: posts => this._pendingPosts.set(posts),
+      error: () => this._pendingPosts.set([]),
     });
   }
 

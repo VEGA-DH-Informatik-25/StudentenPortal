@@ -60,6 +60,16 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
+    public Task DeleteAsync(Guid id)
+    {
+        lock (_syncRoot)
+        {
+            _store.Remove(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task UpdateSettingsAsync(Guid id, GroupSettings settings)
     {
         lock (_syncRoot)

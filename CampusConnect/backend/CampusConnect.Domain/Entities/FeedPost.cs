@@ -1,3 +1,5 @@
+using CampusConnect.Domain.Enums;
+
 namespace CampusConnect.Domain.Entities;
 
 public class FeedPost
@@ -7,6 +9,8 @@ public class FeedPost
     public Guid GroupId { get; set; }
     public string AuthorName { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
+    public FeedPostStatus Status { get; set; } = FeedPostStatus.Published;
+    public bool AllowComments { get; set; } = true;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public List<FeedComment> Comments { get; set; } = [];
     public List<FeedReaction> Reactions { get; set; } = [];

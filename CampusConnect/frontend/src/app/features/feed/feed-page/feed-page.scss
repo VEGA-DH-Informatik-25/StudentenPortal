@@ -9,14 +9,14 @@
 
   h1 {
     color: var(--dhbw-ink);
-    font-size: 3.2rem;
+    font-size: var(--type-page-title);
     line-height: 1;
     margin: 0 0 0.7rem;
   }
 
   p {
     color: var(--dhbw-text-muted);
-    font-size: 1rem;
+    font-size: var(--type-page-body);
     line-height: 1.65;
     margin: 0;
     max-width: 40rem;
@@ -24,7 +24,7 @@
 
   &__eyebrow {
     color: var(--dhbw-red);
-    font-size: 0.78rem;
+    font-size: var(--type-page-eyebrow);
     font-weight: 800;
     margin-bottom: 0.45rem;
     text-transform: uppercase;
@@ -75,7 +75,7 @@
 
   strong {
     color: var(--dhbw-ink);
-    font-size: 1.05rem;
+    font-size: var(--type-section-title);
   }
 }
 
@@ -211,6 +211,17 @@
       font-weight: 700;
       line-height: 1.35;
     }
+  }
+
+  &__comment-setting {
+    align-items: center;
+    color: var(--dhbw-ink-soft);
+    display: flex;
+    font-size: 0.82rem;
+    font-weight: 700;
+    gap: 0.5rem;
+
+    input { accent-color: var(--dhbw-red); }
   }
 
   &__footer {
@@ -489,12 +500,6 @@
 }
 
 @media (max-width: 680px) {
-  .feed-hero {
-    h1 {
-      font-size: 2.25rem;
-    }
-  }
-
   .composer,
   .post-card {
     grid-template-columns: 1fr;
