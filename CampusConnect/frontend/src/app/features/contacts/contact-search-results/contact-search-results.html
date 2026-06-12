@@ -1,0 +1,28 @@
+<section class="contact-search-results" [attr.aria-label]="'contacts.resultsLabel' | translate">
+  <header>
+    <h3>{{ 'contacts.resultsLabel' | translate }}</h3>
+  </header>
+
+  @if (query().trim().length < 3) {
+    <p class="contact-search-results__state">{{ 'contacts.minimumQueryHint' | translate }}</p>
+  } @else if (error()) {
+    <p class="contact-search-results__state contact-search-results__state--error">{{ error() }}</p>
+  } @else if (isLoading()) {
+    <p class="contact-search-results__state">{{ 'contacts.loading' | translate }}</p>
+  } @else if (contacts().length === 0) {
+    <p class="contact-search-results__state">{{ 'contacts.empty' | translate }}</p>
+  } @else {
+    <div class="contact-search-results__list">
+      @for (contact of contacts(); track contact.id) {
+        <app-contact-result-card
+          [contact]="contact"
+          [isFavorite]="favoriteIds().has(contact.id)"
+          (favoriteToggle)="favoriteToggle.emit($event)" />
+      }
+    </div>
+
+    @if (contacts().length >= resultLimit()) {
+      <p class="contact-search-results__limit">{{ 'contacts.limitHint' | translate:{ count: resultLimit() } }}</p>
+    }
+  }
+</section>

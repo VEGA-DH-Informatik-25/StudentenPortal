@@ -1,0 +1,20 @@
+<article class="favorite-contact-card">
+  <span class="favorite-contact-card__avatar" aria-hidden="true">{{ initials() }}</span>
+  <div class="favorite-contact-card__body">
+    <header>
+      <strong>{{ contact().displayName }}</strong>
+      <button type="button" (click)="toggleFavorite()" [attr.aria-label]="'contacts.removeFavorite' | translate" [title]="'contacts.removeFavorite' | translate">
+        &#9733;
+      </button>
+    </header>
+    <p>
+      {{ contact().course || ('common.notSpecified' | translate) }}
+      -
+      {{ contact().studyProgram || ('common.notSpecified' | translate) }}
+    </p>
+    <div class="favorite-contact-card__email">
+      <span>{{ 'common.email' | translate }}</span>
+      <a [href]="'mailto:' + contact().email" [title]="contact().email">{{ contact().email }}</a>
+    </div>
+  </div>
+</article>

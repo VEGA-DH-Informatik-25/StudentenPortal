@@ -17,16 +17,20 @@ public record ContactProfileDto(
 
 public class ContactsService(IUserRepository userRepository)
 {
-    public async Task<IReadOnlyList<ContactProfileDto>> SearchAsync(Guid currentUserId, string? query, CancellationToken cancellationToken = default)
+    private const int DefaultLimit = 50;
+    private const int MaxLimit = 50;
+
+    public async Task<IReadOnlyList<ContactProfileDto>> SearchAsync(Guid currentUserId, string? query, int? limit = null, CancellationToken cancellationToken = default)
     {
         var users = await userRepository.ListAsync(cancellationToken);
         var term = query?.Trim();
+        var resultLimit = Math.Clamp(limit ?? DefaultLimit, 1, MaxLimit);
         var results = users
             .Where(user => user.Id != currentUserId)
             .Where(user => string.IsNullOrWhiteSpace(term) || Matches(user, term))
             .OrderBy(user => user.DisplayName)
             .ThenBy(user => user.Email)
-            .Take(50)
+            .Take(resultLimit)
             .Select(ToDto)
             .ToList();
 

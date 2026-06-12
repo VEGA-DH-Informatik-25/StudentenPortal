@@ -1,0 +1,11 @@
+<label class="contact-search-input" for="contact-search-query">
+  <span>{{ 'common.search' | translate }}</span>
+  <input
+    id="contact-search-query"
+    type="search"
+    autocomplete="off"
+    autofocus
+    [ngModel]="query()"
+    (ngModelChange)="queryChange.emit($event)"
+    [placeholder]="'contacts.placeholder' | translate" />
+</label>

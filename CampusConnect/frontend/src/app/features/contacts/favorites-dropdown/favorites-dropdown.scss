@@ -1,0 +1,64 @@
+.favorites-dropdown {
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
+  border-radius: 8px;
+  box-shadow: var(--dhbw-shadow);
+
+  summary {
+    align-items: center;
+    color: var(--dhbw-ink);
+    cursor: pointer;
+    display: flex;
+    font-weight: 900;
+    gap: 0.75rem;
+    justify-content: space-between;
+    list-style: none;
+    padding: 1rem;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::after {
+      color: var(--dhbw-red);
+      content: "▾";
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 3px var(--dhbw-focus);
+      outline: none;
+    }
+  }
+
+  &[open] summary {
+    border-bottom: 1px solid var(--dhbw-border);
+
+    &::after {
+      content: "▴";
+    }
+  }
+
+  &__count {
+    background: var(--dhbw-red-soft);
+    border-radius: 999px;
+    color: var(--dhbw-red-dark);
+    font-size: 0.78rem;
+    min-width: 1.7rem;
+    padding: 0.2rem 0.5rem;
+    text-align: center;
+  }
+
+  &__content {
+    padding: 1rem;
+  }
+
+  &__grid {
+    align-items: stretch;
+    display: grid;
+    gap: 0.75rem;
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+}

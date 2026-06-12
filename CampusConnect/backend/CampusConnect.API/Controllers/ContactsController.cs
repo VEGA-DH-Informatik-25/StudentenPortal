@@ -11,13 +11,13 @@ namespace CampusConnect.API.Controllers;
 public class ContactsController(ContactsService contactsService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> SearchContacts([FromQuery] string? query, CancellationToken cancellationToken)
+    public async Task<IActionResult> SearchContacts([FromQuery] string? query, [FromQuery] int? limit, CancellationToken cancellationToken)
     {
         var userId = CurrentUser.GetUserId(User);
         if (userId is null)
             return Unauthorized(new { error = "User could not be resolved from the token." });
 
-        var contacts = await contactsService.SearchAsync(userId.Value, query, cancellationToken);
+        var contacts = await contactsService.SearchAsync(userId.Value, query, limit, cancellationToken);
         return Ok(contacts);
     }
 }

@@ -1,0 +1,150 @@
+.contact-result-card {
+  align-items: start;
+  background: var(--dhbw-surface);
+  border: 1px solid var(--dhbw-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 0.85rem;
+
+  &__avatar {
+    align-items: center;
+    background: var(--dhbw-red-soft);
+    border-radius: 999px;
+    color: var(--dhbw-red-dark);
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 900;
+    height: 2.35rem;
+    justify-content: center;
+    width: 2.35rem;
+  }
+
+  &__body {
+    display: grid;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  header {
+    align-items: start;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+
+    strong,
+    span {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    strong {
+      color: var(--dhbw-ink);
+      font-size: 1rem;
+    }
+
+    span {
+      color: var(--dhbw-text-muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      margin-top: 0.12rem;
+      text-transform: uppercase;
+    }
+  }
+
+  &__favorite {
+    align-items: center;
+    background: var(--dhbw-surface-muted);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 999px;
+    color: var(--dhbw-red);
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 1rem;
+    font-weight: 900;
+    height: 2rem;
+    justify-content: center;
+    padding: 0;
+    width: 2rem;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--dhbw-red-soft);
+      border-color: var(--dhbw-red);
+      outline: none;
+    }
+
+    &--active {
+      background: var(--dhbw-red-soft);
+      border-color: var(--dhbw-red);
+    }
+  }
+
+  dl {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  dt {
+    color: var(--dhbw-text-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  dd {
+    color: var(--dhbw-ink-soft);
+    font-size: 0.86rem;
+    font-weight: 700;
+    margin: 0.1rem 0 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__email {
+    display: grid;
+    gap: 0.18rem;
+    min-width: 0;
+  }
+
+  &__email span {
+    color: var(--dhbw-text-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  a {
+    color: var(--dhbw-red-dark);
+    font-size: 0.84rem;
+    font-weight: 700;
+    justify-self: start;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+    user-select: text;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--dhbw-red);
+      outline: none;
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 620px) {
+  .contact-result-card {
+    grid-template-columns: 1fr;
+
+    &__avatar {
+      display: none;
+    }
+
+    dl {
+      grid-template-columns: 1fr;
+    }
+  }
+}

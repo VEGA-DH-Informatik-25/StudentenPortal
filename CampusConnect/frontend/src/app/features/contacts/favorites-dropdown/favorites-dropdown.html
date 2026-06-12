@@ -1,0 +1,18 @@
+<details class="favorites-dropdown">
+  <summary>
+    <span>{{ 'contacts.favoritesTitle' | translate }}</span>
+    <span class="favorites-dropdown__count">{{ favorites().length }}</span>
+  </summary>
+
+  <div class="favorites-dropdown__content">
+    @if (favorites().length === 0) {
+      <app-empty-favorites-state />
+    } @else {
+      <div class="favorites-dropdown__grid">
+        @for (favorite of favorites(); track favorite.id) {
+          <app-favorite-contact-card [contact]="favorite" (favoriteToggle)="favoriteToggle.emit($event)" />
+        }
+      </div>
+    }
+  </div>
+</details>
