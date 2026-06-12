@@ -3,6 +3,7 @@ using System;
 using CampusConnect.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CampusConnect.Infrastructure.Migrations
 {
     [DbContext(typeof(CampusConnectDbContext))]
-    partial class CampusConnectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608083126_AddGroupTypeRenameAndJoinWorkflow")]
+    partial class AddGroupTypeRenameAndJoinWorkflow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
@@ -166,9 +169,6 @@ namespace CampusConnect.Infrastructure.Migrations
                     b.Property<Guid>("AuthorId")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("AllowComments")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("AuthorName")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -191,11 +191,6 @@ namespace CampusConnect.Infrastructure.Migrations
 
                     b.Property<string>("Reactions")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

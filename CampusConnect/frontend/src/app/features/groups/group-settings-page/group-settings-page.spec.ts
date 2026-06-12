@@ -4,6 +4,8 @@ import { of } from 'rxjs';
 
 import { GroupSettingsPage } from './group-settings-page';
 import { Groups } from '../../../core/services/groups';
+import { Courses } from '../../../core/services/courses';
+import { Feed } from '../../../core/services/feed';
 import { GroupSettingsDetails } from '../../../core/models/group.model';
 
 describe('GroupSettingsPage', () => {
@@ -15,28 +17,39 @@ describe('GroupSettingsPage', () => {
       id: 'group-1',
       name: 'Lerngruppe Web',
       description: 'Gemeinsam lernen',
-      type: 'Social',
+      type: 'Campus',
       audience: 'Interessierte',
       courseCode: null,
+      officialCategory: null,
       ownerUserId: 'user-1',
       ownerLabel: 'Alice',
       iconLabel: 'LW',
       accentColor: '#2563eb',
-      assignedUserCount: 1,
-      canManage: true,
+      assignedUserCount: 2,
       isAssigned: true,
+      canManage: true,
+      canEditSettings: true,
+      canManageMembers: true,
+      canAppointModerator: true,
       canPost: true,
+      canInteract: true,
       canJoin: false,
-      memberPermission: 'ReadWrite',
+      canRequestJoin: false,
+      hasPendingJoinRequest: false,
+      hasPendingInvitation: false,
+      pendingJoinRequestCount: 0,
+      canDelete: true,
       groupRole: 'Owner',
       isSystemAdminAccess: false,
-      canAppointModerator: true,
-      settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
+      isCourseManaged: false,
+      settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true, joinRule: 'Open' },
     },
-    accounts: [
-      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', isAssigned: true, permission: 'ReadWrite', groupRole: 'Member' },
-      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', isAssigned: false, permission: 'ReadWrite', groupRole: 'None' },
+    members: [
+      { id: 'user-1', displayName: 'Alice', email: 'alice@dhbw-loerrach.de', role: 'Student', course: 'TIF25A', groupRole: 'Owner', isOwner: true },
+      { id: 'user-2', displayName: 'Bob', email: 'bob@dhbw-loerrach.de', role: 'Lecturer', course: 'TIF25B', groupRole: 'Member', isOwner: false },
     ],
+    joinRequests: [],
+    invitations: [],
   };
 
   beforeEach(async () => {
@@ -52,9 +65,27 @@ describe('GroupSettingsPage', () => {
           provide: Groups,
           useValue: {
             getSettings: () => of(details),
+            deleteGroup: () => of(void 0),
             updateSettings: () => of(details.group),
-            updateAssignments: () => of(details),
-            updateMemberPermissions: () => of(details),
+            searchCandidates: () => of([]),
+            addMembers: () => of(details),
+            addCourse: () => of(details),
+            removeMember: () => of(details),
+            setMemberRole: () => of(details),
+          },
+        },
+        {
+          provide: Courses,
+          useValue: {
+            getCourses: () => of([]),
+          },
+        },
+        {
+          provide: Feed,
+          useValue: {
+            getPendingPosts: () => of([]),
+            approvePost: () => of({}),
+            deletePost: () => of(void 0),
           },
         },
       ],
@@ -69,30 +100,53 @@ describe('GroupSettingsPage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('filters assignment rows by search text', () => {
-    (component as any)._accountSearch.set('bob');
+  it('lists current members with their group role', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Alice');
     expect(text).toContain('Bob');
-    expect(text).not.toContain('alice@dhbw-loerrach.de');
   });
 
-  it('derives group roles from ownership and permissions', async () => {
+  it('allows role editing for non-owner members only', () => {
     fixture.detectChanges();
-    await fixture.whenStable();
 
-    const owner = details.accounts[0];
-    const other = details.accounts[1];
+    const owner = details.members[0];
+    const member = details.members[1];
 
-    expect((component as any).accountGroupRole(owner)).toBe('Owner');
-    expect((component as any).accountGroupRole(other)).toBe('None');
+    expect((component as any).canEditMemberRole(owner)).toBe(false);
+    expect((component as any).canEditMemberRole(member)).toBe(true);
+  });
 
-    (component as any)._selectedAccountIds.set(['user-2']);
-    (component as any)._selectedPermissions.set({ 'user-2': 'Manage' });
-    expect((component as any).accountGroupRole(other)).toBe('Moderator');
+  it('shows posts waiting for approval', () => {
+    fixture.detectChanges();
+    (component as any)._pendingPosts.set([{
+      id: 'post-1',
+      authorName: 'Bob',
+      group: details.group,
+      content: 'Bitte freigeben',
+      createdAt: '2026-06-12T10:00:00Z',
+      status: 'Pending',
+      allowComments: true,
+      canDelete: true,
+      canComment: false,
+      comments: [],
+      reactions: [],
+    }]);
 
-    (component as any)._selectedPermissions.set({ 'user-2': 'ReadWrite' });
-    expect((component as any).accountGroupRole(other)).toBe('Member');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Bitte freigeben');
+  });
+
+  it('requires a second step before group deletion', () => {
+    fixture.detectChanges();
+    expect((component as any)._deleteConfirmationOpen()).toBe(false);
+
+    (component as any).openDeleteConfirmation();
+    fixture.detectChanges();
+
+    expect((component as any)._deleteConfirmationOpen()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Delete permanently');
   });
 });

@@ -9,6 +9,7 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     [Theory]
     [InlineData("/api/auth/me")]
     [InlineData("/api/feed")]
+    [InlineData("/api/groups/00000000-0000-0000-0000-000000000001/pending-posts")]
     [InlineData("/api/groups")]
     [InlineData("/api/grades")]
     [InlineData("/api/grades/plan")]
@@ -37,6 +38,16 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
         var courses = await response.Content.ReadFromJsonAsync<CourseResponse[]>();
         Assert.NotNull(courses);
         Assert.Contains(courses!, course => course.Code == "ADMIN" && course.IsActive);
+    }
+
+    [Fact]
+    public async Task DeleteGroup_WithoutToken_ReturnsUnauthorized()
+    {
+        var client = factory.CreateClient();
+
+        var response = await client.DeleteAsync("/api/groups/00000000-0000-0000-0000-000000000001");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]

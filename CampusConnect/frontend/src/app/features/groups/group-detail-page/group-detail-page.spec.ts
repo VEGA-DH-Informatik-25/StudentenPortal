@@ -26,23 +26,32 @@ describe('GroupDetailPage', () => {
     id: 'group-1',
     name: 'Lerngruppe Web',
     description: 'Gemeinsam lernen',
-    type: 'Social',
+    type: 'Campus',
     audience: 'Interessierte',
     courseCode: null,
+    officialCategory: null,
     ownerUserId: 'user-1',
     ownerLabel: 'Alice',
     iconLabel: 'LW',
     accentColor: '#2563eb',
     assignedUserCount: 1,
-    canManage: true,
     isAssigned: true,
+    canManage: true,
+    canEditSettings: true,
+    canManageMembers: true,
+    canAppointModerator: false,
     canPost: true,
+    canInteract: true,
     canJoin: false,
-    memberPermission: 'ReadWrite',
+    canRequestJoin: false,
+    hasPendingJoinRequest: false,
+    hasPendingInvitation: false,
+    pendingJoinRequestCount: 0,
+    canDelete: true,
     groupRole: 'Member',
     isSystemAdminAccess: false,
-    canAppointModerator: false,
-    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true },
+    isCourseManaged: false,
+    settings: { allowStudentPosts: true, allowComments: true, requiresApproval: false, isDiscoverable: true, joinRule: 'Open' },
   };
 
   const posts: FeedPost[] = [
@@ -52,6 +61,8 @@ describe('GroupDetailPage', () => {
       group,
       content: 'Treffen um 16 Uhr',
       createdAt: '2026-01-01T10:00:00Z',
+      status: 'Published',
+      allowComments: true,
       canDelete: false,
       canComment: true,
       comments: [],
@@ -63,6 +74,8 @@ describe('GroupDetailPage', () => {
       group: { ...group, id: 'group-2', name: 'Andere Gruppe' },
       content: 'Soll nicht sichtbar sein',
       createdAt: '2026-01-01T11:00:00Z',
+      status: 'Published',
+      allowComments: true,
       canDelete: false,
       canComment: true,
       comments: [],
@@ -115,7 +128,7 @@ describe('GroupDetailPage', () => {
     const form = fixture.nativeElement.querySelector('form.composer') as HTMLFormElement;
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
-    expect(feedApi.createPost).toHaveBeenCalledWith({ content: 'Neue Info', groupId: 'group-1' });
+    expect(feedApi.createPost).toHaveBeenCalledWith({ content: 'Neue Info', groupId: 'group-1', allowComments: true });
   });
 
   it('creates comments from the comment form submit', () => {

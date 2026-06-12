@@ -15,6 +15,7 @@ public sealed class EntityFeatureRepositoryTests
         var userId = Guid.NewGuid();
         var groupId = Guid.NewGuid();
         var postId = Guid.NewGuid();
+        var moderatorId = Guid.NewGuid();
 
         try
         {
@@ -32,14 +33,14 @@ public sealed class EntityFeatureRepositoryTests
                     Id = groupId,
                     Name = "Database study group",
                     Description = "Shared preparation for the database exam.",
-                    Type = GroupType.Social,
+                    Type = GroupType.Campus,
                     Audience = "TIF25A",
                     OwnerUserId = userId,
                     OwnerLabel = "Alice",
                     IconLabel = "DB",
                     AccentColor = "#2563eb",
-                    AssignedUserIds = [userId],
-                    MemberPermissions = new Dictionary<Guid, GroupMemberPermission> { [userId] = GroupMemberPermission.Manage }
+                    AssignedUserIds = [userId, moderatorId],
+                    MemberRoles = new Dictionary<Guid, GroupRole> { [moderatorId] = GroupRole.Moderator }
                 });
 
                 await feed.AddAsync(new FeedPost
@@ -88,7 +89,7 @@ public sealed class EntityFeatureRepositoryTests
                 var persistedGroup = await groups.FindByIdAsync(groupId);
                 Assert.NotNull(persistedGroup);
                 Assert.Contains(userId, persistedGroup!.AssignedUserIds);
-                Assert.Equal(GroupMemberPermission.Manage, persistedGroup.MemberPermissions[userId]);
+                Assert.Equal(GroupRole.Moderator, persistedGroup.MemberRoles[moderatorId]);
 
                 var persistedPost = await feed.FindByIdAsync(postId);
                 Assert.NotNull(persistedPost);

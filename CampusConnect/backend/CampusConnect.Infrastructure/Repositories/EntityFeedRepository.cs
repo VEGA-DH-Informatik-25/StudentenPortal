@@ -1,4 +1,5 @@
 using CampusConnect.Domain.Entities;
+using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
 using CampusConnect.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,24 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
             .OrderByDescending(post => post.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(post => Clone(post))
+            .ToListAsync();
+
+    public async Task<IReadOnlyList<FeedPost>> GetPublishedAsync(int page, int pageSize) =>
+        await dbContext.FeedPosts
+            .AsNoTracking()
+            .Where(post => post.Status == FeedPostStatus.Published)
+            .OrderByDescending(post => post.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(post => Clone(post))
+            .ToListAsync();
+
+    public async Task<IReadOnlyList<FeedPost>> GetByGroupAsync(Guid groupId) =>
+        await dbContext.FeedPosts
+            .AsNoTracking()
+            .Where(post => post.GroupId == groupId)
+            .OrderByDescending(post => post.CreatedAt)
             .Select(post => Clone(post))
             .ToListAsync();
 
@@ -35,6 +54,17 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
         }
 
         await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<FeedPost?> SetStatusAsync(Guid id, FeedPostStatus status)
+    {
+        var post = await dbContext.FeedPosts.FirstOrDefaultAsync(item => item.Id == id);
+        if (post is null)
+            return null;
+
+        post.Status = status;
+        await dbContext.SaveChangesAsync();
+        return Clone(post);
     }
 
     public async Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment)
@@ -93,12 +123,24 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task DeleteByGroupAsync(Guid groupId)
+    {
+        var posts = await dbContext.FeedPosts.Where(post => post.GroupId == groupId).ToListAsync();
+        if (posts.Count == 0)
+            return;
+
+        dbContext.FeedPosts.RemoveRange(posts);
+        await dbContext.SaveChangesAsync();
+    }
+
     private static void Copy(FeedPost source, FeedPost target)
     {
         target.AuthorId = source.AuthorId;
         target.GroupId = source.GroupId;
         target.AuthorName = source.AuthorName;
         target.Content = source.Content;
+        target.Status = source.Status;
+        target.AllowComments = source.AllowComments;
         target.Comments = source.Comments.Select(Clone).ToList();
         target.Reactions = source.Reactions.Select(Clone).ToList();
     }
@@ -110,6 +152,8 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
         GroupId = post.GroupId,
         AuthorName = post.AuthorName,
         Content = post.Content,
+        Status = post.Status,
+        AllowComments = post.AllowComments,
         CreatedAt = post.CreatedAt,
         Comments = post.Comments.Select(Clone).ToList(),
         Reactions = post.Reactions.Select(Clone).ToList()

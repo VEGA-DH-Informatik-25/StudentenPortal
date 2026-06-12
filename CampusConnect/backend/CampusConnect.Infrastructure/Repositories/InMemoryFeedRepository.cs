@@ -1,4 +1,5 @@
 using CampusConnect.Domain.Entities;
+using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
 using System.Collections.Concurrent;
 
@@ -32,6 +33,34 @@ public class InMemoryFeedRepository : IFeedRepository
         }
     }
 
+    public Task<IReadOnlyList<FeedPost>> GetPublishedAsync(int page, int pageSize)
+    {
+        lock (_syncRoot)
+        {
+            var posts = _store.Values
+                .Where(post => post.Status == FeedPostStatus.Published)
+                .OrderByDescending(post => post.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(Clone)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<FeedPost>>(posts);
+        }
+    }
+
+    public Task<IReadOnlyList<FeedPost>> GetByGroupAsync(Guid groupId)
+    {
+        lock (_syncRoot)
+        {
+            var posts = _store.Values
+                .Where(post => post.GroupId == groupId)
+                .OrderByDescending(post => post.CreatedAt)
+                .Select(Clone)
+                .ToList();
+            return Task.FromResult<IReadOnlyList<FeedPost>>(posts);
+        }
+    }
+
     public Task AddAsync(FeedPost post)
     {
         lock (_syncRoot)
@@ -40,6 +69,18 @@ public class InMemoryFeedRepository : IFeedRepository
         }
 
         return Task.CompletedTask;
+    }
+
+    public Task<FeedPost?> SetStatusAsync(Guid id, FeedPostStatus status)
+    {
+        lock (_syncRoot)
+        {
+            if (!_store.TryGetValue(id, out var post))
+                return Task.FromResult<FeedPost?>(null);
+
+            post.Status = status;
+            return Task.FromResult<FeedPost?>(Clone(post));
+        }
     }
 
     public Task<FeedPost?> AddCommentAsync(Guid postId, FeedComment comment)
@@ -99,6 +140,17 @@ public class InMemoryFeedRepository : IFeedRepository
         return Task.CompletedTask;
     }
 
+    public Task DeleteByGroupAsync(Guid groupId)
+    {
+        lock (_syncRoot)
+        {
+            foreach (var id in _store.Values.Where(post => post.GroupId == groupId).Select(post => post.Id).ToList())
+                _store.TryRemove(id, out _);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static FeedPost Clone(FeedPost post) => new()
     {
         Id = post.Id,
@@ -106,6 +158,8 @@ public class InMemoryFeedRepository : IFeedRepository
         GroupId = post.GroupId,
         AuthorName = post.AuthorName,
         Content = post.Content,
+        Status = post.Status,
+        AllowComments = post.AllowComments,
         CreatedAt = post.CreatedAt,
         Comments = post.Comments.Select(Clone).ToList(),
         Reactions = post.Reactions.Select(Clone).ToList()

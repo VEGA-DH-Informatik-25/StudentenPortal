@@ -33,7 +33,9 @@ export class FeedPage implements OnInit {
   protected readonly _isLoading = signal(false);
   protected readonly _isPosting = signal(false);
   protected readonly _error = signal('');
+  protected readonly _notice = signal('');
   protected readonly _newContent = signal('');
+  protected readonly _allowComments = signal(true);
   protected readonly _commentDrafts = signal<Record<string, string>>({});
   protected readonly _openCommentPostIds = signal<string[]>([]);
   protected readonly _commentingPostIds = signal<string[]>([]);
@@ -84,9 +86,19 @@ export class FeedPage implements OnInit {
     }
 
     this._error.set('');
+    this._notice.set('');
     this._isPosting.set(true);
-    this._feedService.createPost({ content, groupId: group.id }).subscribe({
-      next: post => { this._posts.update(posts => [post, ...posts]); this._newContent.set(''); this._isPosting.set(false); },
+    this._feedService.createPost({ content, groupId: group.id, allowComments: group.settings.allowComments && this._allowComments() }).subscribe({
+      next: post => {
+        if (post.status === 'Published') {
+          this._posts.update(posts => [post, ...posts]);
+        } else {
+          this._notice.set(this._i18n.translate('feed.pendingNotice'));
+        }
+        this._newContent.set('');
+        this._allowComments.set(true);
+        this._isPosting.set(false);
+      },
       error: () => { this._error.set(this._i18n.translate('feed.createPostError')); this._isPosting.set(false); },
     });
   }
@@ -160,6 +172,11 @@ export class FeedPage implements OnInit {
 
   protected updateSelectedGroup(value: string): void {
     this._selectedGroupId.set(value);
+    this._allowComments.set(true);
+  }
+
+  protected updateAllowComments(value: boolean): void {
+    this._allowComments.set(value);
   }
 
   protected updateCommentDraft(postId: string, value: string): void {
@@ -221,7 +238,7 @@ export class FeedPage implements OnInit {
   }
 
   protected canReactToPost(post: FeedPost): boolean {
-    return post.group.canManage || (post.group.isAssigned && (post.group.memberPermission === 'ReadWrite' || post.group.memberPermission === 'Manage'));
+    return post.group.canInteract;
   }
 
   protected groupTypeLabel(type: GroupType): string {
@@ -230,7 +247,7 @@ export class FeedPage implements OnInit {
         return this._i18n.translate('common.course');
       case 'Official':
         return this._i18n.translate('groups.tab.official');
-      case 'Social':
+      case 'Campus':
         return this._i18n.translate('groups.tab.campus');
     }
   }
@@ -362,7 +379,7 @@ export class FeedPage implements OnInit {
     const officialGroup = groups.find(group => group.type === 'Official' && this.canPostToGroup(group));
     const fallback = (role === 'Admin' ? officialGroup : courseGroup)
       ?? courseGroup
-      ?? groups.find(group => group.type === 'Social' && this.canPostToGroup(group))
+      ?? groups.find(group => group.type === 'Campus' && this.canPostToGroup(group))
       ?? groups.find(group => this.canPostToGroup(group));
 
     this._selectedGroupId.set(fallback?.id ?? '');

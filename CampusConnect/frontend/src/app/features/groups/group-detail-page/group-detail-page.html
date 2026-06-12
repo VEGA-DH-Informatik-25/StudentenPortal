@@ -1,8 +1,17 @@
 <div class="group-detail-page">
-  <button type="button" class="group-detail-page__back" (click)="backToGroups()">{{ 'groups.back' | translate }}</button>
+  <nav class="group-detail-page__navigation" [attr.aria-label]="'groups.back' | translate">
+    <button type="button" class="group-detail-page__back" (click)="backToGroups()">
+      <span aria-hidden="true">&larr;</span>
+      {{ 'groups.back' | translate }}
+    </button>
+  </nav>
 
   @if (_error()) {
     <p class="group-detail-page__state group-detail-page__state--error">{{ _error() }}</p>
+  }
+
+  @if (_notice()) {
+    <p class="group-detail-page__state">{{ _notice() }}</p>
   }
 
   @if (_isLoading()) {
@@ -12,8 +21,13 @@
       <span class="group-detail-page__icon" [style.background]="group.accentColor" aria-hidden="true">{{ group.iconLabel }}</span>
       <div>
         <p>{{ groupTypeLabel(group.type) }} · {{ permissionLabel(group) }}@if (hasGroupRoleBadge(group)) { · {{ groupRoleBadge(group) }}}</p>
-        <h2>{{ groupName(group) }}</h2>
+        <h1>{{ groupName(group) }}</h1>
         <span>{{ groupDescription(group) }}</span>
+        <div class="group-detail-page__meta">
+          <span>{{ group.audience }}</span>
+          <span>{{ 'groups.membersCount' | translate:{ count: group.assignedUserCount } }}</span>
+          <span>{{ commentPolicyLabel(group) }}</span>
+        </div>
       </div>
       <div class="group-detail-page__actions">
         @if (group.canJoin) {
@@ -32,12 +46,24 @@
     </header>
 
     @if (group.canPost) {
-      <form class="composer" (ngSubmit)="onPost()" [attr.aria-label]="'groups.feedLabel' | translate">
+      <section class="group-detail-page__composer-section">
+        <div class="group-detail-page__section-head">
+          <span>{{ groupTypeLabel(group.type) }}</span>
+          <strong>{{ 'feed.composeLabel' | translate }}</strong>
+        </div>
+        <form class="composer" (ngSubmit)="onPost()" [attr.aria-label]="'groups.feedLabel' | translate">
         <span class="composer__avatar" aria-hidden="true">{{ _profileInitials() }}</span>
         <div class="composer__body">
           <div class="composer__target">
             <span>{{ groupName(group) }} · {{ groupTypeLabel(group.type) }} · {{ commentPolicyLabel(group) }}</span>
           </div>
+
+          @if (group.settings.allowComments) {
+            <label class="composer__comment-setting">
+              <input type="checkbox" [ngModel]="_allowComments()" (ngModelChange)="updateAllowComments($event)" name="group-allow-comments">
+              <span>{{ 'feed.allowCommentsForPost' | translate }}</span>
+            </label>
+          }
 
           <label class="visually-hidden" for="group-feed-content">{{ 'feed.composeLabel' | translate }}</label>
           <textarea
@@ -53,7 +79,8 @@
             <button type="submit" [disabled]="!_newContent().trim() || _isLoading()">{{ 'feed.post' | translate }}</button>
           </div>
         </div>
-      </form>
+        </form>
+      </section>
     }
 
     <section class="group-detail-page__posts" [attr.aria-label]="'groups.feedLabel' | translate">

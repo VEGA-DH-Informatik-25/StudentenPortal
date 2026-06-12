@@ -44,7 +44,7 @@ Domain besitzt keine Projektabhängigkeit. Application referenziert Domain. Infr
 
 ## Persistenz und Repository-Strategie
 
-Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge in SQLite über Entity Framework Core. EF-Migrations verwalten das Datenbankschema; bestehende lokale SQLite-Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen, damit sie ohne Datenverlust weiter migriert werden können. Feed-Kommentare, Reaktionen sowie Gruppeneinstellungen und Mitgliedsrechte werden als strukturierte JSON-Spalten gespeichert. Services, die Kurszuordnungen ändern, synchronisieren weiterhin die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht konsistent bleiben.
+Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge in SQLite über Entity Framework Core. EF-Migrations verwalten das Datenbankschema; bestehende lokale SQLite-Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen, damit sie ohne Datenverlust weiter migriert werden können. Feed-Kommentare, Reaktionen sowie Gruppeneinstellungen und Gruppenrollen der Mitglieder werden als strukturierte JSON-Spalten gespeichert. Services, die Kurszuordnungen ändern, synchronisieren weiterhin die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht konsistent bleiben.
 
 ## Externe APIs
 

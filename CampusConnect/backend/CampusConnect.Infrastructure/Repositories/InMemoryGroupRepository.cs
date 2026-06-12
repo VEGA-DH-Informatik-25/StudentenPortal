@@ -60,6 +60,16 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
+    public Task DeleteAsync(Guid id)
+    {
+        lock (_syncRoot)
+        {
+            _store.Remove(id);
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task UpdateSettingsAsync(Guid id, GroupSettings settings)
     {
         lock (_syncRoot)
@@ -75,15 +85,28 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
-    public Task UpdateAssignmentsAsync(Guid id, IReadOnlyCollection<Guid> assignedUserIds)
+    public Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds)
     {
         lock (_syncRoot)
         {
             if (_store.TryGetValue(id, out var group))
             {
                 var updated = Clone(group);
-                updated.AssignedUserIds = assignedUserIds.ToHashSet();
-                SyncMemberPermissions(updated);
+                var assigned = updated.AssignedUserIds.ToHashSet();
+                foreach (var userId in userIds)
+                    assigned.Add(userId);
+
+                updated.AssignedUserIds = assigned;
+                var pending = updated.PendingJoinRequests.ToHashSet();
+                var invitations = updated.Invitations.ToHashSet();
+                foreach (var userId in userIds)
+                {
+                    pending.Remove(userId);
+                    invitations.Remove(userId);
+                }
+                updated.PendingJoinRequests = pending;
+                updated.Invitations = invitations;
+                SyncMemberRoles(updated);
                 _store[id] = updated;
             }
         }
@@ -91,17 +114,34 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
-    public Task UpdateMemberPermissionsAsync(Guid id, IReadOnlyDictionary<Guid, GroupMemberPermission> permissions)
+    public Task RemoveMemberAsync(Guid id, Guid userId)
     {
         lock (_syncRoot)
         {
             if (_store.TryGetValue(id, out var group))
             {
                 var updated = Clone(group);
-                updated.MemberPermissions = updated.AssignedUserIds
-                    .ToDictionary(
-                        userId => userId,
-                        userId => permissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                var assigned = updated.AssignedUserIds.ToHashSet();
+                assigned.Remove(userId);
+                updated.AssignedUserIds = assigned;
+                updated.MemberRoles.Remove(userId);
+                SyncMemberRoles(updated);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group) && group.AssignedUserIds.Contains(userId))
+            {
+                var updated = Clone(group);
+                updated.MemberRoles[userId] = role;
+                SyncMemberRoles(updated);
                 _store[id] = updated;
             }
         }
@@ -122,8 +162,72 @@ public class InMemoryGroupRepository : IGroupRepository
             {
                 var updated = Clone(group);
                 updated.AssignedUserIds = assignedUserIds.ToHashSet();
-                SyncMemberPermissions(updated);
+                SyncMemberRoles(updated);
                 _store[updated.Id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AddJoinRequestAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group) && !group.AssignedUserIds.Contains(userId))
+            {
+                var updated = Clone(group);
+                updated.PendingJoinRequests.Add(userId);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveJoinRequestAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.PendingJoinRequests.Remove(userId);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AddInvitationsAsync(Guid id, IReadOnlyCollection<Guid> userIds)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                foreach (var userId in userIds)
+                {
+                    if (!updated.AssignedUserIds.Contains(userId))
+                        updated.Invitations.Add(userId);
+                }
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveInvitationAsync(Guid id, Guid userId)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group))
+            {
+                var updated = Clone(group);
+                updated.Invitations.Remove(userId);
+                _store[id] = updated;
             }
         }
 
@@ -151,21 +255,28 @@ public class InMemoryGroupRepository : IGroupRepository
         Type = group.Type,
         Audience = group.Audience,
         CourseCode = group.CourseCode,
+        OfficialCategory = group.OfficialCategory,
         OwnerUserId = group.OwnerUserId,
         OwnerLabel = group.OwnerLabel,
         IconLabel = group.IconLabel,
         AccentColor = group.AccentColor,
         Settings = Clone(group.Settings),
         AssignedUserIds = group.AssignedUserIds.ToHashSet(),
-        MemberPermissions = group.MemberPermissions.ToDictionary(item => item.Key, item => item.Value)
+        MemberRoles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value),
+        PendingJoinRequests = group.PendingJoinRequests.ToHashSet(),
+        Invitations = group.Invitations.ToHashSet()
     };
 
-    private static void SyncMemberPermissions(CampusGroup group)
+    private static void SyncMemberRoles(CampusGroup group)
     {
-        group.MemberPermissions = group.AssignedUserIds
+        var ownerId = group.OwnerUserId;
+        group.MemberRoles = group.AssignedUserIds
+            .Where(userId => userId != ownerId)
             .ToDictionary(
                 userId => userId,
-                userId => group.MemberPermissions.TryGetValue(userId, out var permission) ? permission : GroupMemberPermission.ReadWrite);
+                userId => group.MemberRoles.TryGetValue(userId, out var role) && role is GroupRole.Moderator or GroupRole.Member
+                    ? role
+                    : GroupRole.Member);
     }
 
     private static GroupSettings Clone(GroupSettings settings) => new()
@@ -173,7 +284,8 @@ public class InMemoryGroupRepository : IGroupRepository
         AllowStudentPosts = settings.AllowStudentPosts,
         AllowComments = settings.AllowComments,
         RequiresApproval = settings.RequiresApproval,
-        IsDiscoverable = settings.IsDiscoverable
+        IsDiscoverable = settings.IsDiscoverable,
+        JoinRule = settings.JoinRule
     };
 
     private static string NormalizeCourse(string courseCode) => courseCode.Trim().ToUpperInvariant();
@@ -188,7 +300,7 @@ public class InMemoryGroupRepository : IGroupRepository
     {
         GroupType.Official => 0,
         GroupType.Course => 1,
-        GroupType.Social => 2,
+        GroupType.Campus => 2,
         _ => 3
     };
 }
