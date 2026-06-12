@@ -1,0 +1,42 @@
+<article class="contact-result-card">
+  <span class="contact-result-card__avatar" aria-hidden="true">{{ initials() }}</span>
+
+  <div class="contact-result-card__body">
+    <header>
+      <div>
+        <strong>{{ contact().displayName }}</strong>
+        <span>{{ roleLabel(contact().role) }}</span>
+      </div>
+      <button
+        type="button"
+        class="contact-result-card__favorite"
+        (click)="toggleFavorite()"
+        [class.contact-result-card__favorite--active]="isFavorite()"
+        [attr.aria-label]="(isFavorite() ? 'contacts.removeFavorite' : 'contacts.addFavorite') | translate"
+        [title]="(isFavorite() ? 'contacts.removeFavorite' : 'contacts.addFavorite') | translate">
+        @if (isFavorite()) {
+          &#9733;
+        } @else {
+          &#9734;
+        }
+      </button>
+    </header>
+
+    <dl>
+      <div>
+        <dt>{{ 'common.course' | translate }}</dt>
+        <dd>{{ contact().course || ('common.notSpecified' | translate) }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'common.studyProgram' | translate }}</dt>
+        <dd>{{ contact().studyProgram || ('common.notSpecified' | translate) }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'common.semester' | translate }}</dt>
+        <dd>{{ 'common.semesterValue' | translate:{ semester: contact().semester } }}</dd>
+      </div>
+    </dl>
+
+    <a [href]="'mailto:' + contact().email">{{ 'common.email' | translate }}</a>
+  </div>
+</article>

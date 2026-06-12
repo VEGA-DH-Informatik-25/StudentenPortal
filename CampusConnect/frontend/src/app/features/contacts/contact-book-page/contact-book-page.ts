@@ -1,64 +1,37 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { I18n } from '../../../core/i18n/i18n';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ContactProfile } from '../../../core/models/contact.model';
-import { Contacts } from '../../../core/services/contacts';
-import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
+import { ContactSearchCard } from '../contact-search-card/contact-search-card';
+import { ContactSearchModal } from '../contact-search-modal/contact-search-modal';
+import { FavoritesDropdown } from '../favorites-dropdown/favorites-dropdown';
 
 @Component({
   selector: 'app-contact-book-page',
   standalone: true,
-  imports: [FormsModule, ProfileHoverCard, TranslatePipe],
+  imports: [ContactSearchCard, ContactSearchModal, FavoritesDropdown, TranslatePipe],
   templateUrl: './contact-book-page.html',
   styleUrl: './contact-book-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ContactBookPage implements OnInit {
-  private readonly _contactsService = inject(Contacts);
-  private readonly _i18n = inject(I18n);
+export class ContactBookPage {
+  protected readonly _favoriteContacts = signal<ContactProfile[]>([]);
+  protected readonly _favoriteIds = computed(() => new Set(this._favoriteContacts().map(contact => contact.id)));
+  protected readonly _isSearchOpen = signal(false);
 
-  protected readonly _contacts = signal<ContactProfile[]>([]);
-  protected readonly _query = signal('');
-  protected readonly _isLoading = signal(false);
-  protected readonly _error = signal('');
-  protected readonly _resultLabel = computed(() => {
-    const count = this._contacts().length;
-    return count === 1
-      ? this._i18n.translate('contacts.count.one')
-      : this._i18n.translate('contacts.count.many', { count });
-  });
-
-  ngOnInit(): void {
-    this.search();
+  protected openSearch(): void {
+    this._isSearchOpen.set(true);
   }
 
-  protected updateQuery(value: string): void {
-    this._query.set(value);
+  protected closeSearch(): void {
+    this._isSearchOpen.set(false);
   }
 
-  protected search(): void {
-    this._isLoading.set(true);
-    this._error.set('');
-    this._contactsService.searchContacts(this._query()).subscribe({
-      next: contacts => {
-        this._contacts.set(contacts);
-        this._isLoading.set(false);
-      },
-      error: () => {
-        this._contacts.set([]);
-        this._error.set(this._i18n.translate('contacts.loadError'));
-        this._isLoading.set(false);
-      },
+  protected toggleFavorite(contact: ContactProfile): void {
+    this._favoriteContacts.update(favorites => {
+      const isFavorite = favorites.some(favorite => favorite.id === contact.id);
+      return isFavorite
+        ? favorites.filter(favorite => favorite.id !== contact.id)
+        : [...favorites, contact].sort((a, b) => a.displayName.localeCompare(b.displayName, 'de', { sensitivity: 'base' }));
     });
-  }
-
-  protected clearSearch(): void {
-    this._query.set('');
-    this.search();
-  }
-
-  protected roleLabel(role: string): string {
-    return this._i18n.roleLabel(role);
   }
 }

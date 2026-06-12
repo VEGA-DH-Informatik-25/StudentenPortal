@@ -27,4 +27,12 @@ describe('Contacts', () => {
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
+
+  it('should include an optional result limit', () => {
+    service.searchContacts('alice', 10).subscribe();
+
+    const request = http.expectOne('/api/contacts?query=alice&limit=10');
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
 });

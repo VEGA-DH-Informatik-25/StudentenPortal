@@ -1,0 +1,25 @@
+@if (isOpen()) {
+  <div class="contact-search-modal" (click)="close()">
+    <section class="contact-search-modal__dialog" role="dialog" aria-modal="true" [attr.aria-labelledby]="'contact-search-modal-title'" (click)="stopClick($event)">
+      <header>
+        <div>
+          <p>{{ 'contacts.label' | translate }}</p>
+          <h2 id="contact-search-modal-title">{{ 'contacts.openSearch' | translate }}</h2>
+        </div>
+        <button type="button" class="contact-search-modal__close" (click)="close()" [attr.aria-label]="'common.close' | translate">
+          ×
+        </button>
+      </header>
+
+      <app-contact-search-input [query]="_query()" (queryChange)="updateQuery($event)" />
+      <app-contact-search-results
+        [contacts]="_contacts()"
+        [error]="_error()"
+        [favoriteIds]="favoriteIds()"
+        [isLoading]="_isLoading()"
+        [query]="_query()"
+        [resultLimit]="_resultLimit"
+        (favoriteToggle)="favoriteToggle.emit($event)" />
+    </section>
+  </div>
+}

@@ -1,0 +1,13 @@
+.empty-favorites-state {
+  background: var(--dhbw-surface-muted);
+  border: 1px dashed var(--dhbw-border);
+  border-radius: 8px;
+  color: var(--dhbw-text-muted);
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+
+  strong {
+    color: var(--dhbw-ink);
+  }
+}

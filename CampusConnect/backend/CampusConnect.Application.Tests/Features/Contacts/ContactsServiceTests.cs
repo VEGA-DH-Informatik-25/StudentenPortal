@@ -25,6 +25,35 @@ public sealed class ContactsServiceTests
         Assert.Contains(byCourse, contact => contact.Id == clara.Id && contact.PhoneNumber == "+49 7621 123456");
     }
 
+    [Fact]
+    public async Task SearchAsync_ShouldRespectRequestedLimit()
+    {
+        var currentUser = User("Alice", "alice@dhbw-loerrach.de", "TIF25A");
+        var service = new ContactsService(new FakeUserRepository(
+            currentUser,
+            User("Bob", "bob@dhbw-loerrach.de", "TIF25A"),
+            User("Clara", "clara@dhbw-loerrach.de", "TIF25A"),
+            User("David", "david@dhbw-loerrach.de", "TIF25A")));
+
+        var results = await service.SearchAsync(currentUser.Id, "TIF25A", limit: 2);
+
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldClampLimitToAtLeastOne()
+    {
+        var currentUser = User("Alice", "alice@dhbw-loerrach.de", "TIF25A");
+        var service = new ContactsService(new FakeUserRepository(
+            currentUser,
+            User("Bob", "bob@dhbw-loerrach.de", "TIF25A"),
+            User("Clara", "clara@dhbw-loerrach.de", "TIF25A")));
+
+        var results = await service.SearchAsync(currentUser.Id, "TIF25A", limit: 0);
+
+        Assert.Single(results);
+    }
+
     private static User User(string displayName, string email, string course, string phoneNumber = "", string location = "", string profileNote = "") => new()
     {
         DisplayName = displayName,

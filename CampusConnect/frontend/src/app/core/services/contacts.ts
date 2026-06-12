@@ -7,11 +7,14 @@ import { ContactProfile } from '../models/contact.model';
 export class Contacts {
   private readonly _http = inject(HttpClient);
 
-  searchContacts(query: string): Observable<ContactProfile[]> {
+  searchContacts(query: string, limit?: number): Observable<ContactProfile[]> {
     let params = new HttpParams();
     const term = query.trim();
     if (term) {
       params = params.set('query', term);
+    }
+    if (limit !== undefined) {
+      params = params.set('limit', limit);
     }
 
     return this._http.get<ContactProfile[]>('/api/contacts', { params });

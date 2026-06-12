@@ -1,0 +1,27 @@
+.contact-search-input {
+  display: grid;
+  gap: 0.45rem;
+
+  span {
+    color: var(--dhbw-ink);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  input {
+    background: var(--dhbw-surface-muted);
+    border: 1px solid var(--dhbw-border);
+    border-radius: 8px;
+    color: var(--dhbw-ink);
+    min-height: 2.8rem;
+    min-width: 0;
+    padding: 0.6rem 0.75rem;
+
+    &:focus {
+      background: var(--dhbw-surface);
+      border-color: var(--dhbw-red);
+      box-shadow: 0 0 0 3px var(--dhbw-focus);
+      outline: none;
+    }
+  }
+}
