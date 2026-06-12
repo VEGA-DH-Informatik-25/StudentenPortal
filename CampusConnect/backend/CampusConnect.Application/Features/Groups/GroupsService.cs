@@ -42,6 +42,8 @@ public record AddGroupMembersCommand(IReadOnlyList<Guid> UserIds);
 public record InviteGroupMembersCommand(IReadOnlyList<Guid> UserIds);
 public record AddGroupCourseCommand(string CourseCode);
 public record SetGroupMemberRoleCommand(string Role);
+public record LeaveGroupCommand(Guid? NewOwnerUserId = null);
+public record LeaveGroupResultDto(CampusGroupDto? Group, bool Deleted);
 public record GroupMemberDto(Guid Id, string DisplayName, string Email, string Role, string Course, string GroupRole, bool IsOwner);
 public record GroupRequestDto(Guid Id, string DisplayName, string Email, string Role, string Course);
 public record GroupCandidateDto(Guid Id, string DisplayName, string Email, string Role, string Course);
@@ -292,6 +294,57 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo,
         return await ReloadDetailsAsync(groupId, context.Value.User);
     }
 
+    public async Task<Result<LeaveGroupResultDto>> LeaveGroupAsync(Guid groupId, Guid userId, LeaveGroupCommand command)
+    {
+        var user = await userRepo.FindByIdAsync(userId);
+        if (user is null)
+            return Result<LeaveGroupResultDto>.Failure("User profile was not found.");
+
+        var group = await groupRepo.FindByIdAsync(groupId);
+        if (group is null)
+            return Result<LeaveGroupResultDto>.Failure("Group was not found.");
+
+        if (group.Type == GroupType.Course)
+            return Result<LeaveGroupResultDto>.Failure(CourseManagedError);
+
+        if (!group.AssignedUserIds.Contains(user.Id))
+            return Result<LeaveGroupResultDto>.Failure("You are not a member of this group.");
+
+        if (group.OwnerUserId != user.Id)
+        {
+            await groupRepo.RemoveMemberAsync(groupId, user.Id);
+            return await ReloadLeaveResultAsync(groupId, user);
+        }
+
+        var remainingMemberIds = group.AssignedUserIds
+            .Where(memberId => memberId != user.Id)
+            .ToList();
+
+        if (remainingMemberIds.Count == 0)
+        {
+            if (feedRepo is null)
+                return Result<LeaveGroupResultDto>.Failure("Group deletion is not available.");
+
+            await feedRepo.DeleteByGroupAsync(groupId);
+            await groupRepo.DeleteAsync(groupId);
+            return Result<LeaveGroupResultDto>.Success(new LeaveGroupResultDto(null, Deleted: true));
+        }
+
+        if (command.NewOwnerUserId is null)
+            return Result<LeaveGroupResultDto>.Failure("Select a new owner before leaving this group.");
+
+        if (command.NewOwnerUserId == user.Id || !remainingMemberIds.Contains(command.NewOwnerUserId.Value))
+            return Result<LeaveGroupResultDto>.Failure("Select an existing group member as the new owner.");
+
+        var newOwner = await userRepo.FindByIdAsync(command.NewOwnerUserId.Value);
+        if (newOwner is null)
+            return Result<LeaveGroupResultDto>.Failure("New owner profile was not found.");
+
+        await groupRepo.SetOwnerAsync(groupId, newOwner.Id, newOwner.DisplayName);
+        await groupRepo.RemoveMemberAsync(groupId, user.Id);
+        return await ReloadLeaveResultAsync(groupId, user);
+    }
+
     public async Task<Result<CampusGroupDto>> JoinGroupAsync(Guid groupId, Guid userId)
     {
         await SyncCourseGroupAssignmentsAsync();
@@ -424,6 +477,15 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo,
     {
         var updatedGroup = await groupRepo.FindByIdAsync(groupId);
         return Result<CampusGroupDto>.Success(GroupDtoMapper.ToDto(updatedGroup!, user));
+    }
+
+    private async Task<Result<LeaveGroupResultDto>> ReloadLeaveResultAsync(Guid groupId, User user)
+    {
+        var updatedGroup = await groupRepo.FindByIdAsync(groupId);
+        if (updatedGroup is null || !GroupDtoMapper.CanView(user, updatedGroup))
+            return Result<LeaveGroupResultDto>.Success(new LeaveGroupResultDto(null, Deleted: false));
+
+        return Result<LeaveGroupResultDto>.Success(new LeaveGroupResultDto(GroupDtoMapper.ToDto(updatedGroup, user), Deleted: false));
     }
 
     private async Task<Result<GroupSettingsDetailsDto>> ReloadDetailsAsync(Guid groupId, User user)

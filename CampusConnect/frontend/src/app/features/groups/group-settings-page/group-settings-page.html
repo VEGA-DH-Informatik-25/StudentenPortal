@@ -239,6 +239,43 @@
       </section>
     }
 
+    @if (_canLeaveGroup()) {
+      <section class="danger-card" [attr.aria-label]="'groups.leaveGroup' | translate">
+        <div>
+          <span>{{ 'groups.leaveGroup' | translate }}</span>
+          <h2>{{ 'groups.leaveGroup' | translate }}</h2>
+          @if (_requiresNewOwner()) {
+            <p>{{ 'groups.leaveGroupOwnerBody' | translate }}</p>
+          } @else if (group.groupRole === 'Owner') {
+            <p>{{ 'groups.leaveGroupSoleOwnerBody' | translate }}</p>
+          } @else {
+            <p>{{ 'groups.leaveGroupBody' | translate }}</p>
+          }
+        </div>
+        @if (_leaveConfirmationOpen()) {
+          <div class="danger-card__confirm">
+            @if (_requiresNewOwner()) {
+              <label class="owner-transfer">
+                <span>{{ 'groups.selectNewOwner' | translate }}</span>
+                <select [value]="_selectedNewOwnerId()" [disabled]="_leavingGroup()" (change)="updateSelectedNewOwner($any($event.target).value)">
+                  @for (candidate of _leaveOwnerCandidates(); track candidate.id) {
+                    <option [value]="candidate.id">{{ candidate.displayName }} &middot; {{ groupRoleLabel(candidate.groupRole) }}</option>
+                  }
+                </select>
+              </label>
+            }
+            <strong>{{ _requiresNewOwner() ? ('groups.leaveGroupTransferHint' | translate) : ('groups.leaveGroupConfirmHint' | translate) }}</strong>
+            <span class="row-actions">
+              <button type="button" class="secondary-action" [disabled]="_leavingGroup()" (click)="closeLeaveConfirmation()">{{ 'common.cancel' | translate }}</button>
+              <button type="button" class="danger-action" [disabled]="!_canConfirmLeave()" (click)="leaveGroup()">{{ (_leavingGroup() ? 'groups.leavingGroup' : 'groups.leaveGroupConfirm') | translate }}</button>
+            </span>
+          </div>
+        } @else {
+          <button type="button" class="danger-action" (click)="openLeaveConfirmation()">{{ 'groups.leaveGroup' | translate }}</button>
+        }
+      </section>
+    }
+
     @if (_canDelete()) {
       <section class="danger-card" [attr.aria-label]="'groups.dangerZone' | translate">
         <div>

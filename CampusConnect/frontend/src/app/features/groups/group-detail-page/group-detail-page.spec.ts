@@ -99,7 +99,7 @@ describe('GroupDetailPage', () => {
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => 'group-1' } } } },
         { provide: Auth, useValue: { displayName: signal('Alice') } },
-        { provide: Groups, useValue: { getGroups: () => of([group]), joinGroup: () => of(group) } },
+        { provide: Groups, useValue: { getGroups: () => of([group]), joinGroup: () => of(group), leaveGroup: () => of({ group: null, deleted: false }) } },
         { provide: Feed, useValue: feedApi },
       ],
     }).compileComponents();

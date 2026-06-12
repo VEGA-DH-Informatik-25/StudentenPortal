@@ -65,6 +65,52 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
     }
 
+    [Fact]
+    public async Task LeaveGroup_ShouldRemoveMemberAndTransferOwner()
+    {
+        var ownerClient = factory.CreateClient();
+        var memberClient = factory.CreateClient();
+        _ = await RegisterAsync(ownerClient, "leave-owner");
+        var memberId = await RegisterAsync(memberClient, "leave-member");
+
+        var createGroup = await ownerClient.PostAsJsonAsync("/api/groups", new
+        {
+            name = "Leave study group",
+            description = "Members can leave the group.",
+            audience = "Students",
+            type = "Campus",
+            allowStudentPosts = true,
+            allowComments = true,
+            requiresApproval = false,
+            isDiscoverable = true,
+            joinRule = "Open"
+        });
+        Assert.Equal(HttpStatusCode.Created, createGroup.StatusCode);
+        var groupId = await ReadGuidAsync(createGroup, "id");
+
+        var addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { memberId } });
+        Assert.Equal(HttpStatusCode.OK, addMember.StatusCode);
+
+        var memberLeave = await memberClient.PostAsJsonAsync($"/api/groups/{groupId}/leave", new { });
+        Assert.Equal(HttpStatusCode.OK, memberLeave.StatusCode);
+        var memberLeaveBody = await memberLeave.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(memberLeaveBody.GetProperty("deleted").GetBoolean());
+
+        addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { memberId } });
+        Assert.Equal(HttpStatusCode.OK, addMember.StatusCode);
+
+        var ownerLeave = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/leave", new { newOwnerUserId = memberId });
+        Assert.Equal(HttpStatusCode.OK, ownerLeave.StatusCode);
+        var ownerLeaveBody = await ownerLeave.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.False(ownerLeaveBody.GetProperty("deleted").GetBoolean());
+        Assert.Equal(memberId, ownerLeaveBody.GetProperty("group").GetProperty("ownerUserId").GetGuid());
+
+        var formerOwnerGroups = await ownerClient.GetFromJsonAsync<JsonElement[]>("/api/groups");
+        Assert.NotNull(formerOwnerGroups);
+        Assert.Contains(formerOwnerGroups!, group => group.GetProperty("id").GetGuid() == groupId && !group.GetProperty("isAssigned").GetBoolean());
+
+    }
+
     private static async Task<Guid> RegisterAsync(HttpClient client, string prefix)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new

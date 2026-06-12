@@ -178,6 +178,20 @@ public class GroupsController(GroupsService groupsService) : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpPost("{id:guid}/leave")]
+    public async Task<IActionResult> LeaveGroup(Guid id, [FromBody] LeaveGroupRequest? request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await groupsService.LeaveGroupAsync(id, userId.Value, new LeaveGroupCommand(request?.NewOwnerUserId));
+        if (!result.IsSuccess)
+            return ToFailureResult(result.Error);
+
+        return Ok(result.Value);
+    }
+
     [HttpPost("{id:guid}/requests/{userId:guid}/approve")]
     public async Task<IActionResult> ApproveJoinRequest(Guid id, Guid userId)
     {

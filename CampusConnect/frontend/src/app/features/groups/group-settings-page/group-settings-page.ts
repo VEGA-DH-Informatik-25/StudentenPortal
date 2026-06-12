@@ -44,6 +44,9 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _busyPostId = signal('');
   protected readonly _deleteConfirmationOpen = signal(false);
   protected readonly _deletingGroup = signal(false);
+  protected readonly _leaveConfirmationOpen = signal(false);
+  protected readonly _leavingGroup = signal(false);
+  protected readonly _selectedNewOwnerId = signal('');
 
   protected readonly _group = computed(() => this._details()?.group ?? null);
   protected readonly _members = computed(() => this._details()?.members ?? []);
@@ -55,6 +58,13 @@ export class GroupSettingsPage implements OnInit {
   protected readonly _isCourseManaged = computed(() => this._group()?.isCourseManaged ?? false);
   protected readonly _isSystemAdminAccess = computed(() => this._group()?.isSystemAdminAccess ?? false);
   protected readonly _canDelete = computed(() => this._group()?.canDelete ?? false);
+  protected readonly _canLeaveGroup = computed(() => {
+    const group = this._group();
+    return !!group && group.isAssigned && !group.isCourseManaged && !group.isSystemAdminAccess;
+  });
+  protected readonly _leaveOwnerCandidates = computed(() => this._members().filter(member => !member.isOwner));
+  protected readonly _requiresNewOwner = computed(() => this._group()?.groupRole === 'Owner' && this._leaveOwnerCandidates().length > 0);
+  protected readonly _canConfirmLeave = computed(() => this._canLeaveGroup() && !this._leavingGroup() && (!this._requiresNewOwner() || !!this._selectedNewOwnerId()));
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');
@@ -261,6 +271,44 @@ export class GroupSettingsPage implements OnInit {
     if (!this._deletingGroup()) {
       this._deleteConfirmationOpen.set(false);
     }
+  }
+
+  protected openLeaveConfirmation(): void {
+    if (!this._canLeaveGroup()) {
+      return;
+    }
+
+    this._selectedNewOwnerId.set(this._leaveOwnerCandidates()[0]?.id ?? '');
+    this._leaveConfirmationOpen.set(true);
+  }
+
+  protected closeLeaveConfirmation(): void {
+    if (!this._leavingGroup()) {
+      this._leaveConfirmationOpen.set(false);
+    }
+  }
+
+  protected updateSelectedNewOwner(userId: string): void {
+    this._selectedNewOwnerId.set(userId);
+  }
+
+  protected leaveGroup(): void {
+    const group = this._group();
+    if (!group || !this._canConfirmLeave()) {
+      return;
+    }
+
+    this._leavingGroup.set(true);
+    this._error.set('');
+    this._groupsService.leaveGroup(group.id, {
+      newOwnerUserId: this._requiresNewOwner() ? this._selectedNewOwnerId() : null,
+    }).subscribe({
+      next: () => void this._router.navigate(['/groups']),
+      error: () => {
+        this._error.set(this._i18n.translate('groups.leaveGroupError'));
+        this._leavingGroup.set(false);
+      },
+    });
   }
 
   protected deleteGroup(): void {

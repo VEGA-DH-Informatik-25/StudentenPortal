@@ -124,6 +124,23 @@ public sealed class EntityGroupRepository(CampusConnectDbContext dbContext) : IG
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task SetOwnerAsync(Guid id, Guid ownerUserId, string ownerLabel)
+    {
+        var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);
+        if (group is null || !group.AssignedUserIds.Contains(ownerUserId))
+            return;
+
+        group.OwnerUserId = ownerUserId;
+        group.OwnerLabel = ownerLabel;
+
+        var roles = group.MemberRoles.ToDictionary(item => item.Key, item => item.Value);
+        roles.Remove(ownerUserId);
+        group.MemberRoles = roles;
+
+        SyncMemberRoles(group);
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
     {
         var group = await dbContext.CampusGroups.FirstOrDefaultAsync(item => item.Id == id);

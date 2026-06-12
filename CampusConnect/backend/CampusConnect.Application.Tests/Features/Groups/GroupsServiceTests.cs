@@ -531,6 +531,81 @@ public class GroupsServiceTests
     }
 
     [Fact]
+    public async Task LeaveGroupAsync_RemovesMemberFromGroup()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        var groups = new FakeGroupRepository(group);
+        var service = new GroupsService(groups, new FakeUserRepository(owner, member));
+
+        var result = await service.LeaveGroupAsync(group.Id, member.Id, new LeaveGroupCommand());
+
+        Assert.True(result.IsSuccess);
+        var persistedGroup = await groups.FindByIdAsync(group.Id);
+        Assert.NotNull(persistedGroup);
+        Assert.DoesNotContain(member.Id, persistedGroup!.AssignedUserIds);
+        Assert.False(result.Value!.Deleted);
+    }
+
+    [Fact]
+    public async Task LeaveGroupAsync_OwnerMustChooseNewOwnerWhenMembersRemain()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        var service = new GroupsService(new FakeGroupRepository(group), new FakeUserRepository(owner, member));
+
+        var result = await service.LeaveGroupAsync(group.Id, owner.Id, new LeaveGroupCommand());
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Select a new owner before leaving this group.", result.Error);
+    }
+
+    [Fact]
+    public async Task LeaveGroupAsync_OwnerTransfersOwnershipBeforeLeaving()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var member = StudentUser("Hannes", "hannes@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        group.AssignedUserIds.Add(member.Id);
+        group.MemberRoles[member.Id] = GroupRole.Moderator;
+        var groups = new FakeGroupRepository(group);
+        var service = new GroupsService(groups, new FakeUserRepository(owner, member));
+
+        var result = await service.LeaveGroupAsync(group.Id, owner.Id, new LeaveGroupCommand(member.Id));
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value!.Deleted);
+        var persistedGroup = await groups.FindByIdAsync(group.Id);
+        Assert.NotNull(persistedGroup);
+        Assert.Equal(member.Id, persistedGroup!.OwnerUserId);
+        Assert.Equal(member.DisplayName, persistedGroup.OwnerLabel);
+        Assert.Contains(member.Id, persistedGroup.AssignedUserIds);
+        Assert.DoesNotContain(owner.Id, persistedGroup.AssignedUserIds);
+        Assert.False(persistedGroup.MemberRoles.ContainsKey(member.Id));
+    }
+
+    [Fact]
+    public async Task LeaveGroupAsync_DeletesGroupWhenSoleOwnerLeaves()
+    {
+        var owner = StudentUser("Gina", "gina@dhbw-loerrach.de");
+        var group = SocialGroup(owner.Id);
+        var groups = new FakeGroupRepository(group);
+        var feed = new FakeFeedRepository(group.Id);
+        var service = new GroupsService(groups, new FakeUserRepository(owner), feed);
+
+        var result = await service.LeaveGroupAsync(group.Id, owner.Id, new LeaveGroupCommand());
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value!.Deleted);
+        Assert.Null(await groups.FindByIdAsync(group.Id));
+        Assert.Contains(group.Id, feed.DeletedGroupIds);
+    }
+
+    [Fact]
     public async Task GetSettingsDetailsAsync_AllowsAssignedModerator()
     {
         var owner = new User
@@ -814,6 +889,15 @@ public class GroupsServiceTests
             assigned.Remove(userId);
             group.AssignedUserIds = assigned;
             group.MemberRoles.Remove(userId);
+            return Task.CompletedTask;
+        }
+
+        public Task SetOwnerAsync(Guid id, Guid ownerUserId, string ownerLabel)
+        {
+            var group = _groups.First(group => group.Id == id);
+            group.OwnerUserId = ownerUserId;
+            group.OwnerLabel = ownerLabel;
+            group.MemberRoles.Remove(ownerUserId);
             return Task.CompletedTask;
         }
 

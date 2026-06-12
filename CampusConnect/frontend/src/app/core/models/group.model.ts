@@ -106,3 +106,12 @@ export interface AddGroupCourseRequest {
 export interface SetGroupMemberRoleRequest {
   role: GroupRole;
 }
+
+export interface LeaveGroupRequest {
+  newOwnerUserId: string | null;
+}
+
+export interface LeaveGroupResponse {
+  group: CampusGroup | null;
+  deleted: boolean;
+}

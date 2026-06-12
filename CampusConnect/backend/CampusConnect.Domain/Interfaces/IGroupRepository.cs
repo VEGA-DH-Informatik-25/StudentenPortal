@@ -14,6 +14,8 @@ public interface IGroupRepository
     Task UpdateSettingsAsync(Guid id, GroupSettings settings);
     Task AddMembersAsync(Guid id, IReadOnlyCollection<Guid> userIds);
     Task RemoveMemberAsync(Guid id, Guid userId);
+    Task SetOwnerAsync(Guid id, Guid ownerUserId, string ownerLabel) =>
+        throw new NotSupportedException();
     Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role);
     Task AddJoinRequestAsync(Guid id, Guid userId);
     Task RemoveJoinRequestAsync(Guid id, Guid userId);

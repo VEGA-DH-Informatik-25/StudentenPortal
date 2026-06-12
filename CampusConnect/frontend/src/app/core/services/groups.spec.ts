@@ -136,4 +136,13 @@ describe('Groups', () => {
     expect(request.request.body).toEqual({ role: 'Moderator' });
     request.flush({});
   });
+
+  it('should leave a group', () => {
+    service.leaveGroup('group-1', { newOwnerUserId: 'user-2' }).subscribe();
+
+    const request = http.expectOne('/api/groups/group-1/leave');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ newOwnerUserId: 'user-2' });
+    request.flush({ group: null, deleted: false });
+  });
 });

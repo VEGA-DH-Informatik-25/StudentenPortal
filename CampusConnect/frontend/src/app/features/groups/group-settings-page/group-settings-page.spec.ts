@@ -66,6 +66,7 @@ describe('GroupSettingsPage', () => {
           useValue: {
             getSettings: () => of(details),
             deleteGroup: () => of(void 0),
+            leaveGroup: () => of({ group: null, deleted: false }),
             updateSettings: () => of(details.group),
             searchCandidates: () => of([]),
             addMembers: () => of(details),

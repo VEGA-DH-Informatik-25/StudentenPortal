@@ -7,6 +7,8 @@ import {
   CampusGroup,
   CreateGroupRequest,
   GroupCandidate,
+  LeaveGroupRequest,
+  LeaveGroupResponse,
   GroupSettingsDetails,
   InviteGroupMembersRequest,
   SetGroupMemberRoleRequest,
@@ -60,6 +62,10 @@ export class Groups {
 
   joinGroup(id: string): Observable<CampusGroup> {
     return this._http.post<CampusGroup>(`/api/groups/${id}/join`, {});
+  }
+
+  leaveGroup(id: string, req: LeaveGroupRequest = { newOwnerUserId: null }): Observable<LeaveGroupResponse> {
+    return this._http.post<LeaveGroupResponse>(`/api/groups/${id}/leave`, req);
   }
 
   approveRequest(id: string, userId: string): Observable<GroupSettingsDetails> {

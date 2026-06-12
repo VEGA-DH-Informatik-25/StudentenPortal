@@ -17,3 +17,4 @@ public record AddGroupMembersRequest(IReadOnlyList<Guid> UserIds);
 public record InviteGroupMembersRequest(IReadOnlyList<Guid> UserIds);
 public record AddGroupCourseRequest(string CourseCode);
 public record SetGroupMemberRoleRequest(string Role);
+public record LeaveGroupRequest(Guid? NewOwnerUserId = null);

@@ -42,8 +42,28 @@
         @if (group.canManage) {
           <button type="button" class="group-detail-page__secondary" (click)="openSettings(group)">{{ 'groups.settings' | translate }}</button>
         }
+        @if (canLeaveGroup(group)) {
+          <button type="button" class="group-detail-page__secondary group-detail-page__secondary--danger" [disabled]="_isLeaving()" (click)="openLeaveConfirmation()">
+            {{ 'groups.leaveGroup' | translate }}
+          </button>
+        }
       </div>
     </header>
+
+    @if (_leaveConfirmationOpen()) {
+      <section class="group-detail-page__leave-confirm" [attr.aria-label]="'groups.leaveGroup' | translate">
+        <div>
+          <strong>{{ 'groups.leaveGroup' | translate }}</strong>
+          <p>{{ 'groups.leaveGroupBody' | translate }}</p>
+        </div>
+        <span class="group-detail-page__leave-actions">
+          <button type="button" class="group-detail-page__secondary" [disabled]="_isLeaving()" (click)="closeLeaveConfirmation()">{{ 'common.cancel' | translate }}</button>
+          <button type="button" class="group-detail-page__danger" [disabled]="_isLeaving()" (click)="leaveGroup(group)">
+            {{ (_isLeaving() ? 'groups.leavingGroup' : 'groups.leaveGroupConfirm') | translate }}
+          </button>
+        </span>
+      </section>
+    }
 
     @if (group.canPost) {
       <section class="group-detail-page__composer-section">

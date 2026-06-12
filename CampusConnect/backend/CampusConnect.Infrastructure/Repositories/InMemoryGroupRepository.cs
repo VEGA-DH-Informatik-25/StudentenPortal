@@ -133,6 +133,24 @@ public class InMemoryGroupRepository : IGroupRepository
         return Task.CompletedTask;
     }
 
+    public Task SetOwnerAsync(Guid id, Guid ownerUserId, string ownerLabel)
+    {
+        lock (_syncRoot)
+        {
+            if (_store.TryGetValue(id, out var group) && group.AssignedUserIds.Contains(ownerUserId))
+            {
+                var updated = Clone(group);
+                updated.OwnerUserId = ownerUserId;
+                updated.OwnerLabel = ownerLabel;
+                updated.MemberRoles.Remove(ownerUserId);
+                SyncMemberRoles(updated);
+                _store[id] = updated;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task SetMemberRoleAsync(Guid id, Guid userId, GroupRole role)
     {
         lock (_syncRoot)

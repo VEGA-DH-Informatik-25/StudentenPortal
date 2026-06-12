@@ -33,6 +33,8 @@ export class GroupDetailPage implements OnInit {
   protected readonly _posts = signal<FeedPost[]>([]);
   protected readonly _isLoading = signal(false);
   protected readonly _isJoining = signal(false);
+  protected readonly _isLeaving = signal(false);
+  protected readonly _leaveConfirmationOpen = signal(false);
   protected readonly _error = signal('');
   protected readonly _notice = signal('');
   protected readonly _newContent = signal('');
@@ -69,6 +71,36 @@ export class GroupDetailPage implements OnInit {
     }
 
     void this._router.navigate(['/groups', group.id, 'settings']);
+  }
+
+  protected canLeaveGroup(group: CampusGroup): boolean {
+    return group.isAssigned && group.groupRole !== 'Owner' && !group.isCourseManaged && !group.isSystemAdminAccess;
+  }
+
+  protected openLeaveConfirmation(): void {
+    this._leaveConfirmationOpen.set(true);
+  }
+
+  protected closeLeaveConfirmation(): void {
+    if (!this._isLeaving()) {
+      this._leaveConfirmationOpen.set(false);
+    }
+  }
+
+  protected leaveGroup(group: CampusGroup): void {
+    if (!this.canLeaveGroup(group) || this._isLeaving()) {
+      return;
+    }
+
+    this._isLeaving.set(true);
+    this._error.set('');
+    this._groupsService.leaveGroup(group.id).subscribe({
+      next: () => void this._router.navigate(['/groups']),
+      error: () => {
+        this._error.set(this._i18n.translate('groups.leaveGroupError'));
+        this._isLeaving.set(false);
+      },
+    });
   }
 
   protected joinGroup(group: CampusGroup): void {
