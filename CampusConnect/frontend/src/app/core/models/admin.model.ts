@@ -8,6 +8,7 @@ export interface AdminUser {
   semester: number;
   course: string;
   role: string;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -17,6 +18,28 @@ export interface UpdateUserRoleRequest {
 
 export interface UpdateUserCourseRequest {
   courseCode: string;
+}
+
+export interface CreateAdminUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  courseCode: string;
+  initialPassword: string;
+  isActive: boolean;
+}
+
+export interface UpdateAdminUserRequest {
+  displayName: string;
+  email: string;
+  role: string;
+  courseCode: string;
+  isActive: boolean;
+}
+
+export interface UpdateUserStatusRequest {
+  isActive: boolean;
 }
 
 export type AdminCourse = Course;

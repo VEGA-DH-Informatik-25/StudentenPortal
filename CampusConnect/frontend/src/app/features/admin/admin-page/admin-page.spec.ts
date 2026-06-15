@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { Admin } from '../../../core/services/admin';
+import { Auth } from '../../../core/services/auth';
 import { AdminPage } from './admin-page';
 
 describe('AdminPage', () => {
@@ -18,9 +19,18 @@ describe('AdminPage', () => {
             getUsers: () => of([]),
             getCourses: () => of([]),
             createCourse: () => of({ code: 'TIF25A', studyProgram: 'Computer Science', semester: 3, isActive: true, createdAt: '' }),
+            createUser: () => of({}),
+            updateUser: () => of({}),
+            updateUserStatus: () => of({}),
             updateUserRole: () => of({}),
             updateUserCourse: () => of({}),
             deleteUser: () => of(undefined),
+          },
+        },
+        {
+          provide: Auth,
+          useValue: {
+            userProfile: () => null,
           },
         },
       ],

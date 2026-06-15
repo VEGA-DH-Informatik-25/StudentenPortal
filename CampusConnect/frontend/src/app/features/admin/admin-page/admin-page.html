@@ -2,13 +2,26 @@
   <header class="admin-page__header">
     <div>
       <p class="admin-page__eyebrow">{{ 'admin.section' | translate }}</p>
-      <h1>{{ 'admin.header' | translate }}</h1>
+      <h1>{{ 'admin.section' | translate }}</h1>
+      <p class="admin-page__subtitle">{{ 'admin.adminSubtitle' | translate }}</p>
     </div>
 
     <button type="button" class="admin-page__refresh" (click)="loadData()" [disabled]="_isLoading() || _coursesLoading()">
       {{ 'common.refresh' | translate }}
     </button>
   </header>
+
+  <nav class="admin-tabs" [attr.aria-label]="'admin.tabsLabel' | translate">
+    <button type="button" [class.admin-tabs__tab--active]="_activeTab() === 'overview'" (click)="switchTab('overview')">
+      {{ 'admin.tabOverview' | translate }}
+    </button>
+    <button type="button" [class.admin-tabs__tab--active]="_activeTab() === 'users'" (click)="switchTab('users')">
+      {{ 'admin.tabUsers' | translate }}
+    </button>
+    <button type="button" [class.admin-tabs__tab--active]="_activeTab() === 'courses'" (click)="switchTab('courses')">
+      {{ 'admin.tabCourses' | translate }}
+    </button>
+  </nav>
 
   @if (_error()) {
     <p class="admin-page__message admin-page__message--error">{{ _error() }}</p>
@@ -18,90 +31,341 @@
     <p class="admin-page__message admin-page__message--success">{{ _success() }}</p>
   }
 
-  <section class="course-admin" [attr.aria-label]="'admin.createCourse' | translate">
-    <header>
-      <div>
-        <h3>{{ 'common.course' | translate }}</h3>
-        <p>{{ 'admin.activeCourses' | translate:{ count: _courses().length } }}</p>
-      </div>
-    </header>
+  @if (_activeTab() === 'overview') {
+    <section class="admin-section" [attr.aria-label]="'admin.tabOverview' | translate">
+      <header class="admin-section__header">
+        <div>
+          <h2>{{ 'admin.overviewTitle' | translate }}</h2>
+          <p>{{ 'admin.overviewSubtitle' | translate }}</p>
+        </div>
+      </header>
 
-    <form class="course-admin__form" (ngSubmit)="createCourse()">
-      <label>
-        {{ 'common.courseCode' | translate }}
-        <input type="text" name="courseCode" [(ngModel)]="_courseForm.code" maxlength="40" placeholder="TIF25C" required />
-      </label>
-      <label>
-        {{ 'common.studyProgram' | translate }}
-        <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Computer Science" required />
-      </label>
-      <label>
-        {{ 'common.semester' | translate }}
-        <input type="number" name="semester" [(ngModel)]="_courseForm.semester" min="1" max="6" required />
-      </label>
-      <button type="submit" [disabled]="_isCreatingCourse()">{{ _isCreatingCourse() ? ('admin.saveCourse' | translate) : ('admin.createCourse' | translate) }}</button>
-    </form>
-
-    @if (_coursesLoading()) {
-      <p class="course-admin__state">{{ 'common.loading' | translate }}</p>
-    } @else {
-      <div class="course-list" [attr.aria-label]="'admin.activeCourses' | translate:{ count: _courses().length }">
-        @for (course of _courses(); track course.code) {
-          <span>{{ courseLabel(course) }}</span>
-        }
-      </div>
-    }
-  </section>
-
-  @if (_isLoading()) {
-    <p class="admin-page__state">{{ 'admin.usersLoading' | translate }}</p>
-  } @else if (_users().length === 0) {
-    <p class="admin-page__state">{{ 'admin.emptyUsers' | translate }}</p>
-  } @else {
-    <section class="user-table" [attr.aria-label]="'admin.header' | translate">
-      <div class="user-table__row user-table__row--head">
-        <span>{{ 'common.account' | translate }}</span>
-        <span>{{ 'common.study' | translate }}</span>
-        <span>{{ 'common.course' | translate }}</span>
-        <span>{{ 'common.role' | translate }}</span>
-        <span>{{ 'admin.createdAt' | translate }}</span>
-        <span>{{ 'common.action' | translate }}</span>
+      <div class="admin-dashboard">
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statUsers' | translate }}</span>
+          <strong>{{ _dashboardStats().totalUsers }}</strong>
+        </article>
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statActiveUsers' | translate }}</span>
+          <strong>{{ _dashboardStats().activeUsers }}</strong>
+        </article>
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statInactiveUsers' | translate }}</span>
+          <strong>{{ _dashboardStats().inactiveUsers }}</strong>
+        </article>
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statCourses' | translate }}</span>
+          <strong>{{ _dashboardStats().courses }}</strong>
+        </article>
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statAdmins' | translate }}</span>
+          <strong>{{ _dashboardStats().admins }}</strong>
+        </article>
+        <article class="admin-stat-card">
+          <span>{{ 'admin.statStudents' | translate }}</span>
+          <strong>{{ _dashboardStats().students }}</strong>
+        </article>
       </div>
 
-      @for (user of _users(); track user.id) {
-        <div class="user-table__row">
-          <div>
-            <strong>{{ user.displayName }}</strong>
-            <span>{{ user.email }}</span>
-          </div>
-          <div>
-            <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
-            <span>{{ user.course }} · {{ 'common.semesterValue' | translate:{ semester: user.semester } }}</span>
-          </div>
-          <label class="admin-select">
+      <div class="admin-quick-actions">
+        <button type="button" class="admin-toolbar__primary" (click)="openCreateFromDashboard()" [disabled]="_coursesLoading()">
+          {{ 'admin.newUser' | translate }}
+        </button>
+        <button type="button" class="admin-action-button" (click)="switchTab('users')">
+          {{ 'admin.manageUsers' | translate }}
+        </button>
+        <button type="button" class="admin-action-button" (click)="switchTab('courses')">
+          {{ 'admin.manageCourses' | translate }}
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (_activeTab() === 'users') {
+    <section class="admin-section" [attr.aria-label]="'admin.header' | translate">
+      <header class="admin-section__header">
+        <div>
+          <h2>{{ 'admin.header' | translate }}</h2>
+          <p>{{ 'admin.subtitle' | translate }}</p>
+        </div>
+      </header>
+
+      <section class="admin-toolbar" [attr.aria-label]="'common.filter' | translate">
+        <label class="admin-field admin-field--search">
+          <span>{{ 'admin.searchUsers' | translate }}</span>
+          <input
+            type="search"
+            name="userSearch"
+            [ngModel]="_searchQuery()"
+            (ngModelChange)="updateSearchQuery($event)"
+            [placeholder]="'admin.searchPlaceholder' | translate"
+          />
+        </label>
+
+        <label class="admin-field">
+          <span>{{ 'admin.roleFilter' | translate }}</span>
+          <select name="roleFilter" [ngModel]="_roleFilter()" (ngModelChange)="updateRoleFilter($event)">
+            <option value="All">{{ 'admin.allRoles' | translate }}</option>
+            @for (role of _roles; track role) {
+              <option [value]="role">{{ roleLabel(role) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="admin-field">
+          <span>{{ 'admin.courseFilter' | translate }}</span>
+          <select name="courseFilter" [ngModel]="_courseFilter()" (ngModelChange)="updateCourseFilter($event)" [disabled]="_coursesLoading()">
+            <option value="All">{{ 'admin.allCourses' | translate }}</option>
+            @for (course of _courses(); track course.code) {
+              <option [value]="course.code">{{ course.code }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="admin-field">
+          <span>{{ 'admin.statusFilter' | translate }}</span>
+          <select name="statusFilter" [ngModel]="_statusFilter()" (ngModelChange)="updateStatusFilter($event)">
+            <option value="All">{{ 'admin.allStatuses' | translate }}</option>
+            <option value="Active">{{ 'admin.statusActive' | translate }}</option>
+            <option value="Inactive">{{ 'admin.statusInactive' | translate }}</option>
+          </select>
+        </label>
+
+        <button type="button" class="admin-toolbar__primary" (click)="openCreateUser()" [disabled]="_coursesLoading()">
+          {{ 'admin.newUser' | translate }}
+        </button>
+      </section>
+
+      @if (_isLoading()) {
+        <p class="admin-page__state">{{ 'admin.usersLoading' | translate }}</p>
+      } @else if (_users().length === 0) {
+        <p class="admin-page__state">{{ 'admin.emptyUsers' | translate }}</p>
+      } @else if (_filteredUsers().length === 0) {
+        <p class="admin-page__state">{{ 'admin.noFilteredUsers' | translate }}</p>
+      } @else {
+        <section class="user-table" [attr.aria-label]="'admin.header' | translate">
+          <div class="user-table__row user-table__row--head">
+            <span>{{ 'common.account' | translate }}</span>
+            <span>{{ 'common.study' | translate }}</span>
             <span>{{ 'common.course' | translate }}</span>
-            <select [ngModel]="user.course" (ngModelChange)="updateCourse(user, $event)" [disabled]="_busyUserId() === user.id || _coursesLoading()">
-              @if (user.course && !courseExists(user.course)) {
-                <option [value]="user.course">{{ user.course }} · {{ 'common.notSet' | translate }}</option>
-              }
-              @for (course of _courses(); track course.code) {
-                <option [value]="course.code">{{ course.code }}</option>
-              }
-            </select>
-          </label>
-          <label class="admin-select">
             <span>{{ 'common.role' | translate }}</span>
-            <select [ngModel]="user.role" (ngModelChange)="updateRole(user, $event)" [disabled]="_busyUserId() === user.id">
+            <span>{{ 'admin.status' | translate }}</span>
+            <span>{{ 'admin.createdAt' | translate }}</span>
+            <span>{{ 'common.action' | translate }}</span>
+          </div>
+
+          @for (user of _filteredUsers(); track user.id) {
+            <div class="user-table__row">
+              <div class="user-table__account">
+                <strong>{{ user.displayName }}</strong>
+                <span>{{ user.email }}</span>
+              </div>
+              <div>
+                <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
+                <span>{{ 'common.semesterValue' | translate:{ semester: user.semester } }}</span>
+              </div>
+              <span>{{ user.course || ('common.notSet' | translate) }}</span>
+              <span>{{ roleLabel(user.role) }}</span>
+              <span class="admin-status" [class.admin-status--inactive]="!user.isActive">{{ statusLabel(user.isActive) }}</span>
+              <span>{{ user.createdAt | date:'mediumDate':'':_i18n.locale() }}</span>
+              <button type="button" class="user-table__manage" (click)="openEditUser(user)">
+                {{ 'admin.manageUser' | translate }}
+              </button>
+            </div>
+          }
+        </section>
+      }
+    </section>
+  }
+
+  @if (_activeTab() === 'courses') {
+    <section class="admin-section" [attr.aria-label]="'admin.tabCourses' | translate">
+      <header class="admin-section__header">
+        <div>
+          <h2>{{ 'admin.coursesTitle' | translate }}</h2>
+          <p>{{ 'admin.coursesSubtitle' | translate }}</p>
+        </div>
+      </header>
+
+      @if (_coursesLoading()) {
+        <p class="admin-page__state">{{ 'common.loading' | translate }}</p>
+      } @else if (_courses().length === 0) {
+        <p class="admin-page__state">{{ 'admin.emptyCourses' | translate }}</p>
+      } @else {
+        <section class="course-table" [attr.aria-label]="'admin.coursesTitle' | translate">
+          <div class="course-table__row course-table__row--head">
+            <span>{{ 'common.courseCode' | translate }}</span>
+            <span>{{ 'common.studyProgram' | translate }}</span>
+            <span>{{ 'common.semester' | translate }}</span>
+            <span>{{ 'admin.assignedUsers' | translate }}</span>
+            <span>{{ 'admin.status' | translate }}</span>
+          </div>
+
+          @for (row of _courseRows(); track row.course.code) {
+            <div class="course-table__row">
+              <strong>{{ row.course.code }}</strong>
+              <span>{{ row.course.studyProgram }}</span>
+              <span>{{ 'common.semesterValue' | translate:{ semester: row.course.semester } }}</span>
+              <span>{{ row.userCount }}</span>
+              <span class="admin-status" [class.admin-status--inactive]="!row.course.isActive">
+                {{ row.course.isActive ? ('admin.statusActive' | translate) : ('admin.statusInactive' | translate) }}
+              </span>
+            </div>
+          }
+        </section>
+      }
+    </section>
+  }
+
+  @if (_editorMode()) {
+    <div class="admin-editor-backdrop" role="presentation" (click)="closeEditor()"></div>
+    <section class="admin-editor" role="dialog" aria-modal="true" [attr.aria-label]="_editorMode() === 'create' ? ('admin.createUserTitle' | translate) : ('admin.editUserTitle' | translate)">
+      <header class="admin-editor__header">
+        <div>
+          <p>{{ _editorMode() === 'create' ? ('admin.createUser' | translate) : ('admin.manageUser' | translate) }}</p>
+          <h2>{{ _editorMode() === 'create' ? ('admin.createUserTitle' | translate) : ('admin.editUserTitle' | translate) }}</h2>
+        </div>
+        <button type="button" class="admin-editor__close" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus()" [attr.aria-label]="'admin.closeEditor' | translate">
+          &times;
+        </button>
+      </header>
+
+      @if (_editorMode() === 'create') {
+        <form class="admin-editor__form" (ngSubmit)="createUser()">
+          <label class="admin-field">
+            <span>{{ 'admin.firstName' | translate }}</span>
+            <input type="text" name="firstName" [(ngModel)]="_createForm.firstName" maxlength="60" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'admin.lastName' | translate }}</span>
+            <input type="text" name="lastName" [(ngModel)]="_createForm.lastName" maxlength="60" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.email' | translate }}</span>
+            <input type="email" name="email" [(ngModel)]="_createForm.email" maxlength="160" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.role' | translate }}</span>
+            <select name="role" [(ngModel)]="_createForm.role" required>
               @for (role of _roles; track role) {
                 <option [value]="role">{{ roleLabel(role) }}</option>
               }
             </select>
           </label>
-          <span>{{ user.createdAt | date:'mediumDate':'':_i18n.locale() }}</span>
-          <button type="button" class="delete-button" (click)="deleteUser(user)" [disabled]="_busyUserId() === user.id">
-            {{ 'common.delete' | translate }}
-          </button>
-        </div>
+
+          <label class="admin-field">
+            <span>{{ 'common.course' | translate }}</span>
+            <select name="courseCode" [(ngModel)]="_createForm.courseCode" [disabled]="_coursesLoading()" required>
+              @for (course of _courses(); track course.code) {
+                <option [value]="course.code">{{ courseLabel(course) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'admin.status' | translate }}</span>
+            <select name="createStatus" [(ngModel)]="_createForm.isActive" required>
+              <option [ngValue]="true">{{ 'admin.statusActive' | translate }}</option>
+              <option [ngValue]="false">{{ 'admin.statusInactive' | translate }}</option>
+            </select>
+          </label>
+
+          <label class="admin-field admin-field--wide">
+            <span>{{ 'admin.initialPassword' | translate }}</span>
+            <input type="text" name="initialPassword" [(ngModel)]="_createForm.initialPassword" maxlength="120" required />
+          </label>
+
+          <footer class="admin-editor__actions admin-field--wide">
+            <button type="button" class="admin-editor__secondary" (click)="closeEditor()" [disabled]="_isSaving()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="admin-editor__primary" [disabled]="_isSaving() || _coursesLoading()">
+              {{ _isSaving() ? ('admin.savingUser' | translate) : ('admin.createUser' | translate) }}
+            </button>
+          </footer>
+        </form>
+      } @else {
+        <form class="admin-editor__form" (ngSubmit)="saveUser()">
+          <label class="admin-field">
+            <span>{{ 'common.name' | translate }}</span>
+            <input type="text" name="displayName" [(ngModel)]="_editForm.displayName" maxlength="120" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.email' | translate }}</span>
+            <input type="email" name="editEmail" [(ngModel)]="_editForm.email" maxlength="160" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.role' | translate }}</span>
+            <select name="editRole" [(ngModel)]="_editForm.role" required>
+              @for (role of _roles; track role) {
+                <option [value]="role">{{ roleLabel(role) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.course' | translate }}</span>
+            <select name="editCourseCode" [(ngModel)]="_editForm.courseCode" [disabled]="_coursesLoading()" required>
+              @if (_editForm.courseCode && !courseExists(_editForm.courseCode)) {
+                <option [value]="_editForm.courseCode">{{ _editForm.courseCode }} - {{ 'common.notSet' | translate }}</option>
+              }
+              @for (course of _courses(); track course.code) {
+                <option [value]="course.code">{{ courseLabel(course) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'admin.status' | translate }}</span>
+            <select name="editStatus" [(ngModel)]="_editForm.isActive" [disabled]="isEditingCurrentUser()" required>
+              <option [ngValue]="true">{{ 'admin.statusActive' | translate }}</option>
+              <option [ngValue]="false">{{ 'admin.statusInactive' | translate }}</option>
+            </select>
+          </label>
+
+          @if (_editingUser()) {
+            <div class="admin-readonly">
+              <span>{{ 'admin.createdAt' | translate }}</span>
+              <strong>{{ _editingUser()!.createdAt | date:'mediumDate':'':_i18n.locale() }}</strong>
+            </div>
+          }
+
+          <footer class="admin-editor__actions admin-field--wide">
+            @if (_editingUser()?.isActive && !isEditingCurrentUser()) {
+              <button type="button" class="admin-editor__danger" (click)="requestDeactivateUser()" [disabled]="_isSaving() || _isChangingStatus()">
+                {{ 'admin.deactivateUser' | translate }}
+              </button>
+            } @else if (!_editingUser()?.isActive) {
+              <button type="button" class="admin-editor__secondary" (click)="reactivateUser()" [disabled]="_isSaving() || _isChangingStatus()">
+                {{ _isChangingStatus() ? ('admin.changingStatus' | translate) : ('admin.reactivateUser' | translate) }}
+              </button>
+            } @else {
+              <span class="admin-editor__hint">{{ 'admin.selfStatusLocked' | translate }}</span>
+            }
+            <button type="button" class="admin-editor__secondary" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="admin-editor__primary" [disabled]="_isSaving() || _isChangingStatus() || _coursesLoading()">
+              {{ _isSaving() ? ('admin.savingUser' | translate) : ('admin.saveUser' | translate) }}
+            </button>
+          </footer>
+        </form>
+
+        @if (_statusConfirmationOpen() && _editingUser()) {
+          <section class="admin-status-confirmation" [attr.aria-label]="'admin.deactivateUser' | translate">
+            <h3>{{ 'admin.deactivateUser' | translate }}</h3>
+            <p>{{ 'admin.deactivateUserBody' | translate:{ name: _editingUser()!.displayName } }}</p>
+            <div>
+              <button type="button" class="admin-editor__secondary" (click)="closeStatusConfirmation()" [disabled]="_isChangingStatus()">
+                {{ 'common.cancel' | translate }}
+              </button>
+              <button type="button" class="admin-editor__danger" (click)="deactivateConfirmedUser()" [disabled]="_isChangingStatus()">
+                {{ _isChangingStatus() ? ('admin.changingStatus' | translate) : ('admin.confirmDeactivateUser' | translate) }}
+              </button>
+            </div>
+          </section>
+        }
       }
     </section>
   }

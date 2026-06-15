@@ -20,6 +20,50 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
         return Ok(users);
     }
 
+    [HttpPost("users")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateAdminUserRequest request, CancellationToken cancellationToken)
+    {
+        var result = await adminUsersService.CreateUserAsync(
+            new CreateAdminUserCommand(request.FirstName, request.LastName, request.Email, request.Role, request.CourseCode, request.InitialPassword, request.IsActive),
+            cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Created($"/api/admin/users/{result.Value!.Id}", result.Value);
+    }
+
+    [HttpPut("users/{id:guid}")]
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateAdminUserRequest request, CancellationToken cancellationToken)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await adminUsersService.UpdateUserAsync(
+            new UpdateAdminUserCommand(id, request.DisplayName, request.Email, request.Role, request.CourseCode, request.IsActive, currentUserId.Value),
+            cancellationToken);
+
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpPatch("users/{id:guid}/status")]
+    public async Task<IActionResult> UpdateUserStatus(Guid id, [FromBody] UpdateUserStatusRequest request, CancellationToken cancellationToken)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await adminUsersService.UpdateStatusAsync(new UpdateUserStatusCommand(id, request.IsActive, currentUserId.Value), cancellationToken);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
     [HttpPatch("users/{id:guid}/role")]
     public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request, CancellationToken cancellationToken)
     {

@@ -35,6 +35,7 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
             .HasConversion(role => role.ToString(), value => Enum.Parse<UserRole>(value))
             .HasMaxLength(32)
             .IsRequired();
+        user.Property(entity => entity.IsActive).IsRequired();
         user.Property(entity => entity.CreatedAt).IsRequired();
 
         var course = modelBuilder.Entity<Course>();
