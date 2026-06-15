@@ -15,5 +15,6 @@ public class User
     public string Location { get; set; } = string.Empty;
     public string ProfileNote { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Student;
+    public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }

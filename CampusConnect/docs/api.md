@@ -20,8 +20,11 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
+| POST | `/api/admin/users` | Benutzer mit Initialpasswort, Rolle und Kurs anlegen | Ja, Admin |
+| PUT | `/api/admin/users/{id}` | Name, E-Mail, Rolle und Kurs eines Benutzers aktualisieren | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/status` | Benutzer aktiv oder inaktiv setzen | Ja, Admin |
 | DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |

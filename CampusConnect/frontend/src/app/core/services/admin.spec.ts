@@ -38,6 +38,15 @@ describe('Admin', () => {
     request.flush({});
   });
 
+  it('should update user status with a patch request', () => {
+    service.updateUserStatus('user-1', false).subscribe();
+
+    const request = http.expectOne('/api/admin/users/user-1/status');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ isActive: false });
+    request.flush({});
+  });
+
   it('should delete users through the admin endpoint', () => {
     service.deleteUser('user-1').subscribe();
 
