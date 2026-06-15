@@ -1,0 +1,6 @@
+[     122ms] [WARNING] NG0914: The application is using zoneless change detection, but is still loading Zone.js. Consider removing Zone.js to get the full benefits of zoneless. In applications using the Angular CLI, Zone.js is typically included in the "polyfills" section of the angular.json file. @ http://localhost:4200/@fs/Users/simonworner/StudentenPortal/CampusConnect/frontend/.angular/cache/21.2.8/campusconnect-frontend/vite/deps/chunk-VZ3JTQHL.js?v=7dec096d:18402
+[     125ms] [LOG] Angular is running in development mode. @ http://localhost:4200/@fs/Users/simonworner/StudentenPortal/CampusConnect/frontend/.angular/cache/21.2.8/campusconnect-frontend/vite/deps/chunk-VZ3JTQHL.js?v=7dec096d:11188
+[  839176ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:4200/@vite/client:864
+[  946577ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4200/api/auth/logout:0
+[  946577ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4200/chunk-JIZJHHKU.js:0
+[  946581ms] [ERROR] TypeError: Failed to fetch dynamically imported module: http://localhost:4200/chunk-JIZJHHKU.js @ http://localhost:4200/@fs/Users/simonworner/StudentenPortal/CampusConnect/frontend/.angular/cache/21.2.8/campusconnect-frontend/vite/deps/zone__js.js?v=315e45ed:1839
