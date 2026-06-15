@@ -23,7 +23,7 @@ export interface UserProfile {
   email: string;
   displayName: string;
   studyProgram: string;
-  semester: number;
+  semester: number | null;
   course: string;
   phoneNumber: string;
   location: string;

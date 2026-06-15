@@ -36,4 +36,10 @@ export class ProfileHoverCard {
   protected roleLabel(role: string): string {
     return this._i18n.roleLabel(role);
   }
+
+  protected semesterLabel(semester: number | null): string {
+    return semester === null
+      ? this._i18n.translate('common.noSemester')
+      : this._i18n.translate('common.semesterValue', { semester });
+  }
 }

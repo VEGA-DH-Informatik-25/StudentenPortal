@@ -4,15 +4,19 @@ using CampusConnect.Domain.Interfaces;
 
 namespace CampusConnect.Application.Features.Courses;
 
-public record CourseDto(string Code, string StudyProgram, int Semester, bool IsActive, DateTime CreatedAt);
-public record CreateCourseCommand(string Code, string StudyProgram, int Semester);
+public record CourseDto(string Code, string StudyProgram, int? Semester, bool IsActive, DateTime CreatedAt);
+public record CreateCourseCommand(string Code, string StudyProgram, int? Semester);
 
 public class CoursesService(ICourseRepository courseRepository, IGroupRepository groupRepository)
 {
-    public async Task<IReadOnlyList<CourseDto>> GetCoursesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CourseDto>> GetCoursesAsync(bool includeSemesterlessCourses = true, CancellationToken cancellationToken = default)
     {
         var courses = await courseRepository.GetAllAsync(cancellationToken);
-        return courses.Where(course => course.IsActive).Select(ToDto).ToList();
+        return courses
+            .Where(course => course.IsActive)
+            .Where(course => includeSemesterlessCourses || course.Semester.HasValue)
+            .Select(ToDto)
+            .ToList();
     }
 
     public async Task<Result<CourseDto>> CreateCourseAsync(CreateCourseCommand command, CancellationToken cancellationToken = default)
@@ -34,7 +38,8 @@ public class CoursesService(ICourseRepository courseRepository, IGroupRepository
         };
 
         await courseRepository.AddAsync(course, cancellationToken);
-        await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
+        if (course.Semester.HasValue)
+            await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
 
         return Result<CourseDto>.Success(ToDto(course));
     }
@@ -54,7 +59,7 @@ public class CoursesService(ICourseRepository courseRepository, IGroupRepository
         if (command.StudyProgram.Trim().Length > 120)
             return "Study program must be at most 120 characters long.";
 
-        if (command.Semester is < 1 or > 6)
+        if (command.Semester is not null and (< 1 or > 6))
             return "Semester must be between 1 and 6.";
 
         return null;

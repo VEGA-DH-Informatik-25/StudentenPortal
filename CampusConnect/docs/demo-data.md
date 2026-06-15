@@ -4,7 +4,7 @@ The API seeds development-only demo data when `ASPNETCORE_ENVIRONMENT=Developmen
 
 The data is intended for local UI testing only. It is not loaded in the test host or production startup path.
 
-The demo course catalog is read from `DemoData:Courses` in `appsettings.Development.json`. `DemoData:TechnicalCoursePrefixes` controls which configured course prefixes are assigned to the technical project demo group. This keeps the local sample data adaptable when the portal is tested with a different course catalog.
+The demo course catalog is read from `DemoData:Courses` in `appsettings.Development.json`. In addition, the seeder ensures the semesterless role courses `ADMIN`, `LECTURER`, and `MANAGEMENT` so non-student accounts can be assigned without a study semester. `DemoData:TechnicalCoursePrefixes` controls which configured course prefixes are assigned to the technical project demo group. This keeps the local sample data adaptable when the portal is tested with a different course catalog.
 
 ## Sources Used
 
@@ -17,9 +17,9 @@ All seeded accounts use the password from `DemoData:Password`; the default local
 
 | Email | Role | Purpose |
 | --- | --- | --- |
-| `demo.admin@dhbw-loerrach.de` | Admin | Admin UI, course catalog, user/course assignments |
-| `demo.technik@dhbw-loerrach.de` | Lecturer | Technical course/group management |
-| `demo.wirtschaft@dhbw-loerrach.de` | Lecturer | Business course/group management |
+| `demo.admin@dhbw-loerrach.de` | Admin | Admin UI, course catalog, user/course assignments; assigned to `ADMIN` |
+| `demo.technik@dhbw-loerrach.de` | Lecturer | Technical course/group management; assigned to `LECTURER` |
+| `demo.wirtschaft@dhbw-loerrach.de` | Lecturer | Business course/group management; assigned to `LECTURER` |
 | `lena.tif25a@dhbw-loerrach.de` | Student | Informatik course flow |
 | `noah.wwi25a@dhbw-loerrach.de` | Student | Wirtschaftsinformatik course flow |
 | `mia.wdb25a@dhbw-loerrach.de` | Student | Digital Business course flow |

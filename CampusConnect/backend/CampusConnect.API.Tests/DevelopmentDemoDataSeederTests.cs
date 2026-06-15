@@ -43,9 +43,12 @@ public sealed class DevelopmentDemoDataSeederTests
                 Assert.Contains(courses, course => course.Code == "TIF25A" && course.StudyProgram == "Computer Science");
                 Assert.Contains(courses, course => course.Code == "WDB25A" && course.StudyProgram == "Business Administration - Digital Business Management");
                 Assert.Contains(courses, course => course.Code == "GIG25A" && course.StudyProgram == "Interprofessional Health Care");
+                Assert.Contains(courses, course => course.Code == "LECTURER" && course.StudyProgram == "Lehrende" && course.Semester is null);
+                Assert.Contains(courses, course => course.Code == "MANAGEMENT" && course.StudyProgram == "Verwaltung" && course.Semester is null);
 
                 var users = await dbContext.Users.AsNoTracking().ToListAsync();
-                Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin);
+                Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin && user.Course == "ADMIN" && user.Semester is null);
+                Assert.Contains(users, user => user.Email == "demo.technik@dhbw-loerrach.de" && user.Role == UserRole.Lecturer && user.Course == "LECTURER" && user.Semester is null);
                 var tifStudent = Assert.Single(users, user => user.Email == "lena.tif25a@dhbw-loerrach.de");
                 var housingOwner = Assert.Single(users, user => user.Email == "noah.wwi25a@dhbw-loerrach.de");
                 Assert.Equal("TIF25A", tifStudent.Course);

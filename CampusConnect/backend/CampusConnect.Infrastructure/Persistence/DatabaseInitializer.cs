@@ -8,6 +8,12 @@ namespace CampusConnect.Infrastructure.Persistence;
 
 public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptions<AdminOptions> adminOptions)
 {
+    private static readonly (string Code, string StudyProgram)[] RoleCourses =
+    [
+        ("LECTURER", "Lehrende"),
+        ("MANAGEMENT", "Verwaltung")
+    ];
+
     private const string EfProductVersion = "10.0.7";
     private const string InitialUsersMigrationId = "20260504000000_InitialUsers";
     private const string AddUserProfileColumnsMigrationId = "20260504000100_AddUserProfileColumns";
@@ -22,6 +28,8 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         var options = adminOptions.Value;
         var courseCode = options.Course.Trim().ToUpperInvariant();
         await EnsureAdminCourseAsync(courseCode, options, cancellationToken);
+        foreach (var (code, studyProgram) in RoleCourses)
+            await EnsureRoleCourseAsync(code, studyProgram, cancellationToken);
 
         var email = options.Email.Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(options.Password))
@@ -45,7 +53,7 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             PasswordHash = PasswordHasher.Hash(options.Password),
             DisplayName = options.DisplayName,
             StudyProgram = options.StudyProgram,
-            Semester = Math.Max(1, options.Semester),
+            Semester = null,
             Course = string.IsNullOrWhiteSpace(courseCode) ? options.Course : courseCode,
             Role = UserRole.Admin
         });
@@ -61,7 +69,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         var studyProgram = string.IsNullOrWhiteSpace(options.StudyProgram)
             ? "Administration"
             : options.StudyProgram.Trim();
-        var semester = Math.Clamp(options.Semester, 1, 6);
 
         var existing = await dbContext.Courses.FirstOrDefaultAsync(course => course.Code == courseCode, cancellationToken);
         if (existing is null)
@@ -70,7 +77,7 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             {
                 Code = courseCode,
                 StudyProgram = studyProgram,
-                Semester = semester,
+                Semester = null,
                 IsActive = true
             });
 
@@ -91,9 +98,49 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             changed = true;
         }
 
-        if (existing.Semester != semester)
+        if (existing.Semester is not null)
         {
-            existing.Semester = semester;
+            existing.Semester = null;
+            changed = true;
+        }
+
+        if (changed)
+            await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureRoleCourseAsync(string courseCode, string studyProgram, CancellationToken cancellationToken)
+    {
+        var existing = await dbContext.Courses.FirstOrDefaultAsync(course => course.Code == courseCode, cancellationToken);
+        if (existing is null)
+        {
+            dbContext.Courses.Add(new Course
+            {
+                Code = courseCode,
+                StudyProgram = studyProgram,
+                Semester = null,
+                IsActive = true
+            });
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var changed = false;
+        if (!existing.IsActive)
+        {
+            existing.IsActive = true;
+            changed = true;
+        }
+
+        if (existing.StudyProgram != studyProgram)
+        {
+            existing.StudyProgram = studyProgram;
+            changed = true;
+        }
+
+        if (existing.Semester is not null)
+        {
+            existing.Semester = null;
             changed = true;
         }
 

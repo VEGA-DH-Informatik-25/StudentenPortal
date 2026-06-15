@@ -222,7 +222,7 @@ public sealed class DevelopmentDemoDataSeeder(
             Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
         });
 
-        foreach (var course in demoCourses)
+        foreach (var course in demoCourses.Where(course => course.Semester.HasValue))
         {
             var group = await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
             var assignedIds = users.Values
@@ -386,10 +386,13 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private IReadOnlyList<DemoCourse> ResolveDemoCourses() => _options.Courses
         .Where(course => !string.IsNullOrWhiteSpace(course.Code) && !string.IsNullOrWhiteSpace(course.StudyProgram))
-        .Select(course => new DemoCourse(course.Code.Trim().ToUpperInvariant(), course.StudyProgram.Trim(), Math.Clamp(course.Semester, 1, 6)))
+        .Select(course => new DemoCourse(course.Code.Trim().ToUpperInvariant(), course.StudyProgram.Trim(), NormalizeSemester(course.Semester)))
+        .Concat(SystemRoleCourses)
         .GroupBy(course => course.Code, StringComparer.OrdinalIgnoreCase)
         .Select(group => group.First())
         .ToList();
+
+    private static int? NormalizeSemester(int? semester) => semester is null ? null : Math.Clamp(semester.Value, 1, 6);
 
     private bool IsTechnicalDemoCourse(User user) => _options.TechnicalCoursePrefixes
         .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
@@ -398,9 +401,9 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private static readonly DemoUser[] DemoUsers =
     [
-        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "TIF25A", "Campus Administration", 2, UserRole.Admin),
-        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technology Demo", "TIF25A", "Computer Science", 2, UserRole.Lecturer),
-        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Business Demo", "WDB25A", "Business Digital Management", 2, UserRole.Lecturer),
+        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "ADMIN", "Administration", null, UserRole.Admin),
+        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technology Demo", "LECTURER", "Lehrende", null, UserRole.Lecturer),
+        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Business Demo", "LECTURER", "Lehrende", null, UserRole.Lecturer),
         new("student-tif", Guid.Parse("50000000-0000-0000-0000-000000000011"), "lena.tif25a@dhbw-loerrach.de", "Lena Computer Science", "TIF25A", "Computer Science", 2, UserRole.Student),
         new("student-wwi", Guid.Parse("50000000-0000-0000-0000-000000000012"), "noah.wwi25a@dhbw-loerrach.de", "Noah Business Informatics", "WWI25A", "Business Informatics", 2, UserRole.Student),
         new("student-wdb", Guid.Parse("50000000-0000-0000-0000-000000000013"), "mia.wdb25a@dhbw-loerrach.de", "Mia Digital Business", "WDB25A", "Business Administration - Digital Business Management", 2, UserRole.Student),
@@ -409,7 +412,14 @@ public sealed class DevelopmentDemoDataSeeder(
         new("student-gig", Guid.Parse("50000000-0000-0000-0000-000000000016"), "emil.gig25a@dhbw-loerrach.de", "Emil Health Care", "GIG25A", "Interprofessional Health Care", 2, UserRole.Student)
     ];
 
-    private sealed record DemoCourse(string Code, string StudyProgram, int Semester);
+    private static readonly DemoCourse[] SystemRoleCourses =
+    [
+        new("ADMIN", "Administration", null),
+        new("LECTURER", "Lehrende", null),
+        new("MANAGEMENT", "Verwaltung", null)
+    ];
 
-    private sealed record DemoUser(string Key, Guid Id, string Email, string DisplayName, string Course, string StudyProgram, int Semester, UserRole Role);
+    private sealed record DemoCourse(string Code, string StudyProgram, int? Semester);
+
+    private sealed record DemoUser(string Key, Guid Id, string Email, string DisplayName, string Course, string StudyProgram, int? Semester, UserRole Role);
 }

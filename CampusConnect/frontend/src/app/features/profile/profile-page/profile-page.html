@@ -33,7 +33,7 @@
       </div>
       <div>
         <span>{{ 'common.semester' | translate }}</span>
-        <strong>{{ profile.semester }}</strong>
+        <strong>{{ semesterLabel(profile.semester) }}</strong>
       </div>
       <div>
         <span>{{ 'common.course' | translate }}</span>
@@ -72,7 +72,7 @@
 
         <label>
           {{ 'common.semester' | translate }}
-          <input type="text" [value]="'common.semesterValue' | translate:{ semester: selectedCourse()?.semester ?? profile.semester }" readonly />
+          <input type="text" [value]="semesterLabel(selectedSemester(profile))" readonly />
         </label>
 
         <label>

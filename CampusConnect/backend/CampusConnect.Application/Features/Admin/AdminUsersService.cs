@@ -13,7 +13,7 @@ public record AdminUserDto(
     string Email,
     string DisplayName,
     string StudyProgram,
-    int Semester,
+    int? Semester,
     string Course,
     string Role,
     bool IsActive,
@@ -277,10 +277,13 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
             if (course is null)
                 continue;
 
-            await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
-            await groupRepository.SyncCourseAssignmentsAsync(
-                course.Code,
-                users.Where(user => string.Equals(user.Course, course.Code, StringComparison.OrdinalIgnoreCase)).Select(user => user.Id).ToList());
+            if (course.Semester.HasValue)
+            {
+                await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
+                await groupRepository.SyncCourseAssignmentsAsync(
+                    course.Code,
+                    users.Where(user => string.Equals(user.Course, course.Code, StringComparison.OrdinalIgnoreCase)).Select(user => user.Id).ToList());
+            }
         }
     }
 }

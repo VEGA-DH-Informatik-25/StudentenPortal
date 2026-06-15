@@ -53,6 +53,12 @@ export class Navbar {
     return this._i18n.roleLabel(role);
   }
 
+  protected semesterLabel(semester: number | null): string {
+    return semester === null
+      ? this._i18n.translate('common.noSemester')
+      : this._i18n.translate('common.semesterValue', { semester });
+  }
+
   @HostListener('document:click', ['$event.target'])
   protected closeProfileMenuOnOutsideClick(target: EventTarget | null): void {
     const profileMenu = this._profileMenu?.nativeElement;

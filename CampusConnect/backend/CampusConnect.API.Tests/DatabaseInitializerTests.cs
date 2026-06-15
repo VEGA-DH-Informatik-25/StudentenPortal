@@ -38,7 +38,18 @@ public sealed class DatabaseInitializerTests
             Assert.NotNull(adminCourse);
             Assert.True(adminCourse!.IsActive);
             Assert.Equal("Administration", adminCourse.StudyProgram);
-            Assert.Equal(1, adminCourse.Semester);
+            Assert.Null(adminCourse.Semester);
+
+            Assert.Contains(await dbContext.Courses.AsNoTracking().ToListAsync(), course =>
+                course.Code == "LECTURER" &&
+                course.StudyProgram == "Lehrende" &&
+                course.Semester is null &&
+                course.IsActive);
+            Assert.Contains(await dbContext.Courses.AsNoTracking().ToListAsync(), course =>
+                course.Code == "MANAGEMENT" &&
+                course.StudyProgram == "Verwaltung" &&
+                course.Semester is null &&
+                course.IsActive);
         }
         finally
         {

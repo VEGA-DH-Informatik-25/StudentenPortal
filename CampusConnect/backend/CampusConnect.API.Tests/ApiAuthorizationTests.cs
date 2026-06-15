@@ -114,5 +114,5 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     private sealed record GradeSummaryResponse(IReadOnlyList<object> Grades, decimal WeightedAverage, int TotalEcts);
-    private sealed record CourseResponse(string Code, string StudyProgram, int Semester, bool IsActive, DateTime CreatedAt);
+    private sealed record CourseResponse(string Code, string StudyProgram, int? Semester, bool IsActive, DateTime CreatedAt);
 }

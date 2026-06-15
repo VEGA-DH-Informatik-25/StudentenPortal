@@ -33,7 +33,7 @@
       </div>
       <div>
         <dt>{{ 'common.semester' | translate }}</dt>
-        <dd>{{ 'common.semesterValue' | translate:{ semester: contact().semester } }}</dd>
+        <dd>{{ semesterLabel(contact().semester) }}</dd>
       </div>
     </dl>
 

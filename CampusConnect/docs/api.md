@@ -18,7 +18,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
 | GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen (`query` optional, `limit` optional) | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
-| POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
+| POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und optionalem Semester anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/users` | Benutzer mit Initialpasswort, Rolle und Kurs anlegen | Ja, Admin |
 | PUT | `/api/admin/users/{id}` | Name, E-Mail, Rolle und Kurs eines Benutzers aktualisieren | Ja, Admin |
@@ -70,7 +70,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 
 ## Nutzer, Kurse und Gruppen
 
-Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `semester`, `isActive` und `createdAt`. Registrierung und Profiländerung senden nur den Kurscode; Studiengang und Semester werden serverseitig aus dem Kurskatalog übernommen. Admins können neue aktive Kurse anlegen und Benutzer in der Benutzerverwaltung einem anderen Kurs zuordnen.
+Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, optionalem `semester`, `isActive` und `createdAt`. Registrierung und Profiländerung senden nur den Kurscode; Studiengang und Semester werden serverseitig aus dem Kurskatalog übernommen. Die öffentliche Kursliste `/api/courses` liefert nur Studienkurse mit Semester. Die Admin-Kursliste `/api/admin/courses` enthält zusätzlich semesterlose Stammdatenkurse wie `ADMIN`, `LECTURER` und `MANAGEMENT`, damit Admins, Lehrende und Verwaltung ebenfalls eine Kurszuordnung ohne Semester erhalten können.
 
 Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs existiert eine Kursgruppe mit identischem `courseCode`. Die Mitgliedschaft dieser Kursgruppen wird aus den Benutzerprofilen abgeleitet und automatisch synchronisiert; manuelle Mitgliederänderungen in den Gruppeneinstellungen sind deshalb für Kursgruppen gesperrt. Offizielle Gruppen und Campusgruppen verwalten ihre Mitglieder manuell. Ein ganzer Kurs kann über `POST /api/groups/{id}/members/course` einmalig als Momentaufnahme in eine Nicht-Kursgruppe übernommen werden; spätere Kursänderungen wirken sich dann nicht mehr automatisch auf diese Gruppe aus.
 

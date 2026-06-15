@@ -105,7 +105,7 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     [HttpGet("courses")]
     public async Task<IActionResult> GetCourses(CancellationToken cancellationToken)
     {
-        var courses = await coursesService.GetCoursesAsync(cancellationToken);
+        var courses = await coursesService.GetCoursesAsync(includeSemesterlessCourses: true, cancellationToken);
         return Ok(courses);
     }
 

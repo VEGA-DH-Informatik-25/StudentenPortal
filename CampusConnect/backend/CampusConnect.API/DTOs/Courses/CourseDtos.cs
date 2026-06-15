@@ -1,3 +1,3 @@
 namespace CampusConnect.API.DTOs.Courses;
 
-public record CreateCourseRequest(string Code, string StudyProgram, int Semester);
+public record CreateCourseRequest(string Code, string StudyProgram, int? Semester);

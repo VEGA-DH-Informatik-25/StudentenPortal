@@ -19,5 +19,5 @@ public sealed class DemoCourseOptions
 
     public string StudyProgram { get; set; } = string.Empty;
 
-    public int Semester { get; set; } = 1;
+    public int? Semester { get; set; } = 1;
 }

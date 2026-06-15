@@ -162,7 +162,7 @@
               </div>
               <div>
                 <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
-                <span>{{ 'common.semesterValue' | translate:{ semester: user.semester } }}</span>
+                <span>{{ courseSemesterLabel(user.semester) }}</span>
               </div>
               <span>{{ user.course || ('common.notSet' | translate) }}</span>
               <span>{{ roleLabel(user.role) }}</span>
@@ -187,6 +187,27 @@
         </div>
       </header>
 
+      <form class="admin-toolbar" (ngSubmit)="createCourse()" [attr.aria-label]="'admin.createCourse' | translate">
+          <label class="admin-field">
+            <span>{{ 'common.courseCode' | translate }}</span>
+            <input type="text" name="courseCode" [(ngModel)]="_courseForm.code" maxlength="40" placeholder="TIF25C" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.studyProgram' | translate }}</span>
+            <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Computer Science" required />
+          </label>
+
+          <label class="admin-field">
+            <span>{{ 'common.semester' | translate }}</span>
+            <input type="number" name="semester" [(ngModel)]="_courseForm.semester" min="1" max="6" [placeholder]="'admin.semesterOptionalPlaceholder' | translate" />
+          </label>
+
+          <button type="submit" class="admin-toolbar__primary" [disabled]="_isCreatingCourse()">
+            {{ _isCreatingCourse() ? ('admin.saveCourse' | translate) : ('admin.createCourse' | translate) }}
+          </button>
+      </form>
+
       @if (_coursesLoading()) {
         <p class="admin-page__state">{{ 'common.loading' | translate }}</p>
       } @else if (_courses().length === 0) {
@@ -205,7 +226,7 @@
             <div class="course-table__row">
               <strong>{{ row.course.code }}</strong>
               <span>{{ row.course.studyProgram }}</span>
-              <span>{{ 'common.semesterValue' | translate:{ semester: row.course.semester } }}</span>
+              <span>{{ courseSemesterLabel(row.course.semester) }}</span>
               <span>{{ row.userCount }}</span>
               <span class="admin-status" [class.admin-status--inactive]="!row.course.isActive">
                 {{ row.course.isActive ? ('admin.statusActive' | translate) : ('admin.statusInactive' | translate) }}
@@ -249,7 +270,7 @@
 
           <label class="admin-field">
             <span>{{ 'common.role' | translate }}</span>
-            <select name="role" [(ngModel)]="_createForm.role" required>
+            <select name="role" [ngModel]="_createForm.role" (ngModelChange)="updateCreateRole($event)" required>
               @for (role of _roles; track role) {
                 <option [value]="role">{{ roleLabel(role) }}</option>
               }
@@ -299,7 +320,7 @@
 
           <label class="admin-field">
             <span>{{ 'common.role' | translate }}</span>
-            <select name="editRole" [(ngModel)]="_editForm.role" required>
+            <select name="editRole" [ngModel]="_editForm.role" (ngModelChange)="updateEditRole($event)" required>
               @for (role of _roles; track role) {
                 <option [value]="role">{{ roleLabel(role) }}</option>
               }

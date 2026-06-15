@@ -43,7 +43,7 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
         course.HasKey(entity => entity.Code);
         course.Property(entity => entity.Code).HasMaxLength(40).IsRequired();
         course.Property(entity => entity.StudyProgram).HasMaxLength(120).IsRequired();
-        course.Property(entity => entity.Semester).IsRequired();
+        course.Property(entity => entity.Semester);
         course.Property(entity => entity.IsActive).IsRequired();
         course.Property(entity => entity.CreatedAt).IsRequired();
 

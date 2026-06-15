@@ -8,7 +8,7 @@ public record ContactProfileDto(
     string DisplayName,
     string Email,
     string StudyProgram,
-    int Semester,
+    int? Semester,
     string Course,
     string PhoneNumber,
     string Location,

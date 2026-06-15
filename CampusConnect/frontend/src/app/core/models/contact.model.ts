@@ -3,7 +3,7 @@ export interface ContactProfile {
   displayName: string;
   email: string;
   studyProgram: string;
-  semester: number;
+  semester: number | null;
   course: string;
   phoneNumber: string;
   location: string;

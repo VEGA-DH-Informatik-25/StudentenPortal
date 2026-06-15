@@ -5,7 +5,7 @@ export interface AdminUser {
   email: string;
   displayName: string;
   studyProgram: string;
-  semester: number;
+  semester: number | null;
   course: string;
   role: string;
   isActive: boolean;

@@ -32,7 +32,7 @@
         </span>
         <span>
           <small>{{ 'common.semester' | translate }}</small>
-          <strong>{{ 'common.semesterValue' | translate:{ semester: contact.semester } }}</strong>
+          <strong>{{ semesterLabel(contact.semester) }}</strong>
         </span>
         @if (contact.phoneNumber) {
           <span>

@@ -11,6 +11,7 @@ import { Auth } from '../../../core/services/auth';
 type AdminTab = 'overview' | 'users' | 'courses';
 type EditorMode = 'create' | 'edit';
 type StatusFilter = 'All' | 'Active' | 'Inactive';
+type CourseFormSemester = number | string | null;
 
 @Component({
   selector: 'app-admin-page',
@@ -30,6 +31,7 @@ export class AdminPage implements OnInit {
   protected readonly _activeTab = signal<AdminTab>('overview');
   protected readonly _isLoading = signal(false);
   protected readonly _coursesLoading = signal(false);
+  protected readonly _isCreatingCourse = signal(false);
   protected readonly _isSaving = signal(false);
   protected readonly _isChangingStatus = signal(false);
   protected readonly _error = signal<string | null>(null);
@@ -42,6 +44,17 @@ export class AdminPage implements OnInit {
   protected readonly _editingUser = signal<AdminUser | null>(null);
   protected readonly _statusConfirmationOpen = signal(false);
   protected readonly _roles = ['Student', 'Lecturer', 'Management', 'Admin'];
+  protected readonly _roleCourseCodes = new Map<string, string>([
+    ['Lecturer', 'LECTURER'],
+    ['Management', 'MANAGEMENT'],
+    ['Admin', 'ADMIN'],
+  ]);
+
+  protected readonly _courseForm = {
+    code: '',
+    studyProgram: '',
+    semester: null as CourseFormSemester,
+  };
 
   protected readonly _createForm = {
     firstName: '',
@@ -144,6 +157,40 @@ export class AdminPage implements OnInit {
     this.openCreateUser();
   }
 
+  protected createCourse(): void {
+    const code = this._courseForm.code.trim();
+    const studyProgram = this._courseForm.studyProgram.trim();
+    const semester = this._optionalSemesterValue(this._courseForm.semester);
+
+    if (!code || !studyProgram) {
+      this._error.set(this._i18n.translate('admin.courseFieldsRequired'));
+      return;
+    }
+
+    if (semester !== null && (!Number.isInteger(semester) || semester < 1 || semester > 6)) {
+      this._error.set(this._i18n.translate('admin.semesterRange'));
+      return;
+    }
+
+    this._isCreatingCourse.set(true);
+    this._clearMessages();
+    this._adminService.createCourse({ code, studyProgram, semester }).subscribe({
+      next: course => {
+        this._courses.update(courses => [...courses.filter(item => item.code !== course.code), course].sort((a, b) => a.code.localeCompare(b.code)));
+        this._courseForm.code = '';
+        this._courseForm.studyProgram = '';
+        this._courseForm.semester = null;
+        this._setDefaultCourse();
+        this._success.set(this._i18n.translate('admin.courseCreated', { code: course.code }));
+        this._isCreatingCourse.set(false);
+      },
+      error: error => {
+        this._error.set(this._readError(error));
+        this._isCreatingCourse.set(false);
+      },
+    });
+  }
+
   protected updateSearchQuery(value: string): void {
     this._searchQuery.set(value);
   }
@@ -168,10 +215,20 @@ export class AdminPage implements OnInit {
     this._createForm.lastName = '';
     this._createForm.email = '';
     this._createForm.role = 'Student';
-    this._createForm.courseCode = this._firstCourseCode();
+    this._createForm.courseCode = this._defaultCourseForRole('Student');
     this._createForm.initialPassword = '';
     this._createForm.isActive = true;
     this._editorMode.set('create');
+  }
+
+  protected updateCreateRole(role: string): void {
+    this._createForm.role = role;
+    this._createForm.courseCode = this._defaultCourseForRole(role);
+  }
+
+  protected updateEditRole(role: string): void {
+    this._editForm.role = role;
+    this._editForm.courseCode = this._defaultCourseForRole(role) || this._editForm.courseCode;
   }
 
   protected openEditUser(user: AdminUser): void {
@@ -307,7 +364,13 @@ export class AdminPage implements OnInit {
   }
 
   protected courseLabel(course: AdminCourse): string {
-    return `${course.code} - ${course.studyProgram} - ${this._i18n.translate('common.semesterValue', { semester: course.semester })}`;
+    return `${course.code} - ${course.studyProgram} - ${this.courseSemesterLabel(course.semester)}`;
+  }
+
+  protected courseSemesterLabel(semester: number | null): string {
+    return semester === null
+      ? this._i18n.translate('common.noSemester')
+      : this._i18n.translate('common.semesterValue', { semester });
   }
 
   protected roleLabel(role: string): string {
@@ -377,7 +440,7 @@ export class AdminPage implements OnInit {
   }
 
   private _setDefaultCourse(): void {
-    const firstCourseCode = this._firstCourseCode();
+    const firstCourseCode = this._defaultCourseForRole('Student');
     if (!this._createForm.courseCode) {
       this._createForm.courseCode = firstCourseCode;
     }
@@ -388,7 +451,20 @@ export class AdminPage implements OnInit {
   }
 
   private _firstCourseCode(): string {
-    return this._courses()[0]?.code ?? '';
+    return this._courses().find(course => course.semester !== null)?.code ?? this._courses()[0]?.code ?? '';
+  }
+
+  private _defaultCourseForRole(role: string): string {
+    const roleCourseCode = this._roleCourseCodes.get(role);
+    if (roleCourseCode && this.courseExists(roleCourseCode)) {
+      return roleCourseCode;
+    }
+
+    return this._firstCourseCode();
+  }
+
+  private _optionalSemesterValue(value: CourseFormSemester): number | null {
+    return value === null || value === '' ? null : Number(value);
   }
 
   private _normalize(value: string): string {
