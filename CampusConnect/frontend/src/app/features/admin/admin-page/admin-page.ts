@@ -13,6 +13,14 @@ type EditorMode = 'create' | 'edit';
 type StatusFilter = 'All' | 'Active' | 'Inactive';
 type CourseFormSemester = number | string | null;
 
+const PASSWORD_LENGTH = 20;
+const PASSWORD_CHARACTER_SETS = [
+  'ABCDEFGHJKLMNPQRSTUVWXYZ',
+  'abcdefghijkmnopqrstuvwxyz',
+  '23456789',
+  '!@#$%&*+-_=',
+];
+
 @Component({
   selector: 'app-admin-page',
   standalone: true,
@@ -226,6 +234,24 @@ export class AdminPage implements OnInit {
     this._createForm.courseCode = this._defaultCourseForRole(role);
   }
 
+  protected generateInitialPassword(): void {
+    const passwordCharacters = [
+      ...PASSWORD_CHARACTER_SETS.map(characterSet => this._randomCharacter(characterSet)),
+    ];
+    const allCharacters = PASSWORD_CHARACTER_SETS.join('');
+
+    while (passwordCharacters.length < PASSWORD_LENGTH) {
+      passwordCharacters.push(this._randomCharacter(allCharacters));
+    }
+
+    for (let index = passwordCharacters.length - 1; index > 0; index--) {
+      const randomIndex = this._randomIndex(index + 1);
+      [passwordCharacters[index], passwordCharacters[randomIndex]] = [passwordCharacters[randomIndex], passwordCharacters[index]];
+    }
+
+    this._createForm.initialPassword = passwordCharacters.join('');
+  }
+
   protected updateEditRole(role: string): void {
     this._editForm.role = role;
     this._editForm.courseCode = this._defaultCourseForRole(role) || this._editForm.courseCode;
@@ -437,6 +463,23 @@ export class AdminPage implements OnInit {
 
   private _isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  }
+
+  private _randomCharacter(characters: string): string {
+    return characters[this._randomIndex(characters.length)];
+  }
+
+  private _randomIndex(upperBound: number): number {
+    const limit = Math.floor(0x1_0000_0000 / upperBound) * upperBound;
+    const values = new Uint32Array(1);
+    let value: number;
+
+    do {
+      crypto.getRandomValues(values);
+      value = values[0];
+    } while (value >= limit);
+
+    return value % upperBound;
   }
 
   private _setDefaultCourse(): void {

@@ -193,6 +193,19 @@
 	grid-column: 1 / -1;
 }
 
+.admin-password-field {
+	display: flex;
+	gap: 0.6rem;
+
+	input {
+		flex: 1;
+	}
+
+	button {
+		flex: 0 0 auto;
+	}
+}
+
 .admin-page__message,
 .admin-page__state {
 	background: var(--dhbw-surface);
@@ -462,6 +475,7 @@
 @media (max-width: 640px) {
 	.admin-page__header,
 	.admin-quick-actions,
+	.admin-password-field,
 	.admin-editor__actions,
 	.admin-status-confirmation div {
 		align-items: stretch;

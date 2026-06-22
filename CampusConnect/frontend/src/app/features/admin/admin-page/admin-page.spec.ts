@@ -44,4 +44,19 @@ describe('AdminPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('generates a secure initial password', () => {
+    const adminPage = component as unknown as {
+      generateInitialPassword(): void;
+      _createForm: { initialPassword: string };
+    };
+    adminPage.generateInitialPassword();
+
+    const password = adminPage._createForm.initialPassword;
+    expect(password).toHaveLength(20);
+    expect(password).toMatch(/[A-Z]/);
+    expect(password).toMatch(/[a-z]/);
+    expect(password).toMatch(/[0-9]/);
+    expect(password).toMatch(/[!@#$%&*+\-_=]/);
+  });
 });

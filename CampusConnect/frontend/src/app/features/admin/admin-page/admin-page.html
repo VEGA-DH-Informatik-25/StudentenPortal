@@ -296,7 +296,12 @@
 
           <label class="admin-field admin-field--wide">
             <span>{{ 'admin.initialPassword' | translate }}</span>
-            <input type="text" name="initialPassword" [(ngModel)]="_createForm.initialPassword" maxlength="120" required />
+            <div class="admin-password-field">
+              <input type="text" name="initialPassword" [(ngModel)]="_createForm.initialPassword" maxlength="120" required />
+              <button type="button" class="admin-editor__secondary" (click)="generateInitialPassword()">
+                {{ 'admin.generatePassword' | translate }}
+              </button>
+            </div>
           </label>
 
           <footer class="admin-editor__actions admin-field--wide">
