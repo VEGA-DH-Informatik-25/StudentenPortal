@@ -12,7 +12,5 @@ public sealed class AdminOptions
 
     public string StudyProgram { get; init; } = "Administration";
 
-    public int Semester { get; init; } = 1;
-
     public string Course { get; init; } = "ADMIN";
 }

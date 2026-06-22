@@ -15,7 +15,6 @@ public class GroupsServiceTests
             DisplayName = "Cara",
             Email = "cara@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 1,
             Course = "TIF26C"
         };
         var groups = new FakeGroupRepository();
@@ -34,7 +33,6 @@ public class GroupsServiceTests
             DisplayName = "Dina",
             Email = "dina@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 4,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -55,7 +53,6 @@ public class GroupsServiceTests
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -82,7 +79,6 @@ public class GroupsServiceTests
             DisplayName = "Vera Management",
             Email = "vera@dhbw-loerrach.de",
             StudyProgram = "Campus Management",
-            Semester = 1,
             Course = "ADM25A",
             Role = UserRole.Management
         };
@@ -116,7 +112,6 @@ public class GroupsServiceTests
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -154,7 +149,6 @@ public class GroupsServiceTests
             DisplayName = $"{role} User",
             Email = $"{role}@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = role
         };
@@ -184,7 +178,6 @@ public class GroupsServiceTests
             DisplayName = "Eva",
             Email = "eva@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -216,7 +209,6 @@ public class GroupsServiceTests
             DisplayName = "Jana",
             Email = "jana@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -225,7 +217,6 @@ public class GroupsServiceTests
             DisplayName = "Kai",
             Email = "kai@dhbw-loerrach.de",
             StudyProgram = "Business Informatics",
-            Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
         };
@@ -245,7 +236,6 @@ public class GroupsServiceTests
             DisplayName = "Lea",
             Email = "lea@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -254,7 +244,6 @@ public class GroupsServiceTests
             DisplayName = "Miro",
             Email = "miro@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -277,7 +266,6 @@ public class GroupsServiceTests
             DisplayName = "Nora",
             Email = "nora@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -286,7 +274,6 @@ public class GroupsServiceTests
             DisplayName = "Oskar",
             Email = "oskar@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -309,7 +296,6 @@ public class GroupsServiceTests
             DisplayName = "Vera Management",
             Email = "vera@dhbw-loerrach.de",
             StudyProgram = "Campus Management",
-            Semester = 1,
             Course = "ADM25A",
             Role = UserRole.Management
         };
@@ -337,7 +323,6 @@ public class GroupsServiceTests
             DisplayName = "Vera Management",
             Email = "vera@dhbw-loerrach.de",
             StudyProgram = "Campus Management",
-            Semester = 1,
             Course = "ADM25A",
             Role = UserRole.Management
         };
@@ -362,7 +347,6 @@ public class GroupsServiceTests
             DisplayName = "Nora",
             Email = "nora@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -371,7 +355,6 @@ public class GroupsServiceTests
             DisplayName = "Oskar",
             Email = "oskar@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -394,7 +377,6 @@ public class GroupsServiceTests
             DisplayName = "Nora",
             Email = "nora@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -403,7 +385,6 @@ public class GroupsServiceTests
             DisplayName = "Oskar",
             Email = "oskar@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -427,7 +408,6 @@ public class GroupsServiceTests
             DisplayName = "Nora",
             Email = "nora@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -436,7 +416,6 @@ public class GroupsServiceTests
             DisplayName = "Oskar",
             Email = "oskar@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -464,7 +443,6 @@ public class GroupsServiceTests
             DisplayName = "Finn",
             Email = "finn@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -485,7 +463,6 @@ public class GroupsServiceTests
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -494,7 +471,6 @@ public class GroupsServiceTests
             DisplayName = "Hannes",
             Email = "hannes@dhbw-loerrach.de",
             StudyProgram = "Business Informatics",
-            Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
         };
@@ -613,7 +589,6 @@ public class GroupsServiceTests
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -622,7 +597,6 @@ public class GroupsServiceTests
             DisplayName = "Iris",
             Email = "iris@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -645,7 +619,6 @@ public class GroupsServiceTests
             DisplayName = "Gina",
             Email = "gina@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -654,7 +627,6 @@ public class GroupsServiceTests
             DisplayName = "Hannes",
             Email = "hannes@dhbw-loerrach.de",
             StudyProgram = "Business Informatics",
-            Semester = 2,
             Course = "WWI25A",
             Role = UserRole.Student
         };
@@ -699,7 +671,6 @@ public class GroupsServiceTests
             DisplayName = "Ada",
             Email = "ada@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Admin
         };
@@ -801,7 +772,6 @@ public class GroupsServiceTests
         DisplayName = displayName,
         Email = email,
         StudyProgram = "Computer Science",
-        Semester = 2,
         Course = "TIF25A",
         Role = UserRole.Student
     };

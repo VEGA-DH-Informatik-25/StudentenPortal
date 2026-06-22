@@ -42,7 +42,7 @@
           <span class="navbar__identity">
             <span class="navbar__name">{{ _auth.displayName() }}</span>
             @if (_auth.userProfile(); as profile) {
-              <span class="navbar__context">{{ profile.course }} · {{ semesterLabel(profile.semester) }}</span>
+              <span class="navbar__context">{{ profile.course }}</span>
             }
           </span>
         </summary>

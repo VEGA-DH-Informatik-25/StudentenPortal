@@ -4,7 +4,7 @@ The API seeds development-only demo data when `ASPNETCORE_ENVIRONMENT=Developmen
 
 The data is intended for local UI testing only. It is not loaded in the test host or production startup path.
 
-The demo course catalog is read from `DemoData:Courses` in `appsettings.Development.json`. In addition, the seeder ensures the semesterless role courses `ADMIN`, `LECTURER`, and `MANAGEMENT` so non-student accounts can be assigned without a study semester. `DemoData:TechnicalCoursePrefixes` controls which configured course prefixes are assigned to the technical project demo group. This keeps the local sample data adaptable when the portal is tested with a different course catalog.
+The demo course catalog is read from `DemoData:Courses` in `appsettings.Development.json`. In addition, the seeder ensures the system courses `ADMIN`, `LECTURER`, and `MANAGEMENT` for non-student accounts. `DemoData:TechnicalCoursePrefixes` controls which configured course prefixes are assigned to the technical project demo group. This keeps the local sample data adaptable when the portal is tested with a different course catalog.
 
 ## Sources Used
 

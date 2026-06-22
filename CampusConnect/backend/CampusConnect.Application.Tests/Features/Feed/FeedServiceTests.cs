@@ -15,7 +15,6 @@ public class FeedServiceTests
             DisplayName = "Alice",
             Email = "alice@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A"
         };
         var group = CourseGroup("TIF25A");
@@ -43,7 +42,6 @@ public class FeedServiceTests
             DisplayName = "Ben",
             Email = "ben@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A"
         };
         var group = new CampusGroup
@@ -72,7 +70,6 @@ public class FeedServiceTests
             DisplayName = "Clara",
             Email = "clara@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -81,7 +78,6 @@ public class FeedServiceTests
             DisplayName = "David",
             Email = "david@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -102,7 +98,6 @@ public class FeedServiceTests
             DisplayName = "David",
             Email = "david@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -111,7 +106,6 @@ public class FeedServiceTests
             DisplayName = "Clara",
             Email = "clara@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -216,7 +210,6 @@ public class FeedServiceTests
             DisplayName = "Elif",
             Email = "elif@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -225,7 +218,6 @@ public class FeedServiceTests
             DisplayName = "Farid",
             Email = "farid@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -246,7 +238,6 @@ public class FeedServiceTests
             DisplayName = "Elif",
             Email = "elif@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -255,7 +246,6 @@ public class FeedServiceTests
             DisplayName = "Farid",
             Email = "farid@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -276,7 +266,6 @@ public class FeedServiceTests
             DisplayName = "Alice",
             Email = "alice@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A"
         };
         var group = CourseGroup("TIF25A");
@@ -341,7 +330,6 @@ public class FeedServiceTests
             DisplayName = "David",
             Email = "david@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -350,7 +338,6 @@ public class FeedServiceTests
             DisplayName = "Clara",
             Email = "clara@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -372,7 +359,6 @@ public class FeedServiceTests
             DisplayName = "Alice",
             Email = "alice@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A"
         };
         var group = CourseGroup("TIF25A");
@@ -398,7 +384,6 @@ public class FeedServiceTests
             DisplayName = "David",
             Email = "david@dhbw-loerrach.de",
             StudyProgram = "BWL",
-            Semester = 2,
             Course = "BWL25A",
             Role = UserRole.Student
         };
@@ -407,7 +392,6 @@ public class FeedServiceTests
             DisplayName = "Clara",
             Email = "clara@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
@@ -429,7 +413,6 @@ public class FeedServiceTests
             DisplayName = "Alice",
             Email = "alice@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A"
         };
         var group = CourseGroup("TIF25A");
@@ -450,7 +433,6 @@ public class FeedServiceTests
             DisplayName = "Alice",
             Email = "alice@dhbw-loerrach.de",
             StudyProgram = "Computer Science",
-            Semester = 3,
             Course = "TIF25A"
         };
         var group = CourseGroup("TIF25A");
@@ -479,7 +461,6 @@ public class FeedServiceTests
         DisplayName = displayName,
         Email = email,
         StudyProgram = "Computer Science",
-        Semester = 2,
         Course = "TIF25A",
         Role = UserRole.Student
     };

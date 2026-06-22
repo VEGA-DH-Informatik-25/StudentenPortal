@@ -13,7 +13,6 @@ public record AdminUserDto(
     string Email,
     string DisplayName,
     string StudyProgram,
-    int? Semester,
     string Course,
     string Role,
     bool IsActive,
@@ -75,7 +74,6 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
             PasswordHash = PasswordHasher.Hash(password),
             DisplayName = $"{firstName} {lastName}",
             StudyProgram = course.StudyProgram,
-            Semester = course.Semester,
             Course = course.Code,
             Role = role,
             IsActive = command.IsActive
@@ -129,7 +127,6 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         user.Role = role;
         user.Course = course.Code;
         user.StudyProgram = course.StudyProgram;
-        user.Semester = course.Semester;
         user.IsActive = command.IsActive;
 
         await userRepository.UpdateAsync(user, cancellationToken);
@@ -185,7 +182,6 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         var previousCourse = user.Course;
         user.Course = course.Code;
         user.StudyProgram = course.StudyProgram;
-        user.Semester = course.Semester;
 
         await userRepository.UpdateAsync(user, cancellationToken);
         await SyncCourseAssignmentsAsync(course.Code, previousCourse, cancellationToken);
@@ -213,7 +209,6 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         user.Email,
         user.DisplayName,
         user.StudyProgram,
-        user.Semester,
         user.Course,
         user.Role.ToString(),
         user.IsActive,
@@ -259,12 +254,11 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         if (course is null)
             return;
 
-        if (user.Course == course.Code && user.StudyProgram == course.StudyProgram && user.Semester == course.Semester)
+        if (user.Course == course.Code && user.StudyProgram == course.StudyProgram)
             return;
 
         user.Course = course.Code;
         user.StudyProgram = course.StudyProgram;
-        user.Semester = course.Semester;
         await userRepository.UpdateAsync(user, cancellationToken);
     }
 
@@ -277,7 +271,7 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
             if (course is null)
                 continue;
 
-            if (course.Semester.HasValue)
+            if (CoursesService.IsStudentCourse(course.Code))
             {
                 await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
                 await groupRepository.SyncCourseAssignmentsAsync(

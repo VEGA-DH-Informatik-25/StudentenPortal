@@ -27,7 +27,6 @@ public sealed class EntityUserRepositoryTests
                 PasswordHash = "hash",
                 DisplayName = "Alice Example",
                 StudyProgram = "Computer Science",
-                Semester = 2,
                 Course = "TIF25A"
             };
 

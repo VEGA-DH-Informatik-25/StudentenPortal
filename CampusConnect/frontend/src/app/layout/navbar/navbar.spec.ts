@@ -33,7 +33,6 @@ describe('Navbar', () => {
       email: 'alice@dhbw-loerrach.de',
       displayName: 'Alice Example',
       studyProgram: 'Computer Science',
-      semester: 3,
       course: 'TIF25A',
       phoneNumber: '+49 7621 123456',
       location: 'Library',
@@ -46,7 +45,7 @@ describe('Navbar', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Alice Example');
-    expect(text).toContain('TIF25A · Semester 3');
+    expect(text).toContain('TIF25A');
     expect(text).toContain('Edit profile');
   });
   it('should close the profile menu when clicking outside it', () => {

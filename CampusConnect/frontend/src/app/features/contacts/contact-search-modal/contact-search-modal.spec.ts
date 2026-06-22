@@ -72,7 +72,6 @@ describe('ContactSearchModal', () => {
       displayName: 'Alice Example',
       email: 'alice@dhbw-loerrach.de',
       studyProgram: 'Computer Science',
-      semester: 3,
       course: 'TIF25A',
       phoneNumber: '',
       location: '',
@@ -85,7 +84,6 @@ describe('ContactSearchModal', () => {
     expect(text).toContain('Alice Example');
     expect(text).toContain('TIF25A');
     expect(text).toContain('Computer Science');
-    expect(text).toContain('Semester 3');
     expect(text).toContain('alice@dhbw-loerrach.de');
     expect(fixture.nativeElement.querySelector('.contact-result-card__favorite')).not.toBeNull();
   });

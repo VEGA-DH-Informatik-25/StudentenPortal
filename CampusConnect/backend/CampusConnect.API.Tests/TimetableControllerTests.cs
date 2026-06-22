@@ -20,11 +20,10 @@ public sealed class TimetableControllerTests
             Email = "student@dhbw-loerrach.de",
             DisplayName = "Student",
             StudyProgram = "Computer Science",
-            Semester = 2,
             Course = "TIF25A",
             Role = UserRole.Student
         };
-        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2, IsActive = true };
+        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science", IsActive = true };
         var timetableService = new CapturingTimetableService();
         var authService = new AuthService(
             new FakeUserRepository(user),

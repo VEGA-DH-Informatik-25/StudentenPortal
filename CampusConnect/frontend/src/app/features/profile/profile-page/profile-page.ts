@@ -75,19 +75,8 @@ export class ProfilePage implements OnInit {
     return this._courses().find(course => course.code === this._form.course) ?? null;
   }
 
-  protected selectedSemester(profile: UserProfile): number | null {
-    const course = this.selectedCourse();
-    return course ? course.semester : profile.semester;
-  }
-
   protected courseLabel(course: Course): string {
-    return `${course.code} · ${course.studyProgram} · ${this.semesterLabel(course.semester)}`;
-  }
-
-  protected semesterLabel(semester: number | null): string {
-    return semester === null
-      ? this._i18n.translate('common.noSemester')
-      : this._i18n.translate('common.semesterValue', { semester });
+    return `${course.code} · ${course.studyProgram}`;
   }
 
   protected roleLabel(role: string): string {

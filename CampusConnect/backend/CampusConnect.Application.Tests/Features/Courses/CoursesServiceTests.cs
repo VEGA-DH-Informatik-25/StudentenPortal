@@ -12,8 +12,8 @@ public sealed class CoursesServiceTests
     {
         var service = new CoursesService(
             new FakeCourseRepository(
-                new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 1, IsActive = true },
-                new Course { Code = "OLD", StudyProgram = "Archive", Semester = 1, IsActive = false }),
+                new Course { Code = "TIF25A", StudyProgram = "Computer Science", IsActive = true },
+                new Course { Code = "OLD", StudyProgram = "Archive", IsActive = false }),
             new FakeGroupRepository());
 
         var courses = await service.GetCoursesAsync();
@@ -29,7 +29,7 @@ public sealed class CoursesServiceTests
         var groups = new FakeGroupRepository();
         var service = new CoursesService(courses, groups);
 
-        var result = await service.CreateCourseAsync(new CreateCourseCommand(" tif25a ", "Computer Science", 1));
+        var result = await service.CreateCourseAsync(new CreateCourseCommand(" tif25a ", "Computer Science"));
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(await courses.FindByCodeAsync("TIF25A"));
@@ -38,13 +38,28 @@ public sealed class CoursesServiceTests
     }
 
     [Fact]
+    public async Task GetCoursesAsync_ShouldExcludeSystemCoursesFromPublicList()
+    {
+        var service = new CoursesService(
+            new FakeCourseRepository(
+                new Course { Code = "TIF25A", StudyProgram = "Computer Science" },
+                new Course { Code = "ADMIN", StudyProgram = "Administration" }),
+            new FakeGroupRepository());
+
+        var courses = await service.GetCoursesAsync(includeSystemCourses: false);
+
+        var course = Assert.Single(courses);
+        Assert.Equal("TIF25A", course.Code);
+    }
+
+    [Fact]
     public async Task CreateCourseAsync_ShouldRejectDuplicateCourseCodes()
     {
         var service = new CoursesService(
-            new FakeCourseRepository(new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 1 }),
+            new FakeCourseRepository(new Course { Code = "TIF25A", StudyProgram = "Computer Science" }),
             new FakeGroupRepository());
 
-        var result = await service.CreateCourseAsync(new CreateCourseCommand("tif25a", "Computer Science", 1));
+        var result = await service.CreateCourseAsync(new CreateCourseCommand("tif25a", "Computer Science"));
 
         Assert.False(result.IsSuccess);
     }

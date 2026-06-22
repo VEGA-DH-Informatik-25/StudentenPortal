@@ -109,9 +109,6 @@ namespace CampusConnect.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("Semester")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("StudyProgram")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -294,9 +291,6 @@ namespace CampusConnect.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("Semester")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("StudyProgram")
                         .IsRequired()

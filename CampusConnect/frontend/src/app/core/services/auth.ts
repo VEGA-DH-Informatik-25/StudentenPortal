@@ -118,7 +118,6 @@ export class Auth {
       email: res.email,
       displayName: res.displayName,
       studyProgram: '',
-      semester: 1,
       course: '',
       phoneNumber: '',
       location: '',

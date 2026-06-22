@@ -26,6 +26,8 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
                 ["Jwt:Audience"] = TestJwt.Audience,
                 ["Admin:Email"] = string.Empty,
                 ["Admin:Password"] = string.Empty,
+                ["Admin:Course"] = "TIF25A",
+                ["Admin:StudyProgram"] = "Computer Science",
                 ["Mensa:ApiKey"] = "test-key",
                 ["Mensa:BaseUrl"] = "https://example.invalid",
                 ["Mensa:LocationId"] = "677",
@@ -56,6 +58,8 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Audience", TestJwt.Audience);
         Environment.SetEnvironmentVariable("Admin__Email", string.Empty);
         Environment.SetEnvironmentVariable("Admin__Password", string.Empty);
+        Environment.SetEnvironmentVariable("Admin__Course", "TIF25A");
+        Environment.SetEnvironmentVariable("Admin__StudyProgram", "Computer Science");
         Environment.SetEnvironmentVariable("Mensa__ApiKey", "test-key");
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", "https://example.invalid");
         Environment.SetEnvironmentVariable("Mensa__LocationId", "677");
@@ -70,6 +74,8 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Audience", null);
         Environment.SetEnvironmentVariable("Admin__Email", null);
         Environment.SetEnvironmentVariable("Admin__Password", null);
+        Environment.SetEnvironmentVariable("Admin__Course", null);
+        Environment.SetEnvironmentVariable("Admin__StudyProgram", null);
         Environment.SetEnvironmentVariable("Mensa__ApiKey", null);
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", null);
         Environment.SetEnvironmentVariable("Mensa__LocationId", null);

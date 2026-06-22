@@ -12,7 +12,7 @@ public class CoursesController(CoursesService coursesService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetCourses(CancellationToken cancellationToken)
     {
-        var courses = await coursesService.GetCoursesAsync(includeSemesterlessCourses: false, cancellationToken);
+        var courses = await coursesService.GetCoursesAsync(includeSystemCourses: false, cancellationToken);
         return Ok(courses);
     }
 }

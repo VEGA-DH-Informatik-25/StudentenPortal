@@ -15,7 +15,6 @@ public class AdminUsersServiceTests
         {
             Code = "TIF25A",
             StudyProgram = "Computer Science",
-            Semester = 2
         };
         var users = new FakeUserRepository();
         var groups = new FakeGroupRepository();
@@ -36,7 +35,6 @@ public class AdminUsersServiceTests
         Assert.Equal("Mara Muster", createdUser.DisplayName);
         Assert.Equal("TIF25A", createdUser.Course);
         Assert.Equal("Computer Science", createdUser.StudyProgram);
-        Assert.Equal(2, createdUser.Semester);
         Assert.Equal(UserRole.Student, createdUser.Role);
         Assert.True(createdUser.IsActive);
         Assert.True(result.Value!.IsActive);
@@ -57,7 +55,6 @@ public class AdminUsersServiceTests
         {
             Code = "TIF25A",
             StudyProgram = "Computer Science",
-            Semester = 2
         };
         var service = new AdminUsersService(new FakeUserRepository(existingUser), new FakeCourseRepository(course), new FakeGroupRepository());
 
@@ -94,13 +91,11 @@ public class AdminUsersServiceTests
         {
             Code = "TIF25A",
             StudyProgram = "Computer Science",
-            Semester = 1
         };
         var targetCourse = new Course
         {
             Code = "TIF25B",
             StudyProgram = "Computer Science",
-            Semester = 2
         };
         var groups = new FakeGroupRepository();
         var service = new AdminUsersService(new FakeUserRepository(admin, user), new FakeCourseRepository(sourceCourse, targetCourse), groups);
@@ -119,7 +114,6 @@ public class AdminUsersServiceTests
         Assert.Equal("vera.verwaltung@dhbw-loerrach.de", user.Email);
         Assert.Equal(UserRole.Management, user.Role);
         Assert.Equal("TIF25B", user.Course);
-        Assert.Equal(2, user.Semester);
         Assert.False(user.IsActive);
         Assert.False(result.Value!.IsActive);
         Assert.Contains("TIF25A", groups.SyncedCourseCodes);
@@ -140,7 +134,6 @@ public class AdminUsersServiceTests
         {
             Code = "TIF25A",
             StudyProgram = "Computer Science",
-            Semester = 2
         };
         var service = new AdminUsersService(new FakeUserRepository(admin), new FakeCourseRepository(course), new FakeGroupRepository());
 
@@ -214,7 +207,6 @@ public class AdminUsersServiceTests
         {
             Code = "TIF25A",
             StudyProgram = "Computer Science",
-            Semester = 2
         };
         var service = new AdminUsersService(new FakeUserRepository(admin), new FakeCourseRepository(course), new FakeGroupRepository());
 

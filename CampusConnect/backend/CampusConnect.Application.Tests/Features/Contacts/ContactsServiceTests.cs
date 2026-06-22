@@ -59,7 +59,6 @@ public sealed class ContactsServiceTests
         DisplayName = displayName,
         Email = email,
         StudyProgram = "Computer Science",
-        Semester = 3,
         Course = course,
         PhoneNumber = phoneNumber,
         Location = location,

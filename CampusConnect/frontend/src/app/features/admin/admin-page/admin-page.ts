@@ -11,7 +11,6 @@ import { Auth } from '../../../core/services/auth';
 type AdminTab = 'overview' | 'users' | 'courses';
 type EditorMode = 'create' | 'edit';
 type StatusFilter = 'All' | 'Active' | 'Inactive';
-type CourseFormSemester = number | string | null;
 
 const PASSWORD_LENGTH = 20;
 const PASSWORD_CHARACTER_SETS = [
@@ -61,7 +60,6 @@ export class AdminPage implements OnInit {
   protected readonly _courseForm = {
     code: '',
     studyProgram: '',
-    semester: null as CourseFormSemester,
   };
 
   protected readonly _createForm = {
@@ -168,26 +166,18 @@ export class AdminPage implements OnInit {
   protected createCourse(): void {
     const code = this._courseForm.code.trim();
     const studyProgram = this._courseForm.studyProgram.trim();
-    const semester = this._optionalSemesterValue(this._courseForm.semester);
-
     if (!code || !studyProgram) {
       this._error.set(this._i18n.translate('admin.courseFieldsRequired'));
       return;
     }
 
-    if (semester !== null && (!Number.isInteger(semester) || semester < 1 || semester > 6)) {
-      this._error.set(this._i18n.translate('admin.semesterRange'));
-      return;
-    }
-
     this._isCreatingCourse.set(true);
     this._clearMessages();
-    this._adminService.createCourse({ code, studyProgram, semester }).subscribe({
+    this._adminService.createCourse({ code, studyProgram }).subscribe({
       next: course => {
         this._courses.update(courses => [...courses.filter(item => item.code !== course.code), course].sort((a, b) => a.code.localeCompare(b.code)));
         this._courseForm.code = '';
         this._courseForm.studyProgram = '';
-        this._courseForm.semester = null;
         this._setDefaultCourse();
         this._success.set(this._i18n.translate('admin.courseCreated', { code: course.code }));
         this._isCreatingCourse.set(false);
@@ -390,13 +380,7 @@ export class AdminPage implements OnInit {
   }
 
   protected courseLabel(course: AdminCourse): string {
-    return `${course.code} - ${course.studyProgram} - ${this.courseSemesterLabel(course.semester)}`;
-  }
-
-  protected courseSemesterLabel(semester: number | null): string {
-    return semester === null
-      ? this._i18n.translate('common.noSemester')
-      : this._i18n.translate('common.semesterValue', { semester });
+    return `${course.code} - ${course.studyProgram}`;
   }
 
   protected roleLabel(role: string): string {
@@ -494,7 +478,7 @@ export class AdminPage implements OnInit {
   }
 
   private _firstCourseCode(): string {
-    return this._courses().find(course => course.semester !== null)?.code ?? this._courses()[0]?.code ?? '';
+    return this._courses().find(course => !this._roleCourseCodes.has(course.code))?.code ?? this._courses()[0]?.code ?? '';
   }
 
   private _defaultCourseForRole(role: string): string {
@@ -504,10 +488,6 @@ export class AdminPage implements OnInit {
     }
 
     return this._firstCourseCode();
-  }
-
-  private _optionalSemesterValue(value: CourseFormSemester): number | null {
-    return value === null || value === '' ? null : Number(value);
   }
 
   private _normalize(value: string): string {

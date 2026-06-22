@@ -32,10 +32,6 @@
         <strong>{{ profile.studyProgram }}</strong>
       </div>
       <div>
-        <span>{{ 'common.semester' | translate }}</span>
-        <strong>{{ semesterLabel(profile.semester) }}</strong>
-      </div>
-      <div>
         <span>{{ 'common.course' | translate }}</span>
         <strong>{{ profile.course }}</strong>
       </div>
@@ -68,11 +64,6 @@
         <label>
           {{ 'common.studyProgram' | translate }}
           <input type="text" [value]="selectedCourse()?.studyProgram ?? profile.studyProgram" readonly />
-        </label>
-
-        <label>
-          {{ 'common.semester' | translate }}
-          <input type="text" [value]="semesterLabel(selectedSemester(profile))" readonly />
         </label>
 
         <label>

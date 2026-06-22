@@ -27,7 +27,6 @@ public class AuthServiceTests
         Assert.Equal("alice@dhbw-loerrach.de", auth.Profile.Email);
         Assert.Equal("Alice", auth.Profile.DisplayName);
         Assert.Equal("Computer Science", auth.Profile.StudyProgram);
-        Assert.Equal(3, auth.Profile.Semester);
         Assert.Equal("TIF25A", auth.Profile.Course);
 
         var storedUser = await users.FindByEmailAsync("alice@dhbw-loerrach.de");
@@ -78,7 +77,6 @@ public class AuthServiceTests
             PasswordHash = "hash",
             DisplayName = "Bob",
             StudyProgram = "Business Informatics",
-            Semester = 1,
             Course = "WWI25A"
         };
         await users.AddAsync(user);
@@ -98,7 +96,6 @@ public class AuthServiceTests
         Assert.Equal("bob@dhbw-loerrach.de", profile.Email);
         Assert.Equal("Bob B.", profile.DisplayName);
         Assert.Equal("Computer Science", profile.StudyProgram);
-        Assert.Equal(3, profile.Semester);
         Assert.Equal("TIF25B", profile.Course);
         Assert.Equal("+49 7621 123456", profile.PhoneNumber);
         Assert.Equal("Library", profile.Location);
@@ -119,7 +116,6 @@ public class AuthServiceTests
             PasswordHash = "hash",
             DisplayName = "Chris",
             StudyProgram = "Computer Science",
-            Semester = 4,
             Course = "TIF24A"
         };
         await users.AddAsync(user);
@@ -131,7 +127,6 @@ public class AuthServiceTests
         Assert.Equal("Fill in all profile fields.", result.Error);
         var storedUser = await users.FindByIdAsync(user.Id);
         Assert.Equal("Chris", storedUser!.DisplayName);
-        Assert.Equal(4, storedUser.Semester);
     }
 
     private static AuthService CreateService(
@@ -184,9 +179,9 @@ public class AuthServiceTests
     {
         private readonly Dictionary<string, Course> _courses = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["TIF25A"] = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 3 },
-            ["TIF25B"] = new Course { Code = "TIF25B", StudyProgram = "Computer Science", Semester = 3 },
-            ["WWI25A"] = new Course { Code = "WWI25A", StudyProgram = "Business Informatics", Semester = 1 }
+            ["TIF25A"] = new Course { Code = "TIF25A", StudyProgram = "Computer Science" },
+            ["TIF25B"] = new Course { Code = "TIF25B", StudyProgram = "Computer Science" },
+            ["WWI25A"] = new Course { Code = "WWI25A", StudyProgram = "Business Informatics" }
         };
 
         public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default) =>

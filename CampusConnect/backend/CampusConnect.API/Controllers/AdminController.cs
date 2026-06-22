@@ -105,14 +105,14 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
     [HttpGet("courses")]
     public async Task<IActionResult> GetCourses(CancellationToken cancellationToken)
     {
-        var courses = await coursesService.GetCoursesAsync(includeSemesterlessCourses: true, cancellationToken);
+        var courses = await coursesService.GetCoursesAsync(includeSystemCourses: true, cancellationToken);
         return Ok(courses);
     }
 
     [HttpPost("courses")]
     public async Task<IActionResult> CreateCourse([FromBody] CreateCourseRequest request, CancellationToken cancellationToken)
     {
-        var result = await coursesService.CreateCourseAsync(new CreateCourseCommand(request.Code, request.StudyProgram, request.Semester), cancellationToken);
+        var result = await coursesService.CreateCourseAsync(new CreateCourseCommand(request.Code, request.StudyProgram), cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 

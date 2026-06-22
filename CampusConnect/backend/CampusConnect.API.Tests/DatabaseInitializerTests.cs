@@ -26,8 +26,7 @@ public sealed class DatabaseInitializerTests
                 Email = "admin@dhbw-loerrach.de",
                 Password = "Passw0rd!",
                 Course = "admin",
-                StudyProgram = "Administration",
-                Semester = 1
+                StudyProgram = "Administration"
             });
 
             var initializer = new DatabaseInitializer(dbContext, options);
@@ -38,17 +37,14 @@ public sealed class DatabaseInitializerTests
             Assert.NotNull(adminCourse);
             Assert.True(adminCourse!.IsActive);
             Assert.Equal("Administration", adminCourse.StudyProgram);
-            Assert.Null(adminCourse.Semester);
 
             Assert.Contains(await dbContext.Courses.AsNoTracking().ToListAsync(), course =>
                 course.Code == "LECTURER" &&
                 course.StudyProgram == "Lehrende" &&
-                course.Semester is null &&
                 course.IsActive);
             Assert.Contains(await dbContext.Courses.AsNoTracking().ToListAsync(), course =>
                 course.Code == "MANAGEMENT" &&
                 course.StudyProgram == "Verwaltung" &&
-                course.Semester is null &&
                 course.IsActive);
         }
         finally
@@ -76,8 +72,7 @@ public sealed class DatabaseInitializerTests
                 Email = string.Empty,
                 Password = string.Empty,
                 Course = "admin",
-                StudyProgram = "Administration",
-                Semester = 1
+                StudyProgram = "Administration"
             }));
 
             await initializer.InitializeAsync();

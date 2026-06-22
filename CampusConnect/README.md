@@ -108,7 +108,7 @@ Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung;
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
 | GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
-| POST | `/api/admin/courses` | Neuen Kurs mit Code, Studiengang und Semester anlegen | Ja, Admin |
+| POST | `/api/admin/courses` | Neuen Kurs mit Code und Studiengang anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |

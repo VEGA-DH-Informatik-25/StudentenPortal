@@ -127,5 +127,5 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private static UserProfileResponse ToUserProfileResponse(UserProfileResult profile) =>
-        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Semester, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.CreatedAt);
+        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.CreatedAt);
 }

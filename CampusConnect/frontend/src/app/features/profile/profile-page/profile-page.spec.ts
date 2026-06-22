@@ -14,7 +14,6 @@ describe('ProfilePage', () => {
     email: 'alice@dhbw-loerrach.de',
     displayName: 'Alice',
     studyProgram: 'Computer Science',
-    semester: 3,
     course: 'TIF25A',
     phoneNumber: '+49 7621 123456',
     location: 'Library',
@@ -43,7 +42,7 @@ describe('ProfilePage', () => {
     const coursesRequest = http.expectOne('/api/courses');
     expect(coursesRequest.request.method).toBe('GET');
     coursesRequest.flush([
-      { code: 'TIF25A', studyProgram: 'Computer Science', semester: 3, isActive: true, createdAt: '2026-04-27T10:00:00Z' },
+      { code: 'TIF25A', studyProgram: 'Computer Science', isActive: true, createdAt: '2026-04-27T10:00:00Z' },
     ]);
 
     const request = http.expectOne('/api/auth/me');

@@ -63,7 +63,6 @@ describe('ContactBookPage', () => {
       displayName: 'Alice Example',
       email: 'alice@dhbw-loerrach.de',
       studyProgram: 'Computer Science',
-      semester: 3,
       course: 'TIF25A',
       phoneNumber: '',
       location: '',

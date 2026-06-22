@@ -10,7 +10,7 @@ namespace CampusConnect.Application.Features.Auth;
 public record RegisterCommand(string Email, string Password, string DisplayName, string Course);
 public record LoginCommand(string Email, string Password);
 public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
-public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, int? Semester, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, DateTime CreatedAt);
+public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
@@ -28,7 +28,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         if (validationError is not null)
             return Result<AuthResult>.Failure(validationError);
 
-        var course = await ResolveCourseAsync(cmd.Course, requireActive: true, requireSemester: true);
+        var course = await ResolveCourseAsync(cmd.Course, requireActive: true, requireStudentCourse: true);
         if (course is null)
             return Result<AuthResult>.Failure(InvalidCourseError);
 
@@ -41,7 +41,6 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
             PasswordHash = PasswordHasher.Hash(cmd.Password),
             DisplayName = cmd.DisplayName.Trim(),
             StudyProgram = course.StudyProgram,
-            Semester = course.Semester,
             Course = course.Code
         };
 
@@ -88,14 +87,13 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         var course = await ResolveCourseAsync(
             cmd.Course,
             requireActive: !string.Equals(user.Course, cmd.Course, StringComparison.OrdinalIgnoreCase),
-            requireSemester: user.Role == Domain.Enums.UserRole.Student);
+            requireStudentCourse: user.Role == Domain.Enums.UserRole.Student);
         if (course is null)
             return Result<UserProfileResult>.Failure(InvalidCourseError);
 
         var previousCourse = user.Course;
         user.DisplayName = cmd.DisplayName.Trim();
         user.StudyProgram = course.StudyProgram;
-        user.Semester = course.Semester;
         user.Course = course.Code;
         user.PhoneNumber = NormalizeOptional(cmd.PhoneNumber);
         user.Location = NormalizeOptional(cmd.Location);
@@ -107,15 +105,15 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static UserProfileResult ToProfileResult(User user) =>
-        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Semester, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.CreatedAt);
+        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.CreatedAt);
 
-    private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive, bool requireSemester)
+    private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive, bool requireStudentCourse)
     {
         if (string.IsNullOrWhiteSpace(courseCode))
             return null;
 
         var course = await courseRepo.FindByCodeAsync(CoursesService.NormalizeCourseCode(courseCode));
-        if (course is null || requireActive && !course.IsActive || requireSemester && !course.Semester.HasValue)
+        if (course is null || requireActive && !course.IsActive || requireStudentCourse && !CoursesService.IsStudentCourse(course.Code))
             return null;
 
         return course;
@@ -136,12 +134,11 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         if (course is null)
             return;
 
-        if (user.Course == course.Code && user.StudyProgram == course.StudyProgram && user.Semester == course.Semester)
+        if (user.Course == course.Code && user.StudyProgram == course.StudyProgram)
             return;
 
         user.Course = course.Code;
         user.StudyProgram = course.StudyProgram;
-        user.Semester = course.Semester;
         await userRepo.UpdateAsync(user);
     }
 
@@ -154,7 +151,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
             if (course is null)
                 continue;
 
-            if (course.Semester.HasValue)
+            if (CoursesService.IsStudentCourse(course.Code))
             {
                 await groupRepo.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
                 await groupRepo.SyncCourseAssignmentsAsync(

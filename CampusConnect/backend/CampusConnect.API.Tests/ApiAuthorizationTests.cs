@@ -37,7 +37,8 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var courses = await response.Content.ReadFromJsonAsync<CourseResponse[]>();
         Assert.NotNull(courses);
-        Assert.Contains(courses!, course => course.Code == "ADMIN" && course.IsActive);
+        Assert.Contains(courses!, course => course.Code == "TIF25A" && course.IsActive);
+        Assert.DoesNotContain(courses!, course => course.Code == "ADMIN");
     }
 
     [Fact]
@@ -59,7 +60,7 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
             Email = $"cookie-session-{Guid.NewGuid():N}@dhbw-loerrach.de",
             Password = "secret123",
             DisplayName = "Cookie Session",
-            Course = "ADMIN"
+            Course = "TIF25A"
         });
 
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
@@ -114,5 +115,5 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     private sealed record GradeSummaryResponse(IReadOnlyList<object> Grades, decimal WeightedAverage, int TotalEcts);
-    private sealed record CourseResponse(string Code, string StudyProgram, int? Semester, bool IsActive, DateTime CreatedAt);
+    private sealed record CourseResponse(string Code, string StudyProgram, bool IsActive, DateTime CreatedAt);
 }

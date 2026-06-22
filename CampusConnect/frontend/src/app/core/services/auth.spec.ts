@@ -17,7 +17,6 @@ describe('Auth', () => {
     email: 'alice@dhbw-loerrach.de',
     displayName: 'Alice',
     studyProgram: 'Computer Science',
-    semester: 3,
     course: 'TIF25A',
     phoneNumber: '+49 7621 123456',
     location: 'Library',
@@ -132,7 +131,7 @@ describe('Auth', () => {
   });
 
   it('should update the cached profile after saving changes', () => {
-    const updatedProfile = { ...profile, displayName: 'Alice A.', semester: 4 };
+    const updatedProfile = { ...profile, displayName: 'Alice A.' };
 
     service.updateProfile({
       displayName: updatedProfile.displayName,

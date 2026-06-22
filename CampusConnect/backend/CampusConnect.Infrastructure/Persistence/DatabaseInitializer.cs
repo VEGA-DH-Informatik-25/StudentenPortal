@@ -53,7 +53,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             PasswordHash = PasswordHasher.Hash(options.Password),
             DisplayName = options.DisplayName,
             StudyProgram = options.StudyProgram,
-            Semester = null,
             Course = string.IsNullOrWhiteSpace(courseCode) ? options.Course : courseCode,
             Role = UserRole.Admin
         });
@@ -77,7 +76,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             {
                 Code = courseCode,
                 StudyProgram = studyProgram,
-                Semester = null,
                 IsActive = true
             });
 
@@ -95,12 +93,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         if (existing.StudyProgram != studyProgram)
         {
             existing.StudyProgram = studyProgram;
-            changed = true;
-        }
-
-        if (existing.Semester is not null)
-        {
-            existing.Semester = null;
             changed = true;
         }
 
@@ -117,7 +109,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
             {
                 Code = courseCode,
                 StudyProgram = studyProgram,
-                Semester = null,
                 IsActive = true
             });
 
@@ -135,12 +126,6 @@ public sealed class DatabaseInitializer(CampusConnectDbContext dbContext, IOptio
         if (existing.StudyProgram != studyProgram)
         {
             existing.StudyProgram = studyProgram;
-            changed = true;
-        }
-
-        if (existing.Semester is not null)
-        {
-            existing.Semester = null;
             changed = true;
         }
 

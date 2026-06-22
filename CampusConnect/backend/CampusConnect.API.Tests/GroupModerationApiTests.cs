@@ -118,7 +118,7 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
             email = $"{prefix}-{Guid.NewGuid():N}@dhbw-loerrach.de",
             password = "secret123",
             displayName = prefix,
-            course = "ADMIN"
+            course = "TIF25A"
         });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

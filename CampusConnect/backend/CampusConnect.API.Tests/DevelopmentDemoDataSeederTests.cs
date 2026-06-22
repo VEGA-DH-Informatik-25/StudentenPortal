@@ -43,12 +43,12 @@ public sealed class DevelopmentDemoDataSeederTests
                 Assert.Contains(courses, course => course.Code == "TIF25A" && course.StudyProgram == "Computer Science");
                 Assert.Contains(courses, course => course.Code == "WDB25A" && course.StudyProgram == "Business Administration - Digital Business Management");
                 Assert.Contains(courses, course => course.Code == "GIG25A" && course.StudyProgram == "Interprofessional Health Care");
-                Assert.Contains(courses, course => course.Code == "LECTURER" && course.StudyProgram == "Lehrende" && course.Semester is null);
-                Assert.Contains(courses, course => course.Code == "MANAGEMENT" && course.StudyProgram == "Verwaltung" && course.Semester is null);
+                Assert.Contains(courses, course => course.Code == "LECTURER" && course.StudyProgram == "Lehrende");
+                Assert.Contains(courses, course => course.Code == "MANAGEMENT" && course.StudyProgram == "Verwaltung");
 
                 var users = await dbContext.Users.AsNoTracking().ToListAsync();
-                Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin && user.Course == "ADMIN" && user.Semester is null);
-                Assert.Contains(users, user => user.Email == "demo.technik@dhbw-loerrach.de" && user.Role == UserRole.Lecturer && user.Course == "LECTURER" && user.Semester is null);
+                Assert.Contains(users, user => user.Email == "demo.admin@dhbw-loerrach.de" && user.Role == UserRole.Admin && user.Course == "ADMIN");
+                Assert.Contains(users, user => user.Email == "demo.technik@dhbw-loerrach.de" && user.Role == UserRole.Lecturer && user.Course == "LECTURER");
                 var tifStudent = Assert.Single(users, user => user.Email == "lena.tif25a@dhbw-loerrach.de");
                 var housingOwner = Assert.Single(users, user => user.Email == "noah.wwi25a@dhbw-loerrach.de");
                 Assert.Equal("TIF25A", tifStudent.Course);
@@ -80,12 +80,12 @@ public sealed class DevelopmentDemoDataSeederTests
 
     private static List<DemoCourseOptions> DemoCourses() =>
     [
-        new() { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2 },
-        new() { Code = "WWI25A", StudyProgram = "Business Informatics", Semester = 2 },
-        new() { Code = "WDB25A", StudyProgram = "Business Administration - Digital Business Management", Semester = 2 },
-        new() { Code = "TMB25A", StudyProgram = "Mechanical Engineering", Semester = 2 },
-        new() { Code = "WGM24A", StudyProgram = "Business Health Management", Semester = 4 },
-        new() { Code = "GIG25A", StudyProgram = "Interprofessional Health Care", Semester = 2 }
+        new() { Code = "TIF25A", StudyProgram = "Computer Science" },
+        new() { Code = "WWI25A", StudyProgram = "Business Informatics" },
+        new() { Code = "WDB25A", StudyProgram = "Business Administration - Digital Business Management" },
+        new() { Code = "TMB25A", StudyProgram = "Mechanical Engineering" },
+        new() { Code = "WGM24A", StudyProgram = "Business Health Management" },
+        new() { Code = "GIG25A", StudyProgram = "Interprofessional Health Care" }
     ];
 
     private static CampusConnectDbContext CreateDbContext(string databasePath) => new(

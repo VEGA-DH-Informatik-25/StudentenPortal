@@ -1,4 +1,5 @@
 using CampusConnect.Application.Common.Security;
+using CampusConnect.Application.Features.Courses;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
@@ -43,7 +44,6 @@ public sealed class DevelopmentDemoDataSeeder(
                 {
                     Code = seed.Code,
                     StudyProgram = seed.StudyProgram,
-                    Semester = seed.Semester,
                     IsActive = true,
                     CreatedAt = SeedNow.AddDays(-20)
                 });
@@ -51,7 +51,6 @@ public sealed class DevelopmentDemoDataSeeder(
             }
 
             course.StudyProgram = seed.StudyProgram;
-            course.Semester = seed.Semester;
             course.IsActive = true;
         }
 
@@ -66,7 +65,6 @@ public sealed class DevelopmentDemoDataSeeder(
             var user = await dbContext.Users.FirstOrDefaultAsync(item => item.Email == seed.Email, cancellationToken);
             var course = demoCourses.FirstOrDefault(item => item.Code == seed.Course);
             var studyProgram = course?.StudyProgram ?? seed.StudyProgram;
-            var semester = course?.Semester ?? seed.Semester;
 
             if (user is null)
             {
@@ -77,7 +75,6 @@ public sealed class DevelopmentDemoDataSeeder(
                     PasswordHash = PasswordHasher.Hash(_options.Password),
                     DisplayName = seed.DisplayName,
                     StudyProgram = studyProgram,
-                    Semester = semester,
                     Course = seed.Course,
                     Role = seed.Role,
                     CreatedAt = SeedNow.AddDays(-18)
@@ -88,7 +85,6 @@ public sealed class DevelopmentDemoDataSeeder(
             {
                 user.DisplayName = seed.DisplayName;
                 user.StudyProgram = studyProgram;
-                user.Semester = semester;
                 user.Course = seed.Course;
                 user.Role = seed.Role;
             }
@@ -222,7 +218,7 @@ public sealed class DevelopmentDemoDataSeeder(
             Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = true }
         });
 
-        foreach (var course in demoCourses.Where(course => course.Semester.HasValue))
+        foreach (var course in demoCourses.Where(course => CoursesService.IsStudentCourse(course.Code)))
         {
             var group = await groupRepository.EnsureCourseGroupAsync(course.Code, course.StudyProgram);
             var assignedIds = users.Values
@@ -386,13 +382,11 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private IReadOnlyList<DemoCourse> ResolveDemoCourses() => _options.Courses
         .Where(course => !string.IsNullOrWhiteSpace(course.Code) && !string.IsNullOrWhiteSpace(course.StudyProgram))
-        .Select(course => new DemoCourse(course.Code.Trim().ToUpperInvariant(), course.StudyProgram.Trim(), NormalizeSemester(course.Semester)))
+        .Select(course => new DemoCourse(course.Code.Trim().ToUpperInvariant(), course.StudyProgram.Trim()))
         .Concat(SystemRoleCourses)
         .GroupBy(course => course.Code, StringComparer.OrdinalIgnoreCase)
         .Select(group => group.First())
         .ToList();
-
-    private static int? NormalizeSemester(int? semester) => semester is null ? null : Math.Clamp(semester.Value, 1, 6);
 
     private bool IsTechnicalDemoCourse(User user) => _options.TechnicalCoursePrefixes
         .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
@@ -401,25 +395,25 @@ public sealed class DevelopmentDemoDataSeeder(
 
     private static readonly DemoUser[] DemoUsers =
     [
-        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "ADMIN", "Administration", null, UserRole.Admin),
-        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technology Demo", "LECTURER", "Lehrende", null, UserRole.Lecturer),
-        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Business Demo", "LECTURER", "Lehrende", null, UserRole.Lecturer),
-        new("student-tif", Guid.Parse("50000000-0000-0000-0000-000000000011"), "lena.tif25a@dhbw-loerrach.de", "Lena Computer Science", "TIF25A", "Computer Science", 2, UserRole.Student),
-        new("student-wwi", Guid.Parse("50000000-0000-0000-0000-000000000012"), "noah.wwi25a@dhbw-loerrach.de", "Noah Business Informatics", "WWI25A", "Business Informatics", 2, UserRole.Student),
-        new("student-wdb", Guid.Parse("50000000-0000-0000-0000-000000000013"), "mia.wdb25a@dhbw-loerrach.de", "Mia Digital Business", "WDB25A", "Business Administration - Digital Business Management", 2, UserRole.Student),
-        new("student-tmb", Guid.Parse("50000000-0000-0000-0000-000000000014"), "jonas.tmb25a@dhbw-loerrach.de", "Jonas Mechanical Engineering", "TMB25A", "Mechanical Engineering", 2, UserRole.Student),
-        new("student-wgm", Guid.Parse("50000000-0000-0000-0000-000000000015"), "sara.wgm24a@dhbw-loerrach.de", "Sara Health Management", "WGM24A", "Business Health Management", 4, UserRole.Student),
-        new("student-gig", Guid.Parse("50000000-0000-0000-0000-000000000016"), "emil.gig25a@dhbw-loerrach.de", "Emil Health Care", "GIG25A", "Interprofessional Health Care", 2, UserRole.Student)
+        new("admin", Guid.Parse("50000000-0000-0000-0000-000000000001"), "demo.admin@dhbw-loerrach.de", "Demo Administration", "ADMIN", "Administration", UserRole.Admin),
+        new("lecturer-tech", Guid.Parse("50000000-0000-0000-0000-000000000002"), "demo.technik@dhbw-loerrach.de", "Prof. Technology Demo", "LECTURER", "Lehrende", UserRole.Lecturer),
+        new("lecturer-business", Guid.Parse("50000000-0000-0000-0000-000000000003"), "demo.wirtschaft@dhbw-loerrach.de", "Prof. Business Demo", "LECTURER", "Lehrende", UserRole.Lecturer),
+        new("student-tif", Guid.Parse("50000000-0000-0000-0000-000000000011"), "lena.tif25a@dhbw-loerrach.de", "Lena Computer Science", "TIF25A", "Computer Science", UserRole.Student),
+        new("student-wwi", Guid.Parse("50000000-0000-0000-0000-000000000012"), "noah.wwi25a@dhbw-loerrach.de", "Noah Business Informatics", "WWI25A", "Business Informatics", UserRole.Student),
+        new("student-wdb", Guid.Parse("50000000-0000-0000-0000-000000000013"), "mia.wdb25a@dhbw-loerrach.de", "Mia Digital Business", "WDB25A", "Business Administration - Digital Business Management", UserRole.Student),
+        new("student-tmb", Guid.Parse("50000000-0000-0000-0000-000000000014"), "jonas.tmb25a@dhbw-loerrach.de", "Jonas Mechanical Engineering", "TMB25A", "Mechanical Engineering", UserRole.Student),
+        new("student-wgm", Guid.Parse("50000000-0000-0000-0000-000000000015"), "sara.wgm24a@dhbw-loerrach.de", "Sara Health Management", "WGM24A", "Business Health Management", UserRole.Student),
+        new("student-gig", Guid.Parse("50000000-0000-0000-0000-000000000016"), "emil.gig25a@dhbw-loerrach.de", "Emil Health Care", "GIG25A", "Interprofessional Health Care", UserRole.Student)
     ];
 
     private static readonly DemoCourse[] SystemRoleCourses =
     [
-        new("ADMIN", "Administration", null),
-        new("LECTURER", "Lehrende", null),
-        new("MANAGEMENT", "Verwaltung", null)
+        new("ADMIN", "Administration"),
+        new("LECTURER", "Lehrende"),
+        new("MANAGEMENT", "Verwaltung")
     ];
 
-    private sealed record DemoCourse(string Code, string StudyProgram, int? Semester);
+    private sealed record DemoCourse(string Code, string StudyProgram);
 
-    private sealed record DemoUser(string Key, Guid Id, string Email, string DisplayName, string Course, string StudyProgram, int? Semester, UserRole Role);
+    private sealed record DemoUser(string Key, Guid Id, string Email, string DisplayName, string Course, string StudyProgram, UserRole Role);
 }

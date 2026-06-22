@@ -75,13 +75,7 @@ export class LoginPage implements OnInit {
   }
 
   protected courseLabel(course: Course): string {
-    return `${course.code} · ${course.studyProgram} · ${this._semesterLabel(course.semester)}`;
-  }
-
-  private _semesterLabel(semester: number | null): string {
-    return semester === null
-      ? this._i18n.translate('common.noSemester')
-      : this._i18n.translate('common.semesterValue', { semester });
+    return `${course.code} · ${course.studyProgram}`;
   }
 
   private _loadCourses(): void {

@@ -162,7 +162,6 @@
               </div>
               <div>
                 <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
-                <span>{{ courseSemesterLabel(user.semester) }}</span>
               </div>
               <span>{{ user.course || ('common.notSet' | translate) }}</span>
               <span>{{ roleLabel(user.role) }}</span>
@@ -198,11 +197,6 @@
             <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Computer Science" required />
           </label>
 
-          <label class="admin-field">
-            <span>{{ 'common.semester' | translate }}</span>
-            <input type="number" name="semester" [(ngModel)]="_courseForm.semester" min="1" max="6" [placeholder]="'admin.semesterOptionalPlaceholder' | translate" />
-          </label>
-
           <button type="submit" class="admin-toolbar__primary" [disabled]="_isCreatingCourse()">
             {{ _isCreatingCourse() ? ('admin.saveCourse' | translate) : ('admin.createCourse' | translate) }}
           </button>
@@ -217,7 +211,6 @@
           <div class="course-table__row course-table__row--head">
             <span>{{ 'common.courseCode' | translate }}</span>
             <span>{{ 'common.studyProgram' | translate }}</span>
-            <span>{{ 'common.semester' | translate }}</span>
             <span>{{ 'admin.assignedUsers' | translate }}</span>
             <span>{{ 'admin.status' | translate }}</span>
           </div>
@@ -226,7 +219,6 @@
             <div class="course-table__row">
               <strong>{{ row.course.code }}</strong>
               <span>{{ row.course.studyProgram }}</span>
-              <span>{{ courseSemesterLabel(row.course.semester) }}</span>
               <span>{{ row.userCount }}</span>
               <span class="admin-status" [class.admin-status--inactive]="!row.course.isActive">
                 {{ row.course.isActive ? ('admin.statusActive' | translate) : ('admin.statusInactive' | translate) }}

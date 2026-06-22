@@ -21,12 +21,12 @@ describe('Admin', () => {
   });
 
   it('should create courses through the admin endpoint', () => {
-    service.createCourse({ code: 'TIF25A', studyProgram: 'Computer Science', semester: 1 }).subscribe();
+    service.createCourse({ code: 'TIF25A', studyProgram: 'Computer Science' }).subscribe();
 
     const request = http.expectOne('/api/admin/courses');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ code: 'TIF25A', studyProgram: 'Computer Science', semester: 1 });
-    request.flush({ code: 'TIF25A', studyProgram: 'Computer Science', semester: 1, isActive: true, createdAt: '2026-04-28T10:00:00Z' });
+    expect(request.request.body).toEqual({ code: 'TIF25A', studyProgram: 'Computer Science' });
+    request.flush({ code: 'TIF25A', studyProgram: 'Computer Science', isActive: true, createdAt: '2026-04-28T10:00:00Z' });
   });
 
   it('should update user roles with a patch request', () => {

@@ -41,11 +41,11 @@ public sealed class GradesServiceTests
     public async Task AddGradeAsync_WithPlannedModule_ShouldUsePlanModuleNameAndEcts()
     {
         var userId = Guid.NewGuid();
-        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2 };
+        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science" };
         var repository = new FakeGradeRepository();
         var service = CreateService(
             repository,
-            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram, Semester = course.Semester }),
+            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram }),
             new FakeCourseRepository(course),
             new FakeStudyPlanProvider(new StudyPlan(
                 "Computer Science",
@@ -67,10 +67,10 @@ public sealed class GradesServiceTests
     public async Task GetPlanAsync_ShouldMarkCompletedModulesFromExistingGrades()
     {
         var userId = Guid.NewGuid();
-        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science", Semester = 2 };
+        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science" };
         var service = CreateService(
             new FakeGradeRepository(new Grade { UserId = userId, ModuleCode = "T4INF1001", ModuleName = "Mathematics I", Value = 2.0m, Ects = 5 }),
-            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram, Semester = course.Semester }),
+            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram }),
             new FakeCourseRepository(course),
             new FakeStudyPlanProvider(new StudyPlan(
                 "Computer Science",
