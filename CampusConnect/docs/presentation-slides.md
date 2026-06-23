@@ -19,7 +19,7 @@ Ein Projekt der DHBW Informatik – Mai bis Juli 2026
 ```
 
 ### Sprechtext (Person 1 — Moderator)
-"Guten Tag! Mein Name ist [Name] und wir sind ein Team aus vier Informatikstudierenden. Heute stellen wir euch CampusConnect vor – eine Lösung, die den Studienalltag an der DHBW Lörrach fundamental verbessert."
+"Guten Tag! Mein Name ist [Name] und wir sind ein Team aus vier Informatikstudierenden. Heute stellen wir euch CampusConnect vor – eine Lösung, die den Studienalltag an der DHBW Lörrach fundamenta[...]
 
 ---
 
@@ -53,7 +53,7 @@ Herausforderung im Studienalltag der DHBW Lörrach:
 ```
 
 ### Sprechtext
-"An der DHBW Lörrach gibt es aktuell kein zentrales System für den Studienalltag. Informationen verteilen sich über WhatsApp-Gruppen, E-Mails und Aushänge – das ist ineffizient und fehleranfällig. Besonders Erstsemester haben Probleme: Sie wissen oft nicht, wo Prüfungstermine stehen, wie der Mensa-Plan aussieht oder wie sie Lerngruppen finden. Das kostet Zeit und führt zu Frustration."
+"An der DHBW Lörrach gibt es aktuell kein zentrales System für den Studienalltag. Informationen verteilen sich über WhatsApp-Gruppen, E-Mails und Aushänge – das ist ineffizient und fehleranfäll[...]
 
 ---
 
@@ -78,7 +78,7 @@ Was CampusConnect löst:
 ```
 
 ### Sprechtext
-"Mit CampusConnect schaffen wir eine zentrale, benutzerfreundliche Plattform. Alle Informationen sind an einer Stelle. Studierende haben einen einzigen Anlaufpunkt – fertig. Der Mensa-Plan wird automatisch aktualisiert, Prüfungstermine können persönlich verwaltet werden, Lerngruppen entstehen gezielt und nicht zufällig. Das ist ein echter Mehrwert für Studierende und Hochschule."
+"Mit CampusConnect schaffen wir eine zentrale, benutzerfreundliche Plattform. Alle Informationen sind an einer Stelle. Studierende haben einen einzigen Anlaufpunkt – fertig. Der Mensa-Plan wird auto[...]
 
 ---
 
@@ -121,7 +121,7 @@ Zentrale Funktionen von CampusConnect:
 ```
 
 ### Sprechtext
-"Das sind die Kernfunktionen: Ein News-Feed für zentrale Infos, ein Schwarzes Brett für private Angebote und Gesuche, der automatische Mensa-Plan – täglich aktuell ohne manuelle Eingabe. Dann der Prüfungskalender mit Erinnerungen und ein Noten-Tracker. Lerngruppen-Matching sorgt dafür, dass Vernetzung gezielt passiert. Alles sicher hinter der studentischen DHBW-Mail."
+"Das sind die Kernfunktionen: Ein News-Feed für zentrale Infos, ein Schwarzes Brett für private Angebote und Gesuche, der automatische Mensa-Plan – täglich aktuell ohne manuelle Eingabe. Dann der[...]
 
 ---
 
@@ -159,7 +159,7 @@ Konkrete Vorteile für die DHBW Lörrach:
 ```
 
 ### Sprechtext
-"Warum sollte die DHBW in CampusConnect investieren? Weil es messbare Vorteile bringt: bessere Lernergebnisse durch strukturierte Gruppen, weniger Kommunikationschaos für Verwaltung und Studierende, mehr Transparenz und ein modernes Image."
+"Warum sollte die DHBW in CampusConnect investieren? Weil es messbare Vorteile bringt: bessere Lernergebnisse durch strukturierte Gruppen, weniger Kommunikationschaos für Verwaltung und Studierende, [...]
 
 ---
 
@@ -191,7 +191,7 @@ Warum CampusConnect in den richtigen Händen ist:
 ```
 
 ### Sprechtext
-"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch und fokussiert auf ein MVP, das bis Juli funktioniert."
+"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch und f[...]
 
 ---
 
@@ -226,13 +226,43 @@ Kurz gefasst – Die technische Grundlage:
 ```
 
 ### Sprechtext
-"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bedarf skaliert werden kann."
+"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bedarf s[...]
 
 ---
 
-## FOLIE 8: Was wir vom Sponsor brauchen
-**Dauer:** 1 Minute 30 Sekunden  
+## FOLIE 8: Risiken & wie wir sie mindern
+**Dauer:** 30 Sekunden  
 **Redner:** Person 4
+
+### Inhalt – Stichpunkte
+```
+Mögliche Herausforderungen – und unsere Strategie:
+
+⚠️ Abhängigkeiten (SWFR-API, Stundenplan-URLs)
+   → Fallback: Lokale Testdaten, manueller Upload
+   → Früh anfragen, nicht erst spät
+
+⚠️ Scope-Creep
+   → Strikter MVP-Fokus
+   → Optionale Features kommen in "Future Work"
+
+⚠️ Zeitmangel
+   → Agile Sprints mit regelmäßigen Reviews
+   → Priorisierung statt Perfektionismus
+
+⚠️ Sicherheit & Datenschutz
+   → Von Anfang an beachtet
+   → Regelmäßige Security-Reviews
+```
+
+### Sprechtext
+"Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein realis[...]
+
+---
+
+## FOLIE 9: Was wir vom Sponsor brauchen
+**Dauer:** 1 Minute 30 Sekunden  
+**Redner:** Person 4 (Fortsetzung)
 
 ### Inhalt – Stichpunkte
 ```
@@ -263,37 +293,7 @@ Das bitten wir vom Sponsor:
 ```
 
 ### Sprechtext
-"Damit das Projekt erfolgreich ist, brauchen wir Feedback, Zugang zu relevanten Datenquellen (z. B. iCal für Stundenpläne), Test-Nutzende für Beta-Tests und Entscheidungen zu Hosting und Datenschutz. Außerdem sollten wir jetzt schon klären, wer die Plattform nach dem MVP betreut."
-
----
-
-## FOLIE 9: Risiken & wie wir sie mindern
-**Dauer:** 30 Sekunden  
-**Redner:** Person 4 (Fortsetzung)
-
-### Inhalt – Stichpunkte
-```
-Mögliche Herausforderungen – und unsere Strategie:
-
-⚠️ Abhängigkeiten (SWFR-API, Stundenplan-URLs)
-   → Fallback: Lokale Testdaten, manueller Upload
-   → Früh anfragen, nicht erst spät
-
-⚠️ Scope-Creep
-   → Strikter MVP-Fokus
-   → Optionale Features kommen in "Future Work"
-
-⚠️ Zeitmangel
-   → Agile Sprints mit regelmäßigen Reviews
-   → Priorisierung statt Perfektionismus
-
-⚠️ Sicherheit & Datenschutz
-   → Von Anfang an beachtet
-   → Regelmäßige Security-Reviews
-```
-
-### Sprechtext
-"Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews."
+"Damit das Projekt erfolgreich ist, brauchen wir Feedback, Zugang zu relevanten Datenquellen (z. B. iCal für Stundenpläne), Test-Nutzende für Beta-Tests und Entscheidungen zu Hosting und Daten[...]
 
 ---
 
@@ -375,7 +375,7 @@ Kontakt – Fragen sind willkommen!
 - Zeit: 3:45 am Stück
 
 ## Person 4 (Slides 8–11)
-- Fokus: Was wir brauchen, Risiken, Fazit & Kontakt
+- Fokus: Risiken, was wir brauchen, Fazit & Kontakt
 - Zeit: 3:45 am Stück
 
 
