@@ -22,6 +22,7 @@ interface TimetablePageHarness {
   calendarEventIsCompact(event: TimetableEvent): boolean;
   calendarEventLabel(event: TimetableEvent): string;
   eventDuration(event: TimetableEvent): string | null;
+  selectView(view: 'list' | 'week' | 'day'): void;
   previousRange(): void;
 }
 
@@ -38,6 +39,7 @@ describe('TimetablePage', () => {
   let timetableResponses: Map<string, TimetableDay[]>;
 
   beforeEach(async () => {
+    localStorage.clear();
     timetableRequests = [];
     timetableResponses = new Map<string, TimetableDay[]>();
 
@@ -80,6 +82,22 @@ describe('TimetablePage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should restore and persist the selected timetable view', async () => {
+    fixture.destroy();
+    localStorage.setItem('campusconnect.timetable.view', 'week');
+    fixture = TestBed.createComponent(TimetablePage);
+    component = fixture.componentInstance as unknown as TimetablePageHarness;
+    await fixture.whenStable();
+
+    expect(component._activeView()).toBe('week');
+
+    component._course.set('TIF25A');
+    component._courseSelection.set('TIF25A');
+    component.selectView('day');
+
+    expect(localStorage.getItem('campusconnect.timetable.view')).toBe('day');
   });
 
   it('should size week events proportionally to their duration', () => {

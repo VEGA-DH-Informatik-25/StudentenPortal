@@ -7,31 +7,52 @@ using CampusConnect.Domain.Interfaces;
 
 namespace CampusConnect.Application.Features.Auth;
 
-public record LoginCommand(string Email, string Password);
+public record LoginCommand(string Email, string Password, string IpAddress = "", string Device = "");
 public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
 public record ChangeInitialPasswordCommand(string CurrentPassword, string NewPassword);
 public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
-public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
+public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo, ILoginRateLimiter? loginRateLimiter = null)
 {
     public const string UserProfileNotFoundError = "User profile was not found.";
+    public const string LoginRateLimitExceededError = "Too many login attempts. Please try again later.";
     private const string InvalidCourseError = "Choose a valid course.";
     private const string InvalidCredentialsError = "Invalid email address or password.";
 
     public async Task<Result<AuthResult>> LoginAsync(LoginCommand cmd)
     {
-        if (string.IsNullOrWhiteSpace(cmd.Email) || string.IsNullOrEmpty(cmd.Password))
-            return Result<AuthResult>.Failure(InvalidCredentialsError);
+        var rateLimitContext = new LoginRateLimitContext(NormalizeLoginAccount(cmd.Email), cmd.IpAddress, cmd.Device);
+        if (loginRateLimiter?.CheckAndEscalateIfLimited(rateLimitContext).IsLimited == true)
+            return Result<AuthResult>.Failure(LoginRateLimitExceededError);
 
-        var email = cmd.Email.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(cmd.Email) || string.IsNullOrEmpty(cmd.Password))
+        {
+            if (loginRateLimiter?.RegisterFailedAttempt(rateLimitContext).IsLimited == true)
+                return Result<AuthResult>.Failure(LoginRateLimitExceededError);
+
+            return Result<AuthResult>.Failure(InvalidCredentialsError);
+        }
+
+        var email = NormalizeLoginAccount(cmd.Email);
         var user = await userRepo.FindByEmailAsync(email);
         if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
+        {
+            if (loginRateLimiter?.RegisterFailedAttempt(rateLimitContext).IsLimited == true)
+                return Result<AuthResult>.Failure(LoginRateLimitExceededError);
+
             return Result<AuthResult>.Failure(InvalidCredentialsError);
+        }
 
         if (!user.IsActive)
-            return Result<AuthResult>.Failure(InvalidCredentialsError);
+        {
+            if (loginRateLimiter?.RegisterFailedAttempt(rateLimitContext).IsLimited == true)
+                return Result<AuthResult>.Failure(LoginRateLimitExceededError);
 
+            return Result<AuthResult>.Failure(InvalidCredentialsError);
+        }
+
+        loginRateLimiter?.Reset(rateLimitContext);
         await SyncProfileMetadataFromCourseAsync(user);
         var token = jwtService.GenerateToken(user);
         return Result<AuthResult>.Success(new AuthResult(token, ToProfileResult(user)));
@@ -200,6 +221,9 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static string NormalizeOptional(string? value) => value?.Trim() ?? string.Empty;
+
+    private static string NormalizeLoginAccount(string email) =>
+        email.Trim().ToLowerInvariant();
 
     private static string? ValidatePassword(string password)
     {

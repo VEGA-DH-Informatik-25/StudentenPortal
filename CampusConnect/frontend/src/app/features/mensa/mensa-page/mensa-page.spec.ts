@@ -27,10 +27,15 @@ describe('MensaPage', () => {
           },
         ],
       },
+      {
+        date: '2026-04-29',
+        dishes: [],
+      },
     ]),
   };
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [MensaPage],
       providers: [{ provide: Mensa, useValue: mensaService }],
@@ -54,6 +59,20 @@ describe('MensaPage', () => {
     component['selectDay'](-1);
 
     expect(component['_selectedDay']()).toBe(0);
+  });
+
+  it('persists the selected menu day by date', async () => {
+    component['selectDay'](1);
+
+    expect(localStorage.getItem('campusconnect.mensa.selectedDate')).toBe('2026-04-29');
+
+    fixture.destroy();
+    fixture = TestBed.createComponent(MensaPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component['_selectedDay']()).toBe(1);
   });
 
   it('should derive readable category markers', () => {

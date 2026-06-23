@@ -72,9 +72,10 @@ CampusConnect uses JWT-based API authentication and an HttpOnly cookie for brows
 
 1. Admins create user accounts through `POST /api/admin/users`; public self-registration is not available.
 2. The user sends credentials to `POST /api/auth/login`.
-3. The backend validates the credentials and the active account state, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
-4. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
-5. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
-6. The backend validates authentication against the active database user on every protected request and extends the browser session only when there is activity.
+3. The backend rate-limits online login attempts across the normalized account, IP address, and User-Agent based device fingerprint. After 5 failed attempts within 15 minutes, it temporarily blocks further attempts for 1 minute and escalates repeated attempts during the block to 5, 15, and at most 60 minutes. No permanent automatic account lock is written to the database.
+4. The backend validates the credentials and the active account state, issues a signed JWT, resets the login failure counters, and also sets an HttpOnly cookie for the browser session.
+5. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
+6. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
+7. The backend validates authentication against the active database user on every protected request and extends the browser session only when there is activity.
 
 Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.

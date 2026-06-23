@@ -11,7 +11,10 @@ import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 import { TimetableEvent } from '../../../core/models/timetable.model';
 import { Timetable } from '../../../core/services/timetable';
+import { UiPreferences } from '../../../core/services/ui-preferences';
 import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
+
+const FEED_SELECTED_GROUP_KEY = 'campusconnect.feed.selectedGroupId';
 
 @Component({
   selector: 'app-feed-page',
@@ -28,6 +31,7 @@ export class FeedPage implements OnInit {
   protected readonly _i18n = inject(I18n);
   private readonly _router = inject(Router);
   private readonly _timetableService = inject(Timetable);
+  private readonly _uiPreferences = inject(UiPreferences);
 
   protected readonly _posts = signal<FeedPost[]>([]);
   protected readonly _isLoading = signal(false);
@@ -44,7 +48,7 @@ export class FeedPage implements OnInit {
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _groupsLoading = signal(false);
   protected readonly _groupsError = signal('');
-  protected readonly _selectedGroupId = signal('');
+  protected readonly _selectedGroupId = signal(this._uiPreferences.getString(FEED_SELECTED_GROUP_KEY));
   protected readonly _postableGroups = computed(() => this._groups().filter(group => this.canPostToGroup(group)));
   protected readonly _selectedGroup = computed<CampusGroup | null>(() => {
     const selectedId = this._selectedGroupId();
@@ -172,6 +176,7 @@ export class FeedPage implements OnInit {
 
   protected updateSelectedGroup(value: string): void {
     this._selectedGroupId.set(value);
+    this._uiPreferences.setString(FEED_SELECTED_GROUP_KEY, value);
     this._allowComments.set(true);
   }
 
@@ -367,6 +372,7 @@ export class FeedPage implements OnInit {
   private _selectDefaultGroup(groups: CampusGroup[]): void {
     const current = groups.find(group => group.id === this._selectedGroupId() && this.canPostToGroup(group));
     if (current) {
+      this._uiPreferences.setString(FEED_SELECTED_GROUP_KEY, current.id);
       return;
     }
 
@@ -383,6 +389,7 @@ export class FeedPage implements OnInit {
       ?? groups.find(group => this.canPostToGroup(group));
 
     this._selectedGroupId.set(fallback?.id ?? '');
+    this._uiPreferences.setString(FEED_SELECTED_GROUP_KEY, fallback?.id ?? '');
   }
 
   private _replacePost(updatedPost: FeedPost): void {

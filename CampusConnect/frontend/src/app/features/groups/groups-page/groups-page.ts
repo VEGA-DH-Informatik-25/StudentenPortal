@@ -6,9 +6,13 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { CampusGroup, GroupJoinRule, GroupType } from '../../../core/models/group.model';
 import { Auth } from '../../../core/services/auth';
 import { Groups } from '../../../core/services/groups';
+import { UiPreferences } from '../../../core/services/ui-preferences';
 
 type GroupTab = 'All' | 'Explore' | GroupType;
 type GroupPolicyFilter = 'All' | 'StudentPosts' | 'UniversityPosts' | 'Approval' | 'CommentsOpen' | 'CommentsClosed';
+
+const GROUPS_TAB_KEY = 'campusconnect.groups.activeTab';
+const GROUPS_POLICY_FILTER_KEY = 'campusconnect.groups.policyFilter';
 
 interface GroupTabItem {
   id: GroupTab;
@@ -29,6 +33,7 @@ export class GroupsPage implements OnInit {
   private readonly _auth = inject(Auth);
   protected readonly _i18n = inject(I18n);
   private readonly _router = inject(Router);
+  private readonly _uiPreferences = inject(UiPreferences);
 
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _isLoading = signal(false);
@@ -36,9 +41,9 @@ export class GroupsPage implements OnInit {
   protected readonly _isCreateMenuOpen = signal(false);
   protected readonly _error = signal('');
   protected readonly _success = signal('');
-  protected readonly _activeTab = signal<GroupTab>('All');
+  protected readonly _activeTab = signal<GroupTab>(this._storedTab());
   protected readonly _searchQuery = signal('');
-  protected readonly _policyFilter = signal<GroupPolicyFilter>('All');
+  protected readonly _policyFilter = signal<GroupPolicyFilter>(this._storedPolicyFilter());
   protected readonly _joiningGroupIds = signal<string[]>([]);
   protected readonly _createType = signal<GroupType>('Campus');
   protected readonly _createName = signal('');
@@ -102,6 +107,7 @@ export class GroupsPage implements OnInit {
 
   protected setActiveTab(tab: GroupTab): void {
     this._activeTab.set(tab);
+    this._uiPreferences.setString(GROUPS_TAB_KEY, tab);
   }
 
   protected openCreateMenu(): void {
@@ -126,6 +132,7 @@ export class GroupsPage implements OnInit {
 
   protected updatePolicyFilter(value: GroupPolicyFilter): void {
     this._policyFilter.set(value);
+    this._uiPreferences.setString(GROUPS_POLICY_FILTER_KEY, value);
   }
 
   protected updateCreateType(value: GroupType): void {
@@ -317,6 +324,7 @@ export class GroupsPage implements OnInit {
       next: group => {
         this._groups.update(groups => [group, ...groups]);
         this._activeTab.set(group.type);
+        this._uiPreferences.setString(GROUPS_TAB_KEY, group.type);
         this._createType.set('Campus');
         this._createName.set('');
         this._createDescription.set('');
@@ -391,5 +399,23 @@ export class GroupsPage implements OnInit {
       case 'All':
         return true;
     }
+  }
+
+  private _storedTab(): GroupTab {
+    const tab = this._uiPreferences.getString(GROUPS_TAB_KEY);
+    return this._isGroupTab(tab) ? tab : 'All';
+  }
+
+  private _storedPolicyFilter(): GroupPolicyFilter {
+    const filter = this._uiPreferences.getString(GROUPS_POLICY_FILTER_KEY);
+    return this._isGroupPolicyFilter(filter) ? filter : 'All';
+  }
+
+  private _isGroupTab(value: string): value is GroupTab {
+    return value === 'All' || value === 'Explore' || value === 'Course' || value === 'Official' || value === 'Campus';
+  }
+
+  private _isGroupPolicyFilter(value: string): value is GroupPolicyFilter {
+    return value === 'All' || value === 'StudentPosts' || value === 'UniversityPosts' || value === 'Approval' || value === 'CommentsOpen' || value === 'CommentsClosed';
   }
 }

@@ -7,6 +7,7 @@ import { TimetableEvent, TimetableDay } from '../../../core/models/timetable.mod
 import { Auth } from '../../../core/services/auth';
 import { Courses } from '../../../core/services/courses';
 import { Timetable } from '../../../core/services/timetable';
+import { UiPreferences } from '../../../core/services/ui-preferences';
 
 type TimetableView = 'list' | 'week' | 'day';
 
@@ -25,6 +26,7 @@ const COMPACT_EVENT_MAX_HEIGHT = 96;
 const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
 const WEEK_VIEW_DAYS = 6;
 const DAY_VIEW_DAYS = 1;
+const TIMETABLE_VIEW_KEY = 'campusconnect.timetable.view';
 
 interface TimetableRange {
   days: number;
@@ -44,6 +46,7 @@ export class TimetablePage implements OnInit {
   private readonly _coursesService = inject(Courses);
   protected readonly _i18n = inject(I18n);
   private readonly _timetableService = inject(Timetable);
+  private readonly _uiPreferences = inject(UiPreferences);
 
   protected readonly _courseOptions = signal<string[]>([]);
   protected readonly _courseSelection = signal('');
@@ -53,7 +56,7 @@ export class TimetablePage implements OnInit {
   protected readonly _timezone = signal('Europe/Berlin');
   protected readonly _isLoading = signal(false);
   protected readonly _error = signal<string | null>(null);
-  protected readonly _activeView = signal<TimetableView>('list');
+  protected readonly _activeView = signal<TimetableView>(this._storedView());
   protected readonly _anchorDate = signal(this._dateKey(new Date()));
 
   protected readonly _eventCount = computed(() =>
@@ -157,6 +160,7 @@ export class TimetablePage implements OnInit {
 
   protected selectView(view: TimetableView): void {
     this._activeView.set(view);
+    this._uiPreferences.setString(TIMETABLE_VIEW_KEY, view);
     this._loadVisibleRange();
   }
 
@@ -466,5 +470,14 @@ export class TimetablePage implements OnInit {
 
   private _formatDateLong(value: string): string {
     return new Intl.DateTimeFormat(this._i18n.locale(), { weekday: 'long', day: '2-digit', month: 'long' }).format(this._fromDateKey(value));
+  }
+
+  private _storedView(): TimetableView {
+    const view = this._uiPreferences.getString(TIMETABLE_VIEW_KEY);
+    return this._isTimetableView(view) ? view : 'list';
+  }
+
+  private _isTimetableView(value: string): value is TimetableView {
+    return value === 'list' || value === 'week' || value === 'day';
   }
 }

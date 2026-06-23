@@ -21,10 +21,19 @@ public class AuthController(AuthService authService) : ControllerBase
         if (request is null)
             return Unauthorized(new { error = "Invalid email address or password." });
 
-        var result = await authService.LoginAsync(new LoginCommand(request.Email, request.Password));
+        var result = await authService.LoginAsync(new LoginCommand(
+            request.Email,
+            request.Password,
+            GetClientIpAddress(),
+            GetDeviceIdentifier()));
 
         if (!result.IsSuccess)
+        {
+            if (result.Error == AuthService.LoginRateLimitExceededError)
+                return StatusCode(StatusCodes.Status429TooManyRequests, new { error = result.Error });
+
             return Unauthorized(new { error = result.Error });
+        }
 
         await SignInBrowserSessionAsync(result.Value!);
         return Ok(ToAuthResponse(result.Value!));
@@ -106,6 +115,12 @@ public class AuthController(AuthService authService) : ControllerBase
 
     private Guid? GetCurrentUserId()
         => CurrentUser.GetUserId(User);
+
+    private string GetClientIpAddress() =>
+        HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+
+    private string GetDeviceIdentifier() =>
+        Request.Headers.UserAgent.ToString();
 
     private Task SignInBrowserSessionAsync(AuthResult result) =>
         SignInBrowserSessionAsync(result.Profile);

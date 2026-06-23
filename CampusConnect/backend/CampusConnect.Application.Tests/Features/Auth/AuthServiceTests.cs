@@ -51,6 +51,71 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_UsesNeutralErrorForUnknownAccountAndWrongPassword()
+    {
+        var users = new FakeUserRepository();
+        var limiter = new FakeLoginRateLimiter();
+        var service = CreateService(users, limiter: limiter);
+        await users.AddAsync(new User
+        {
+            Email = "alice@dhbw-loerrach.de",
+            PasswordHash = CampusConnect.Application.Common.Security.PasswordHasher.Hash("secret"),
+            DisplayName = "Alice",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            IsActive = true
+        });
+
+        var unknownAccount = await service.LoginAsync(new LoginCommand("missing@dhbw-loerrach.de", "wrong", "127.0.0.1", "browser"));
+        var wrongPassword = await service.LoginAsync(new LoginCommand("alice@dhbw-loerrach.de", "wrong", "127.0.0.1", "browser"));
+
+        Assert.False(unknownAccount.IsSuccess);
+        Assert.False(wrongPassword.IsSuccess);
+        Assert.Equal("Invalid email address or password.", unknownAccount.Error);
+        Assert.Equal("Invalid email address or password.", wrongPassword.Error);
+        Assert.Equal(2, limiter.FailureCount);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ReturnsRateLimitErrorWhenLimiterBlocks()
+    {
+        var users = new FakeUserRepository();
+        var limiter = new FakeLoginRateLimiter { IsLimitedOnCheck = true };
+        var service = CreateService(users, limiter: limiter);
+
+        var result = await service.LoginAsync(new LoginCommand("alice@dhbw-loerrach.de", "secret", "127.0.0.1", "browser"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(AuthService.LoginRateLimitExceededError, result.Error);
+        Assert.Equal(0, limiter.FailureCount);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ResetsRateLimiterAfterSuccessfulLogin()
+    {
+        var users = new FakeUserRepository();
+        var limiter = new FakeLoginRateLimiter();
+        var service = CreateService(users, limiter: limiter);
+        await users.AddAsync(new User
+        {
+            Email = "alice@dhbw-loerrach.de",
+            PasswordHash = CampusConnect.Application.Common.Security.PasswordHasher.Hash("secret"),
+            DisplayName = "Alice",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            IsActive = true
+        });
+
+        var result = await service.LoginAsync(new LoginCommand("  ALICE@DHBW-LOERRACH.DE  ", "secret", "127.0.0.1", "browser"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Single(limiter.ResetContexts);
+        Assert.Equal("alice@dhbw-loerrach.de", limiter.ResetContexts[0].Account);
+        Assert.Equal("127.0.0.1", limiter.ResetContexts[0].IpAddress);
+        Assert.Equal("browser", limiter.ResetContexts[0].Device);
+    }
+
+    [Fact]
     public async Task UpdateProfileAsync_UpdatesOnlyProfileFieldsForUser()
     {
         var users = new FakeUserRepository();
@@ -115,12 +180,43 @@ public class AuthServiceTests
     private static AuthService CreateService(
         FakeUserRepository users,
         FakeCourseRepository? courses = null,
-        FakeGroupRepository? groups = null) =>
-        new(users, new FakeJwtService(), courses ?? new FakeCourseRepository(), groups ?? new FakeGroupRepository());
+        FakeGroupRepository? groups = null,
+        ILoginRateLimiter? limiter = null) =>
+        new(users, new FakeJwtService(), courses ?? new FakeCourseRepository(), groups ?? new FakeGroupRepository(), limiter ?? new NoopLoginRateLimiter());
 
     private sealed class FakeJwtService : IJwtService
     {
         public string GenerateToken(User user) => "test-token";
+    }
+
+    private sealed class NoopLoginRateLimiter : ILoginRateLimiter
+    {
+        public LoginRateLimitResult CheckAndEscalateIfLimited(LoginRateLimitContext context) => new(false);
+
+        public LoginRateLimitResult RegisterFailedAttempt(LoginRateLimitContext context) => new(false);
+
+        public void Reset(LoginRateLimitContext context)
+        {
+        }
+    }
+
+    private sealed class FakeLoginRateLimiter : ILoginRateLimiter
+    {
+        public bool IsLimitedOnCheck { get; init; }
+        public int FailureCount { get; private set; }
+        public List<LoginRateLimitContext> ResetContexts { get; } = [];
+
+        public LoginRateLimitResult CheckAndEscalateIfLimited(LoginRateLimitContext context) =>
+            new(IsLimitedOnCheck);
+
+        public LoginRateLimitResult RegisterFailedAttempt(LoginRateLimitContext context)
+        {
+            FailureCount++;
+            return new(false);
+        }
+
+        public void Reset(LoginRateLimitContext context) =>
+            ResetContexts.Add(context);
     }
 
     private sealed class FakeUserRepository : IUserRepository

@@ -6,10 +6,16 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { AdminCourse, AdminUser } from '../../../core/models/admin.model';
 import { Admin } from '../../../core/services/admin';
 import { Auth } from '../../../core/services/auth';
+import { UiPreferences } from '../../../core/services/ui-preferences';
 
 type AdminTab = 'overview' | 'users' | 'courses';
 type EditorMode = 'create' | 'edit';
 type StatusFilter = 'All' | 'Active' | 'Inactive';
+
+const ADMIN_TAB_KEY = 'campusconnect.admin.activeTab';
+const ADMIN_ROLE_FILTER_KEY = 'campusconnect.admin.roleFilter';
+const ADMIN_COURSE_FILTER_KEY = 'campusconnect.admin.courseFilter';
+const ADMIN_STATUS_FILTER_KEY = 'campusconnect.admin.statusFilter';
 
 const PASSWORD_LENGTH = 20;
 const PASSWORD_CHARACTER_SETS = [
@@ -31,10 +37,17 @@ export class AdminPage implements OnInit {
   private readonly _adminService = inject(Admin);
   private readonly _auth = inject(Auth);
   protected readonly _i18n = inject(I18n);
+  private readonly _uiPreferences = inject(UiPreferences);
+  protected readonly _roles = ['Student', 'Lecturer', 'Management', 'Admin'];
+  protected readonly _roleCourseCodes = new Map<string, string>([
+    ['Lecturer', 'LECTURER'],
+    ['Management', 'MANAGEMENT'],
+    ['Admin', 'ADMIN'],
+  ]);
 
   protected readonly _users = signal<AdminUser[]>([]);
   protected readonly _courses = signal<AdminCourse[]>([]);
-  protected readonly _activeTab = signal<AdminTab>('overview');
+  protected readonly _activeTab = signal<AdminTab>(this._storedTab());
   protected readonly _isLoading = signal(false);
   protected readonly _coursesLoading = signal(false);
   protected readonly _isCreatingCourse = signal(false);
@@ -43,18 +56,12 @@ export class AdminPage implements OnInit {
   protected readonly _error = signal<string | null>(null);
   protected readonly _success = signal<string | null>(null);
   protected readonly _searchQuery = signal('');
-  protected readonly _roleFilter = signal('All');
-  protected readonly _courseFilter = signal('All');
-  protected readonly _statusFilter = signal<StatusFilter>('All');
+  protected readonly _roleFilter = signal(this._storedRoleFilter());
+  protected readonly _courseFilter = signal(this._uiPreferences.getString(ADMIN_COURSE_FILTER_KEY) || 'All');
+  protected readonly _statusFilter = signal<StatusFilter>(this._storedStatusFilter());
   protected readonly _editorMode = signal<EditorMode | null>(null);
   protected readonly _editingUser = signal<AdminUser | null>(null);
   protected readonly _statusConfirmationOpen = signal(false);
-  protected readonly _roles = ['Student', 'Lecturer', 'Management', 'Admin'];
-  protected readonly _roleCourseCodes = new Map<string, string>([
-    ['Lecturer', 'LECTURER'],
-    ['Management', 'MANAGEMENT'],
-    ['Admin', 'ADMIN'],
-  ]);
 
   protected readonly _courseForm = {
     code: '',
@@ -155,6 +162,7 @@ export class AdminPage implements OnInit {
 
   protected switchTab(tab: AdminTab): void {
     this._activeTab.set(tab);
+    this._uiPreferences.setString(ADMIN_TAB_KEY, tab);
   }
 
   protected openCreateFromDashboard(): void {
@@ -194,14 +202,17 @@ export class AdminPage implements OnInit {
 
   protected updateRoleFilter(value: string): void {
     this._roleFilter.set(value);
+    this._uiPreferences.setString(ADMIN_ROLE_FILTER_KEY, value);
   }
 
   protected updateCourseFilter(value: string): void {
     this._courseFilter.set(value);
+    this._uiPreferences.setString(ADMIN_COURSE_FILTER_KEY, value);
   }
 
   protected updateStatusFilter(value: StatusFilter): void {
     this._statusFilter.set(value);
+    this._uiPreferences.setString(ADMIN_STATUS_FILTER_KEY, value);
   }
 
   protected openCreateUser(): void {
@@ -500,5 +511,28 @@ export class AdminPage implements OnInit {
   private _clearMessages(): void {
     this._error.set(null);
     this._success.set(null);
+  }
+
+  private _storedTab(): AdminTab {
+    const tab = this._uiPreferences.getString(ADMIN_TAB_KEY);
+    return this._isAdminTab(tab) ? tab : 'overview';
+  }
+
+  private _storedRoleFilter(): string {
+    const role = this._uiPreferences.getString(ADMIN_ROLE_FILTER_KEY);
+    return role === 'All' || this._roles.includes(role) ? role : 'All';
+  }
+
+  private _storedStatusFilter(): StatusFilter {
+    const status = this._uiPreferences.getString(ADMIN_STATUS_FILTER_KEY);
+    return this._isStatusFilter(status) ? status : 'All';
+  }
+
+  private _isAdminTab(value: string): value is AdminTab {
+    return value === 'overview' || value === 'users' || value === 'courses';
+  }
+
+  private _isStatusFilter(value: string): value is StatusFilter {
+    return value === 'All' || value === 'Active' || value === 'Inactive';
   }
 }

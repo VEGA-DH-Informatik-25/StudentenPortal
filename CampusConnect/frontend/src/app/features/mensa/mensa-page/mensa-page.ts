@@ -4,6 +4,9 @@ import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Mensa } from '../../../core/services/mensa';
 import { MensaDay, MensaDish } from '../../../core/models/mensa.model';
+import { UiPreferences } from '../../../core/services/ui-preferences';
+
+const MENSA_SELECTED_DATE_KEY = 'campusconnect.mensa.selectedDate';
 
 @Component({
   selector: 'app-mensa-page',
@@ -15,6 +18,7 @@ import { MensaDay, MensaDish } from '../../../core/models/mensa.model';
 })
 export class MensaPage implements OnInit {
   private readonly _mensaService = inject(Mensa);
+  private readonly _uiPreferences = inject(UiPreferences);
   protected readonly _i18n = inject(I18n);
 
   protected readonly _menu = signal<MensaDay[]>([]);
@@ -28,9 +32,7 @@ export class MensaPage implements OnInit {
     this._mensaService.getWeekMenu().subscribe({
       next: menu => {
         this._menu.set(menu);
-        if (this._selectedDay() >= menu.length) {
-          this._selectedDay.set(0);
-        }
+        this._restoreSelectedDay(menu);
         this._error.set(null);
         this._isLoading.set(false);
       },
@@ -48,6 +50,21 @@ export class MensaPage implements OnInit {
     }
 
     this._selectedDay.set(index);
+    this._uiPreferences.setString(MENSA_SELECTED_DATE_KEY, this._menu()[index]?.date ?? '');
+  }
+
+  private _restoreSelectedDay(menu: MensaDay[]): void {
+    const storedDate = this._uiPreferences.getString(MENSA_SELECTED_DATE_KEY);
+    const storedIndex = storedDate ? menu.findIndex(day => day.date === storedDate) : -1;
+
+    if (storedIndex >= 0) {
+      this._selectedDay.set(storedIndex);
+      return;
+    }
+
+    if (this._selectedDay() >= menu.length) {
+      this._selectedDay.set(0);
+    }
   }
 
   protected categoryMarker(category: string): string {

@@ -10,6 +10,7 @@ describe('AdminPage', () => {
   let fixture: ComponentFixture<AdminPage>;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [AdminPage],
       providers: [
@@ -43,6 +44,35 @@ describe('AdminPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('persists admin tabs and filters', () => {
+    (component as any).switchTab('users');
+    (component as any).updateRoleFilter('Lecturer');
+    (component as any).updateCourseFilter('TIF25A');
+    (component as any).updateStatusFilter('Active');
+
+    expect(localStorage.getItem('campusconnect.admin.activeTab')).toBe('users');
+    expect(localStorage.getItem('campusconnect.admin.roleFilter')).toBe('Lecturer');
+    expect(localStorage.getItem('campusconnect.admin.courseFilter')).toBe('TIF25A');
+    expect(localStorage.getItem('campusconnect.admin.statusFilter')).toBe('Active');
+  });
+
+  it('restores admin tabs and filters', async () => {
+    fixture.destroy();
+    localStorage.setItem('campusconnect.admin.activeTab', 'courses');
+    localStorage.setItem('campusconnect.admin.roleFilter', 'Management');
+    localStorage.setItem('campusconnect.admin.courseFilter', 'WWI25A');
+    localStorage.setItem('campusconnect.admin.statusFilter', 'Inactive');
+
+    fixture = TestBed.createComponent(AdminPage);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    expect((component as any)._activeTab()).toBe('courses');
+    expect((component as any)._roleFilter()).toBe('Management');
+    expect((component as any)._courseFilter()).toBe('WWI25A');
+    expect((component as any)._statusFilter()).toBe('Inactive');
   });
 
   it('generates a secure initial password', () => {

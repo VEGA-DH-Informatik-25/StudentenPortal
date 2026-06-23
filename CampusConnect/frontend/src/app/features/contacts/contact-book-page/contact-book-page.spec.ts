@@ -9,6 +9,7 @@ describe('ContactBookPage', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [ContactBookPage],
       providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -83,5 +84,26 @@ describe('ContactBookPage', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.favorites-dropdown__count')?.textContent.trim()).toBe('0');
+  });
+
+  it('restores saved favorite contacts', async () => {
+    localStorage.setItem('campusconnect.contacts.favorites', JSON.stringify([{
+      id: 'contact-2',
+      displayName: 'Bob Example',
+      email: 'bob@dhbw-loerrach.de',
+      studyProgram: 'Business Informatics',
+      course: 'WWI25A',
+      phoneNumber: '',
+      location: '',
+      profileNote: '',
+      role: 'Student',
+    }]));
+
+    fixture = TestBed.createComponent(ContactBookPage);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.favorites-dropdown__count')?.textContent.trim()).toBe('1');
+    expect(fixture.nativeElement.textContent).toContain('Bob Example');
   });
 });

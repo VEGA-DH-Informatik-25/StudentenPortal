@@ -67,7 +67,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 > ```
 > Authorization: Bearer <token>
 > ```
-> Das Token wird über `POST /api/auth/login` bezogen. Browser-Sitzungen nutzen zusätzlich ein HttpOnly-Cookie, das bei Logout oder nach 15 Minuten Inaktivität ungültig wird. Token und Cookies werden bei geschützten Requests gegen den aktuellen Datenbanknutzer geprüft; gelöschte oder deaktivierte Konten erhalten keinen Zugriff mehr.
+> Das Token wird über `POST /api/auth/login` bezogen. Browser-Sitzungen nutzen zusätzlich ein HttpOnly-Cookie, das bei Logout oder nach 15 Minuten Inaktivität ungültig wird. Token und Cookies werden bei geschützten Requests gegen den aktuellen Datenbanknutzer geprüft; gelöschte oder deaktivierte Konten erhalten keinen Zugriff mehr. Fehlgeschlagene Online-Logins werden pro Konto, IP-Adresse und Geräte-Fingerprint für 15 Minuten gezählt. Nach 5 Fehlversuchen sperrt die API weitere Login-Versuche temporär mit `429 Too Many Requests`; wiederholte Versuche während der Sperre erhöhen die Wartezeit auf 5, 15 und maximal 60 Minuten. Erfolgreiche Logins setzen die Zähler zurück. Die Fehlermeldungen bleiben neutral und verraten nicht, ob ein Konto existiert.
 
 ## Nutzer, Kurse und Gruppen
 

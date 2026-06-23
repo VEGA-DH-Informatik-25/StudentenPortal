@@ -62,6 +62,7 @@ describe('FeedPage', () => {
   };
 
   beforeEach(async () => {
+    localStorage.clear();
     const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
     feedApi = {
       getFeed: vi.fn(() => of([])),
@@ -112,6 +113,12 @@ describe('FeedPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('persists the selected posting group', () => {
+    (component as any).updateSelectedGroup('group-1');
+
+    expect(localStorage.getItem('campusconnect.feed.selectedGroupId')).toBe('group-1');
   });
 
   it('renders DHBW quick access links as external redirects', () => {

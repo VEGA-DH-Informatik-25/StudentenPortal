@@ -39,6 +39,7 @@ public static class ServiceExtensions
         services.AddScoped<IExamRepository, EntityExamRepository>();
 
         services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<ILoginRateLimiter, InMemoryLoginRateLimiter>();
         services.Configure<MensaOptions>(configuration.GetSection(MensaOptions.SectionName));
         services.AddHttpClient<IMensaService, MensaApiClient>();
         services.AddHttpClient<ITimetableService, DhbwTimetableService>();

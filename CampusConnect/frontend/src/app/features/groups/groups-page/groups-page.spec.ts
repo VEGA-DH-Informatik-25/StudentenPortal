@@ -50,6 +50,7 @@ describe('GroupsPage', () => {
   };
 
   beforeEach(async () => {
+    localStorage.clear();
     userRole = vi.fn(() => 'Student');
     groupsService = {
       getGroups: vi.fn(() => of([group])),
@@ -79,6 +80,27 @@ describe('GroupsPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('persists the selected tab and policy filter', () => {
+    (component as any).setActiveTab('Explore');
+    (component as any).updatePolicyFilter('Approval');
+
+    expect(localStorage.getItem('campusconnect.groups.activeTab')).toBe('Explore');
+    expect(localStorage.getItem('campusconnect.groups.policyFilter')).toBe('Approval');
+  });
+
+  it('restores the selected tab and policy filter', async () => {
+    fixture.destroy();
+    localStorage.setItem('campusconnect.groups.activeTab', 'Campus');
+    localStorage.setItem('campusconnect.groups.policyFilter', 'CommentsOpen');
+
+    fixture = TestBed.createComponent(GroupsPage);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+
+    expect((component as any)._activeTab()).toBe('Campus');
+    expect((component as any)._policyFilter()).toBe('CommentsOpen');
   });
 
   it('filters visible groups by search text', () => {

@@ -83,6 +83,7 @@ const apiErrorTranslations: Record<string, TranslationKey> = {
   'The group owner cannot be removed.': 'apiError.ownerCannotBeRemoved',
   'The group owner role cannot be changed.': 'apiError.ownerRoleLocked',
   'The study plan could not be loaded.': 'apiError.studyPlanLoadFailed',
+  'Too many login attempts. Please try again later.': 'apiError.loginRateLimited',
   'There is no pending invitation for this account.': 'apiError.noPendingInvitation',
   'There is no pending join request for this account.': 'apiError.noPendingJoinRequest',
   'This account is not a member of the group.': 'apiError.accountNotMember',
