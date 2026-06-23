@@ -13,6 +13,8 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | POST | `/api/auth/register` | Registrierung mit Hochschul-E-Mail-Adresse | Nein |
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
 | POST | `/api/auth/logout` | Browser-Sitzung beenden und Auth-Cookie entfernen | Nein |
+| POST | `/api/auth/change-initial-password` | Initialpasswort nach Prüfung des aktuellen Passworts ändern | Ja |
+| POST | `/api/auth/onboarding/complete` | Onboarding nach dem Passwortwechsel abschließen | Ja |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails des eigenen Profils aktualisieren | Ja |
 | GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |

@@ -19,6 +19,9 @@ describe('ProfilePage', () => {
     location: 'Library',
     profileNote: 'Looking for a project group.',
     role: 'Student',
+    mustChangePassword: false,
+    onboardingCompleted: true,
+    onboardingCompletedAt: null,
     createdAt: '2026-04-27T10:00:00Z',
   };
 

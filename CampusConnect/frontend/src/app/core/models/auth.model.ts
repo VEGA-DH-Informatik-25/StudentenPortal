@@ -18,6 +18,11 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ChangeInitialPasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -28,6 +33,9 @@ export interface UserProfile {
   location: string;
   profileNote: string;
   role: string;
+  mustChangePassword: boolean;
+  onboardingCompleted: boolean;
+  onboardingCompletedAt: string | null;
   createdAt: string;
 }
 

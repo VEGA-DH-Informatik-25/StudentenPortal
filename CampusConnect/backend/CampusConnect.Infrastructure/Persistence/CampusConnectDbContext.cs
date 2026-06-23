@@ -36,6 +36,8 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
             .HasMaxLength(32)
             .IsRequired();
         user.Property(entity => entity.IsActive).IsRequired();
+        user.Property(entity => entity.MustChangePassword).IsRequired();
+        user.Property(entity => entity.OnboardingCompleted).IsRequired();
         user.Property(entity => entity.CreatedAt).IsRequired();
 
         var course = modelBuilder.Entity<Course>();

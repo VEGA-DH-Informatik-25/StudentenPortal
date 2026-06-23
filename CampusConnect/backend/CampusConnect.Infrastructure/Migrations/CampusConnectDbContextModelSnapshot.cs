@@ -267,6 +267,15 @@ namespace CampusConnect.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("OnboardingCompleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("OnboardingCompletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(120)

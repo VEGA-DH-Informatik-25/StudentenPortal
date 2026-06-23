@@ -15,7 +15,7 @@
   </header>
 
   <div class="content-grid">
-    <form class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
+    <form data-tour="grades-form" class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
       <h2>{{ 'grades.addGrade' | translate }}</h2>
       @if (planModules().length > 0) {
         @if (hasOpenPlanModules()) {

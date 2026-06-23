@@ -14,6 +14,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'feed', pathMatch: 'full' },
       {
+        path: 'onboarding',
+        loadComponent: () => import('./features/onboarding/onboarding-page/onboarding-page').then(m => m.OnboardingPage),
+      },
+      {
         path: 'feed',
         loadComponent: () => import('./features/feed/feed-page/feed-page').then(m => m.FeedPage),
       },

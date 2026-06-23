@@ -76,7 +76,9 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
             StudyProgram = course.StudyProgram,
             Course = course.Code,
             Role = role,
-            IsActive = command.IsActive
+            IsActive = command.IsActive,
+            MustChangePassword = true,
+            OnboardingCompleted = false
         };
 
         await userRepository.AddAsync(user, cancellationToken);

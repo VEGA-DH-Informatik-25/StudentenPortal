@@ -1,0 +1,14 @@
+<section class="onboarding">
+  @if (_error()) { <p class="onboarding__error">{{ _error() }}</p> }
+  @if (_step() === 'welcome') {
+    <div class="onboarding__card"><p>{{ 'onboarding.eyebrow' | translate }}</p><h1>{{ 'onboarding.welcomeTitle' | translate }}</h1><p>{{ 'onboarding.welcomeBody' | translate }}</p><button (click)="continueFromWelcome()">{{ 'common.continue' | translate }}</button></div>
+  } @else if (_step() === 'password') {
+    <form class="onboarding__card" (ngSubmit)="changePassword()"><p>{{ 'onboarding.eyebrow' | translate }}</p><h1>{{ 'onboarding.passwordTitle' | translate }}</h1><label>{{ 'onboarding.currentPassword' | translate }}<input type="password" name="currentPassword" [(ngModel)]="_passwordForm.currentPassword" required /></label><label>{{ 'onboarding.newPassword' | translate }}<input type="password" name="newPassword" [(ngModel)]="_passwordForm.newPassword" required /></label><label>{{ 'onboarding.confirmPassword' | translate }}<input type="password" name="confirmPassword" [(ngModel)]="_passwordForm.confirmPassword" required /></label><p>{{ 'onboarding.passwordRules' | translate }}</p><button [disabled]="_isSaving() || !passwordMeetsRequirements() || _passwordForm.newPassword !== _passwordForm.confirmPassword">{{ 'onboarding.changePassword' | translate }}</button></form>
+  } @else if (_step() === 'loading') {
+    <div class="onboarding__card"><h1>{{ 'onboarding.loadingTitle' | translate }}</h1><p>{{ 'onboarding.loadingBody' | translate }}</p></div>
+  } @else if (_step() === 'tour') {
+    <div class="onboarding__card"><p>{{ 'onboarding.tourProgress' | translate:{ current: _tourIndex() + 1, total: _tourSteps.length } }}</p><h1>{{ _tourSteps[_tourIndex()].title | translate }}</h1><p>{{ _tourSteps[_tourIndex()].body | translate }}</p><div><button class="secondary" (click)="skipTour()">{{ 'onboarding.skipTour' | translate }}</button><button (click)="nextTourStep()">{{ 'common.continue' | translate }}</button></div></div>
+  } @else {
+    <div class="onboarding__card"><h1>{{ 'onboarding.groupsTitle' | translate }}</h1><p>{{ 'onboarding.groupsBody' | translate }}</p>@for (group of _suggestedGroups(); track group.id) { <article><strong>{{ group.name }}</strong><span>{{ group.description }}</span><button (click)="joinGroup(group)" [disabled]="_joinedGroupIds().has(group.id)">{{ _joinedGroupIds().has(group.id) ? ('onboarding.joined' | translate) : ('onboarding.join' | translate) }}</button></article> } @empty { <p>{{ 'onboarding.noGroups' | translate }}</p> }<button (click)="finish()" [disabled]="_isSaving()">{{ 'onboarding.finish' | translate }}</button></div>
+  }
+</section>

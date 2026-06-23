@@ -10,16 +10,18 @@ describe('authGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) =>
     TestBed.runInInjectionContext(() => authGuard(...guardParameters));
   const isLoggedIn = signal(false);
+  const userProfile = signal(null);
   let restoreSession: ReturnType<typeof vi.fn>;
   let router: Router;
 
   beforeEach(() => {
     isLoggedIn.set(false);
+    userProfile.set(null);
     restoreSession = vi.fn(() => of(false));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
-        { provide: Auth, useValue: { isLoggedIn, restoreSession } },
+        { provide: Auth, useValue: { isLoggedIn, userProfile, restoreSession } },
       ],
     });
     router = TestBed.inject(Router);

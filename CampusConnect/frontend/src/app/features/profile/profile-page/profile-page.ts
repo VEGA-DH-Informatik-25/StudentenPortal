@@ -83,6 +83,10 @@ export class ProfilePage implements OnInit {
     return this._i18n.roleLabel(role);
   }
 
+  protected isNewHere(profile: UserProfile): boolean {
+    return Date.now() - new Date(profile.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000;
+  }
+
   private _loadCourses(): void {
     this._coursesLoading.set(true);
     this._coursesService.getCourses().subscribe({

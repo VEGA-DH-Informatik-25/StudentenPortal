@@ -49,7 +49,15 @@ export class LoginPage implements OnInit {
     this._isLoading.set(true);
     this._error.set('');
     this._auth.login({ email: this._loginForm.email, password: this._loginForm.password }).subscribe({
-      next: () => this._router.navigate(['/feed']),
+      next: response => {
+        const target = response.profile?.onboardingCompleted === false ? '/onboarding' : '/feed';
+        this._router.navigate([target]).then(navigated => {
+          if (!navigated) {
+            this._error.set(this._i18n.translate('login.failed'));
+            this._isLoading.set(false);
+          }
+        });
+      },
       error: err => {
         this._error.set(err.error?.error ?? this._i18n.translate('login.failed'));
         this._isLoading.set(false);
@@ -66,7 +74,12 @@ export class LoginPage implements OnInit {
     this._isLoading.set(true);
     this._error.set('');
     this._auth.register(this._registerForm).subscribe({
-      next: () => this._router.navigate(['/feed']),
+      next: () => this._router.navigate(['/feed']).then(navigated => {
+        if (!navigated) {
+          this._error.set(this._i18n.translate('login.registerFailed'));
+          this._isLoading.set(false);
+        }
+      }),
       error: err => {
         this._error.set(err.error?.error ?? this._i18n.translate('login.registerFailed'));
         this._isLoading.set(false);

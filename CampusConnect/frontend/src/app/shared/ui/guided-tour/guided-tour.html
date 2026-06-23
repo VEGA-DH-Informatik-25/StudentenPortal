@@ -1,0 +1,13 @@
+@if (tour.active(); as active) {
+  <div class="tour-backdrop"></div>
+  <svg class="tour-arrow" aria-hidden="true">
+    <line [attr.x1]="arrowStartX()" [attr.y1]="arrowStartY()" [attr.x2]="arrowEndX()" [attr.y2]="arrowEndY()" marker-end="url(#arrowhead)" />
+    <defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" /></marker></defs>
+  </svg>
+  <section class="tour-popover" role="dialog" aria-modal="true" [style.left.px]="tooltipLeft()" [style.top.px]="tooltipTop()">
+    <p>{{ 'onboarding.tourProgress' | translate:{ current: tour.stepIndex() + 1, total: tour.steps.length } }}</p>
+    <h2>{{ tour.steps[tour.stepIndex()].title | translate }}</h2>
+    <p>{{ tour.steps[tour.stepIndex()].body | translate }}</p>
+    <div><button type="button" class="secondary" (click)="finish()">{{ 'onboarding.skipTour' | translate }}</button><button type="button" (click)="next()" [disabled]="tour.steps[tour.stepIndex()].inputRequired && !tour.inputCompleted()">{{ tour.steps[tour.stepIndex()].final ? ('onboarding.finish' | translate) : ('common.continue' | translate) }}</button></div>
+  </section>
+}
