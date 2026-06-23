@@ -349,7 +349,8 @@ Kontakt – Fragen sind willkommen!
 
 📚 Dokumentation & Links
    GitHub Repository:  github.com/VEGA-DH-Informatik-25/StudentenPortal
-   Projektbeschreibung: /projektbeschreibung.md
+   Dokumentation:       /CampusConnect/docs/README.md
+   Projektbeschreibung: /CampusConnect/docs/product/projektbeschreibung.md
    Architektur-Doku:    /CampusConnect/docs/architecture.md
    API-Doku:            /CampusConnect/docs/api.md
 

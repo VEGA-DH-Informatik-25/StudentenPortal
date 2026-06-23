@@ -28,23 +28,29 @@ The Git repository root is this workspace root. The main application lives in `C
 ```text
 ./
   README.md
-  projektbeschreibung.md
+  prd-mvp.md
   AGENTS.md
   .github/
     copilot-instructions.md
   CampusConnect/
     .github/
+      PULL_REQUEST_TEMPLATE.md
       workflows/ci.yml
-    CONTRIBUTING.md
-    README.md
     docker-compose.yml
     docs/
+      README.md
       api.md
       architecture.md
       code-review.md
+      contributing.md
       demo-data.md
+      frontend.md
+      project-overview.md
       roles.md
       testing.md
+      concepts/
+      media/
+      product/
       wireframes/
     backend/
       CampusConnect.slnx
@@ -68,12 +74,15 @@ The Git repository root is this workspace root. The main application lives in `C
 
 Important source documents:
 
-- `projektbeschreibung.md`: product scope, MVP boundaries, target users, and feature list.
-- `CampusConnect/README.md`: setup overview, architecture summary, endpoints, and contribution rules.
+- `CampusConnect/docs/README.md`: central documentation index.
+- `CampusConnect/docs/project-overview.md`: setup overview, stack summary, local URLs, and documentation map.
+- `CampusConnect/docs/product/projektbeschreibung.md`: product scope, MVP boundaries, target users, and feature list.
+- `prd-mvp.md`: protected MVP product requirements; do not change requirements casually.
 - `CampusConnect/docs/architecture.md`: frontend/backend architecture and auth flow.
 - `CampusConnect/docs/api.md`: current API surface and domain behavior.
 - `CampusConnect/docs/testing.md`: current testing conventions.
-- `CampusConnect/CONTRIBUTING.md`: branch, commit, PR, and test conventions.
+- `CampusConnect/docs/contributing.md`: branch, commit, PR, and test conventions.
+- `CampusConnect/docs/concepts/`: planning concepts. Check live code before treating them as implemented behavior.
 - `.github/copilot-instructions.md`: short GitHub Copilot entry point that defers to this file.
 
 ## Current Stack
@@ -525,8 +534,8 @@ Update documentation when behavior changes:
 
 - API contracts: update `CampusConnect/docs/api.md`.
 - Architecture or auth flow: update `CampusConnect/docs/architecture.md`.
-- Setup, commands, or stack: update `CampusConnect/README.md` and this file.
+- Setup, commands, or stack: update `CampusConnect/docs/project-overview.md` and this file.
 - Testing conventions: update `CampusConnect/docs/testing.md`.
-- Project scope changes: update `projektbeschreibung.md` when the requested change affects product boundaries.
+- Project scope changes: update `CampusConnect/docs/product/projektbeschreibung.md` when the requested change affects product boundaries. Do not alter `prd-mvp.md` requirements unless the user explicitly asks for a PRD change.
 
 When docs and implementation disagree, prefer the live implementation for code changes and either update the docs or mention the doc gap in the final response.

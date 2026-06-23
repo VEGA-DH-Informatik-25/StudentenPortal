@@ -4,16 +4,16 @@ Dieses Repository enthält das Anwendungsprojekt **CampusConnect**, ein Studiere
 
 ## Einstieg
 
-- [Projekt- und Setup-Dokumentation](CampusConnect/README.md)
+- [Zentrale Dokumentation](CampusConnect/docs/README.md)
+- [Projekt- und Setup-Dokumentation](CampusConnect/docs/project-overview.md)
 - [Arbeitsanweisungen für KI-Agenten](AGENTS.md)
-- [Produktbeschreibung](projektbeschreibung.md)
-- [API-Dokumentation](CampusConnect/docs/api.md)
-- [Architektur](CampusConnect/docs/architecture.md)
-- [Tests](CampusConnect/docs/testing.md)
+- [Produktbeschreibung](CampusConnect/docs/product/projektbeschreibung.md)
+- [MVP-PRD](prd-mvp.md)
 
 ## Dokumentstatus
 
-- `CampusConnect/` und die dortigen technischen Dokumente beschreiben die aktuelle Implementierung.
-- `projektbeschreibung.md` und `prd-mvp.md` beschreiben Produktumfang und Zielbild.
-- Konzeptdokumente wie `onboarding.md` und `gruppenfunktion_konzept_campusconnect.md` sind Planungsunterlagen. Sie sind nicht automatisch als implementierte Funktionen zu verstehen.
+- `CampusConnect/docs/` ist der zentrale Dokumentationsordner.
+- `prd-mvp.md` bleibt als geschütztes Anforderungsdokument unverändert im Repository-Root.
+- Das Root-`README.md`, `AGENTS.md`, GitHub-/Agent-Tooling-Dateien und die PRD bleiben bewusst außerhalb von `docs`.
+- Konzeptdokumente unter `CampusConnect/docs/concepts/` sind Planungsunterlagen. Sie sind nicht automatisch als implementierte Funktionen zu verstehen.
 - Bei Widersprüchen sind Quellcode und Konfiguration maßgeblich. Technische Dokumente sollen im selben Change nachgezogen werden.

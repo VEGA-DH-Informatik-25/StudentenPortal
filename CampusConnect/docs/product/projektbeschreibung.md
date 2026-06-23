@@ -1,6 +1,6 @@
 # CampusConnect – Projektbeschreibung
 
-> **Dokumenttyp:** Produktumfang und Projektkontext. Technische Detailangaben werden bei Abweichungen durch `AGENTS.md`, `CampusConnect/README.md`, die Dokumente unter `CampusConnect/docs/` und den Live-Code ersetzt.
+> **Dokumenttyp:** Produktumfang und Projektkontext. Technische Detailangaben werden bei Abweichungen durch [`../../../AGENTS.md`](../../../AGENTS.md), [`../README.md`](../README.md), die Dokumente unter [`../`](../) und den Live-Code ersetzt.
 
 ## Projektidee
 

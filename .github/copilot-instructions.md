@@ -5,12 +5,12 @@ Read the repository-root [`AGENTS.md`](../AGENTS.md) before making changes. It i
 ## Repository Entry Points
 
 - Main application: `CampusConnect/`
-- Product scope: `projektbeschreibung.md`
-- Setup and project overview: `CampusConnect/README.md`
+- Product scope: `CampusConnect/docs/product/projektbeschreibung.md`
+- Setup and project overview: `CampusConnect/docs/project-overview.md`
 - Architecture and authentication: `CampusConnect/docs/architecture.md`
 - Implemented API behavior: `CampusConnect/docs/api.md`
 - Testing conventions: `CampusConnect/docs/testing.md`
-- Contribution workflow: `CampusConnect/CONTRIBUTING.md`
+- Contribution workflow: `CampusConnect/docs/contributing.md`
 
 When documentation conflicts with code or configuration, use the live implementation for code changes and update the affected documentation in the same change.
 

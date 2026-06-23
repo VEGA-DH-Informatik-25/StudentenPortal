@@ -1,6 +1,6 @@
 # Konzept: Gruppenfunktion in CampusConnect
 
-> **Status: Fachliches Konzept.** Teile davon sind implementiert, andere können vom aktuellen Verhalten abweichen. Für bestehende Gruppenrollen, Berechtigungen und Endpunkte sind `CampusConnect/docs/api.md` und der Live-Code maßgeblich.
+> **Status: Fachliches Konzept.** Teile davon sind implementiert, andere können vom aktuellen Verhalten abweichen. Für bestehende Gruppenrollen, Berechtigungen und Endpunkte sind [`../api.md`](../api.md) und der Live-Code maßgeblich.
 
 ## 1. Ziel der Gruppenfunktion
 

@@ -13,7 +13,7 @@
   - `noah.wwi25a@dhbw-loerrach.de` / `CampusDemo2026!` / Student
   - `mia.wdb25a@dhbw-loerrach.de` / `CampusDemo2026!` / Student
 - Getestete Rollen: Student, Lecturer, Admin
-- Nicht getestet: Verwaltung/Management, weil in `CampusConnect/docs/demo-data.md` kein Verwaltungs-Demo-Account dokumentiert ist.
+- Nicht getestet: Verwaltung/Management, weil in `demo-data.md` kein Verwaltungs-Demo-Account dokumentiert ist.
 - Browser: Codex In-App-Browser sollte verwendet werden, konnte in dieser Sitzung aber wegen eines lokalen Sandbox-Startfehlers nicht initialisiert werden. Die UI wurde daher anhand der laufenden lokalen App, der Angular-Routen/Templates/Services und echter API-Requests gegen Backend/Frontend geprüft. Browser-Konsole und visuelle Klickprüfung konnten nicht zuverlässig getestet werden.
 - Datenzustand: Die lokale SQLite-Datenbank war nicht komplett frisch; es waren neben Seed-Daten auch lokale Gruppen vorhanden. Alle während dieses Tests angelegten `QA...`-Gruppen wurden am Ende wieder gelöscht.
 
@@ -89,7 +89,7 @@ Aus Nutzersicht wirkt die Funktion für eine Demo geeignet. Für echte Nutzung f
 ### Problem 2: Verwaltung/Management nicht testbar
 
 - Beschreibung: In `demo-data.md` ist kein Verwaltungs- oder Management-Account dokumentiert.
-- Schritte zum Reproduzieren: Demo-Accounts in `CampusConnect/docs/demo-data.md` prüfen.
+- Schritte zum Reproduzieren: Demo-Accounts in `demo-data.md` prüfen.
 - Erwartetes Verhalten: Für die Rolle Verwaltung existiert ein Demo-Login.
 - Tatsächliches Verhalten: Nur Admin, Lecturer und Student sind dokumentiert.
 - Rolle/Account: Verwaltung/Management.

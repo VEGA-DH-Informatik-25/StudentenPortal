@@ -1,6 +1,6 @@
 # Onboarding-Konzept für CampusConnect
 
-> **Status:** Produktkonzept / Zielbild. Der aktuelle Code besitzt noch keinen vollständigen Guided-Tour-Flow und kein persistiertes Feld `onboarding_completed`. Dieses Dokument beschreibt das gewünschte Verhalten für eine spätere Umsetzung, nicht den aktuellen API- oder Datenbankstand.
+> **Status:** Produktkonzept und Umsetzungsleitlinie. Initialpasswortwechsel, Onboarding-Abschlussfelder und die grundlegende Onboarding-Route sind inzwischen implementiert. Die Guided Tour und Gruppen-Vorschläge bleiben als Zielbild zu verstehen, sofern der Live-Code sie nicht ausdrücklich abdeckt.
 
 ## Ziel des Onboardings
 
@@ -85,7 +85,7 @@ onboarding_completed: boolean
 onboarding_completed_at: datetime
 ```
 
-`must_change_password` ist sicherheitsrelevant und verpflichtend. Guided Tour und Gruppen-Vorschläge bleiben optional. Ein zukünftiges persistiertes Onboarding-Design benötigt ein abgestimmtes Datenmodell, API-Verträge, eine EF-Migration, Tests sowie Aktualisierungen an `api.md` und `architecture.md`.
+`must_change_password` ist sicherheitsrelevant und verpflichtend. Guided Tour und Gruppen-Vorschläge bleiben optional. Änderungen am persistierten Onboarding-Design benötigen abgestimmte Datenmodelle, API-Verträge, EF-Migrationen, Tests sowie Aktualisierungen an `api.md` und `architecture.md`.
 
 Nicht erreichbare externe Datenquellen dürfen das Onboarding nie blockieren. Mensa, Stundenplan, News und Gruppen-Vorschläge werden bei Fehlern mit einer freundlichen Meldung übersprungen und später erneut versucht.
 

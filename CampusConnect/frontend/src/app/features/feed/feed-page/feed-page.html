@@ -57,6 +57,7 @@
               name="feed-group"
               [ngModel]="_selectedGroup()?.id ?? ''"
               (ngModelChange)="updateSelectedGroup($event)"
+              title="{{ 'feed.groupPickerLabel' | translate }}"
               [disabled]="_groupsLoading() || _postableGroups().length === 0">
               @for (group of _postableGroups(); track group.id) {
                 <option [ngValue]="group.id">{{ groupName(group) }}</option>
@@ -74,7 +75,7 @@
 
           @if (_selectedGroup()?.settings?.allowComments) {
             <label class="composer__comment-setting">
-              <input type="checkbox" [ngModel]="_allowComments()" (ngModelChange)="updateAllowComments($event)" name="feed-allow-comments">
+              <input type="checkbox" [ngModel]="_allowComments()" (ngModelChange)="updateAllowComments($event)" name="feed-allow-comments" title="{{ 'feed.allowCommentsForPost' | translate }}">
               <span>{{ 'feed.allowCommentsForPost' | translate }}</span>
             </label>
           }
@@ -84,7 +85,8 @@
             id="feed-content"
             [value]="_newContent()"
             (input)="updateContent($any($event.target).value)"
-            [placeholder]="'feed.placeholder' | translate"
+            placeholder="{{ 'feed.placeholder' | translate }}"
+            title="{{ 'feed.composeLabel' | translate }}"
             maxlength="600"
             rows="4">
           </textarea>
@@ -230,7 +232,8 @@
                         [id]="'comment-' + post.id"
                         rows="2"
                         maxlength="360"
-                        [placeholder]="'feed.commentPlaceholder' | translate"
+                        placeholder="{{ 'feed.commentPlaceholder' | translate }}"
+                        title="{{ 'feed.comment' | translate }}"
                         [value]="commentDraft(post.id)"
                         (input)="updateCommentDraft(post.id, $any($event.target).value)"></textarea>
                       <button type="submit" [disabled]="!commentDraft(post.id).trim() || isCommenting(post.id)">
