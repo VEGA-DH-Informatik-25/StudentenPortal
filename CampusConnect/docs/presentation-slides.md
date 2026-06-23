@@ -163,37 +163,6 @@ Konkrete Vorteile für die DHBW Lörrach:
 
 ---
 
-## FOLIE 6: Warum wir geeignet sind – Team & Qualifikation
-**Dauer:** 1 Minute 15 Sekunden  
-**Redner:** Person 3
-
-### Inhalt – Stichpunkte
-```
-Warum CampusConnect in den richtigen Händen ist:
-
-👥 Unser Team – 4 erfahrene Informatiker
-   • 3. Semester – bereits umfangreiche Projekte umgesetzt
-   • Verschiedene Spezialisierungen (Frontend, Backend, QA/DevOps)
-   • Starke Teamkommunikation und gemeinsame Grundsätze
-
-🔧 Technische Qualifikation
-   • Frontend: Angular 21 (modern, skalierbar, responsive)
-   • Backend: ASP.NET Core (enterprise-grade, sicher)
-   • Datenbank: SQLite (einfach, zuverlässig, wartbar)
-   • Authentifizierung: JWT + HttpOnly-Cookies (sichere Best Practices)
-
-📋 Professionelle Workflows
-   • Code Reviews, Tests, CI/CD
-   • Klar definierte Rollen und Verantwortungen
-
-⏰ Realistische Umsetzung
-   • MVP-Fokus: Wir bauen, was notwendig ist, nicht mehr
-```
-
-### Sprechtext
-"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch [...]
-
----
 
 ## FOLIE 7: Technisches Überblick – Warum das funktioniert
 **Dauer:** 2 Minuten 30 Sekunden  
@@ -257,6 +226,37 @@ Mögliche Herausforderungen – und unsere Strategie:
 
 ### Sprechtext
 "Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein re[...]
+
+---
+## FOLIE 6: Warum wir geeignet sind – Team & Qualifikation
+**Dauer:** 1 Minute 15 Sekunden  
+**Redner:** Person 3
+
+### Inhalt – Stichpunkte
+```
+Warum CampusConnect in den richtigen Händen ist:
+
+👥 Unser Team – 4 erfahrene Informatiker
+   • 3. Semester – bereits umfangreiche Projekte umgesetzt
+   • Verschiedene Spezialisierungen (Frontend, Backend, QA/DevOps)
+   • Starke Teamkommunikation und gemeinsame Grundsätze
+
+🔧 Technische Qualifikation
+   • Frontend: Angular 21 (modern, skalierbar, responsive)
+   • Backend: ASP.NET Core (enterprise-grade, sicher)
+   • Datenbank: SQLite (einfach, zuverlässig, wartbar)
+   • Authentifizierung: JWT + HttpOnly-Cookies (sichere Best Practices)
+
+📋 Professionelle Workflows
+   • Code Reviews, Tests, CI/CD
+   • Klar definierte Rollen und Verantwortungen
+
+⏰ Realistische Umsetzung
+   • MVP-Fokus: Wir bauen, was notwendig ist, nicht mehr
+```
+
+### Sprechtext
+"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch [...]
 
 ---
 
