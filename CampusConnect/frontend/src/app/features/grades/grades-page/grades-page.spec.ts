@@ -137,7 +137,7 @@ describe('GradesPage', () => {
     component['addGrade']();
 
     expect(gradesService.addGrade).not.toHaveBeenCalled();
-    expect(component['_error']()).toBe('All modules from your course plan have already been recorded.');
+    expect(component['_error']()).toBe('Alle Module aus deinem Kursplan sind bereits erfasst.');
   });
 });
 

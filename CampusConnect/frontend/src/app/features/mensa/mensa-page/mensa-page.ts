@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal, OnInit } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Mensa } from '../../../core/services/mensa';
@@ -37,7 +36,7 @@ export class MensaPage implements OnInit {
       },
       error: error => {
         this._menu.set([]);
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'mensa.loadError'));
         this._isLoading.set(false);
       },
     });
@@ -66,15 +65,6 @@ export class MensaPage implements OnInit {
 
   protected dishNameLines(dish: MensaDish): string[] {
     return dish.nameLines?.length ? dish.nameLines : [dish.name];
-  }
-
-  private _readError(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? this._i18n.translate('mensa.loadError');
-    }
-
-    return this._i18n.translate('mensa.loadError');
   }
 }
 

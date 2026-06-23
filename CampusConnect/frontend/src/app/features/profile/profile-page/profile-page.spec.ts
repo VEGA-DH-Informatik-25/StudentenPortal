@@ -56,6 +56,6 @@ describe('ProfilePage', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('alice@dhbw-loerrach.de');
     expect(text).toContain('TIF25A');
-    expect(text).toContain('Profile note');
+    expect(text).toContain('Profilnotiz');
   });
 });

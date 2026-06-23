@@ -145,7 +145,7 @@ select {
 }
 
 .field-error {
-  color: #bf1d1d;
+  color: var(--dhbw-danger-text);
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -154,7 +154,7 @@ button {
   background: var(--dhbw-red);
   border: 0;
   border-radius: 8px;
-  color: var(--dhbw-surface, #ffffff);
+  color: var(--dhbw-on-red);
   cursor: pointer;
   font: inherit;
   font-weight: 800;
@@ -195,7 +195,7 @@ button:hover {
 }
 
 .stats strong {
-  color: var(--dhbw-text, #10213f);
+  color: var(--dhbw-ink);
   font-size: 2rem;
 }
 
@@ -219,7 +219,7 @@ button:hover {
 }
 
 .empty-state strong {
-  color: var(--dhbw-text, #10213f);
+  color: var(--dhbw-ink);
 }
 
 .table-wrapper {
@@ -246,9 +246,9 @@ th {
 }
 
 .grade-badge {
-  background: #eaf7ef;
+  background: var(--dhbw-success-bg);
   border-radius: 999px;
-  color: #16703a;
+  color: var(--dhbw-success-text);
   display: inline-block;
   font-weight: 800;
   min-width: 3.2rem;
@@ -257,14 +257,14 @@ th {
 }
 
 .grade-badge.failed {
-  background: #fff1f0;
-  color: #bf1d1d;
+  background: var(--dhbw-danger-bg);
+  color: var(--dhbw-danger-text);
 }
 
 .ghost-button {
   background: transparent;
   border: 1px solid var(--dhbw-border, #cdd7e5);
-  color: var(--dhbw-text, #38516f);
+  color: var(--dhbw-ink);
   padding: 0.55rem 0.75rem;
 }
 
@@ -293,7 +293,7 @@ th {
 }
 
 .module-card strong {
-  color: var(--dhbw-text, #10213f);
+  color: var(--dhbw-ink);
   font-size: 2rem;
 }
 
@@ -313,7 +313,7 @@ th {
 }
 
 .plan-module.completed {
-  border-color: #b7dfc5;
+  border-color: var(--dhbw-success-border);
 }
 
 .plan-module div {
@@ -331,9 +331,9 @@ th {
 }
 
 .plan-status {
-  background: #eaf7ef;
+  background: var(--dhbw-success-bg);
   border-radius: 999px;
-  color: #16703a !important;
+  color: var(--dhbw-success-text) !important;
   display: inline-block;
   font-size: 0.85rem;
   font-weight: 800;

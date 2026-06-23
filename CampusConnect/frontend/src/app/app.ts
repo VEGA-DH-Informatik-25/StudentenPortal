@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { I18n } from './core/i18n/i18n';
+import { Theme } from './core/services/theme';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +11,8 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.scss'
 })
 export class App {
+  constructor() {
+    inject(I18n);
+    inject(Theme);
+  }
 }

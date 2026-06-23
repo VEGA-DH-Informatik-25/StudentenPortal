@@ -44,14 +44,14 @@
 
   &__message--error {
     background: var(--dhbw-red-soft);
-    border-color: #f7b5be;
+    border-color: var(--dhbw-danger-border);
     color: var(--dhbw-red-dark);
   }
 
   &__message--success {
-    background: #d1fae5;
-    border-color: #8be3b5;
-    color: #065f46;
+    background: var(--dhbw-success-bg);
+    border-color: var(--dhbw-success-border);
+    color: var(--dhbw-success-text);
   }
 }
 
@@ -148,7 +148,7 @@
     background: var(--dhbw-red);
     border: none;
     border-radius: 8px;
-    color: var(--dhbw-surface);
+    color: var(--dhbw-on-red);
     cursor: pointer;
     font-weight: 700;
     padding: 0.65rem 1rem;

@@ -52,18 +52,32 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     [Fact]
+    public async Task SelfRegistrationEndpoint_IsNotAvailable()
+    {
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            email = $"self-register-{Guid.NewGuid():N}@dhbw-loerrach.de",
+            password = "Start123!",
+            displayName = "Self Register",
+            course = "TIF25A"
+        });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task AuthCookie_AllowsReloadedBrowserSessionUntilLogout()
     {
         var client = factory.CreateClient();
-        var registerResponse = await client.PostAsJsonAsync("/api/auth/register", new
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
         {
-            Email = $"cookie-session-{Guid.NewGuid():N}@dhbw-loerrach.de",
-            Password = "secret123",
-            DisplayName = "Cookie Session",
-            Course = "TIF25A"
+            email = TestApiFactory.AdminEmail,
+            password = TestApiFactory.AdminPassword
         });
 
-        Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
 
         var profileResponse = await client.GetAsync("/api/auth/me");
 
@@ -79,8 +93,10 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     [Fact]
     public async Task AdminEndpoint_WithStudentToken_ReturnsForbidden()
     {
+        var adminClient = await factory.CreateAdminClientAsync();
+        var student = await adminClient.CreateUserAsync("student-admin-forbidden");
         var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(Guid.NewGuid()));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(student.Id));
 
         var response = await client.GetAsync("/api/admin/users");
 
@@ -99,10 +115,36 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     [Fact]
-    public async Task GradesEndpoint_WithStudentToken_ReturnsCurrentUserSummary()
+    public async Task ProtectedEndpoint_WithTokenForUnknownUser_ReturnsUnauthorized()
     {
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(Guid.NewGuid()));
+
+        var response = await client.GetAsync("/api/grades");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProtectedEndpoint_WithTokenForInactiveUser_ReturnsUnauthorized()
+    {
+        var adminClient = await factory.CreateAdminClientAsync();
+        var inactiveUser = await adminClient.CreateUserAsync("inactive-token", isActive: false);
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(inactiveUser.Id));
+
+        var response = await client.GetAsync("/api/grades");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GradesEndpoint_WithStudentToken_ReturnsCurrentUserSummary()
+    {
+        var adminClient = await factory.CreateAdminClientAsync();
+        var student = await adminClient.CreateUserAsync("grades-student");
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(student.Id));
 
         var response = await client.GetAsync("/api/grades");
 

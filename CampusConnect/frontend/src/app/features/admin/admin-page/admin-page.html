@@ -194,7 +194,7 @@
 
           <label class="admin-field">
             <span>{{ 'common.studyProgram' | translate }}</span>
-            <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" placeholder="Computer Science" required />
+            <input type="text" name="studyProgram" [(ngModel)]="_courseForm.studyProgram" maxlength="120" [placeholder]="'admin.studyProgramPlaceholder' | translate" required />
           </label>
 
           <button type="submit" class="admin-toolbar__primary" [disabled]="_isCreatingCourse()">

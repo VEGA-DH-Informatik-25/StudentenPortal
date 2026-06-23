@@ -1,5 +1,4 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
@@ -156,7 +155,7 @@ export class GradesPage implements OnInit {
         this._loadPlan();
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('grades.saveError')));
+        this._error.set(this._i18n.readError(error, 'grades.saveError'));
         this._isSubmitting.set(false);
       },
     });
@@ -168,7 +167,7 @@ export class GradesPage implements OnInit {
         this._summary.set(this.createSummary(this.grades().filter(entry => entry.id !== id)));
         this._loadPlan();
       },
-      error: error => this._error.set(this._readError(error, this._i18n.translate('grades.deleteError'))),
+      error: error => this._error.set(this._i18n.readError(error, 'grades.deleteError')),
     });
   }
 
@@ -222,7 +221,7 @@ export class GradesPage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('grades.loadError')));
+        this._error.set(this._i18n.readError(error, 'grades.loadError'));
         this._isLoading.set(false);
       },
     });
@@ -242,7 +241,7 @@ export class GradesPage implements OnInit {
       },
       error: error => {
         this._plan.set(null);
-        this._planNotice.set(this._readError(error, this._i18n.translate('grades.planLoadError')));
+        this._planNotice.set(this._i18n.readError(error, 'grades.planLoadError'));
         this.selectedModuleCode = '';
         this._isPlanLoading.set(false);
       },
@@ -291,12 +290,4 @@ export class GradesPage implements OnInit {
     return this.openPlanModules()[0]?.code ?? '';
   }
 
-  private _readError(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? fallback;
-    }
-
-    return fallback;
-  }
 }

@@ -6,13 +6,6 @@ export interface AuthResponse {
   profile?: UserProfile;
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  displayName: string;
-  course: string;
-}
-
 export interface LoginRequest {
   email: string;
   password: string;

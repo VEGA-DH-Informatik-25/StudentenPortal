@@ -53,8 +53,8 @@
   }
 
   &--success {
-    background: #ecfdf3;
-    color: #047857;
+    background: var(--dhbw-success-bg);
+    color: var(--dhbw-success-text);
   }
 }
 
@@ -195,7 +195,7 @@
 .group-directory__create-toggle {
   background: var(--dhbw-red);
   border: 0;
-  color: var(--dhbw-surface);
+  color: var(--dhbw-on-red);
   min-height: 2.55rem;
   padding: 0.55rem 0.9rem;
 
@@ -259,7 +259,7 @@
   &__icon {
     align-items: center;
     border-radius: 50%;
-    color: var(--dhbw-surface);
+    color: var(--dhbw-on-red);
     display: inline-flex;
     font-size: 0.78rem;
     font-weight: 900;
@@ -336,7 +336,7 @@
   &__join {
     background: var(--dhbw-red);
     border: 0;
-    color: var(--dhbw-surface);
+    color: var(--dhbw-on-red);
     font-size: 0.76rem;
     min-height: 2.15rem;
     padding: 0.4rem 0.6rem;

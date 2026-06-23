@@ -28,14 +28,47 @@
       <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.admin' | translate }}</a></li>
     </ul>
     <div class="navbar__user">
-      <label class="navbar__language">
-        <span>{{ 'language.label' | translate }}</span>
-        <select [value]="_i18n.language()" (change)="setLanguage($any($event.target).value)" [attr.aria-label]="'language.label' | translate">
-          @for (language of _i18n.languages; track language.code) {
-            <option [value]="language.code">{{ language.shortLabel }}</option>
-          }
-        </select>
-      </label>
+      <details #settingsMenu class="navbar__settings-menu">
+        <summary class="navbar__settings-trigger" [attr.aria-label]="'settings.open' | translate" [attr.title]="'settings.open' | translate">
+          <span aria-hidden="true">⚙</span>
+        </summary>
+
+        <div class="navbar__settings-panel">
+          <strong class="navbar__settings-title">{{ 'settings.title' | translate }}</strong>
+
+          <section class="navbar__settings-section">
+            <h2>{{ 'settings.language' | translate }}</h2>
+            <div class="navbar__choice-group" [attr.aria-label]="'settings.language' | translate">
+              @for (language of _i18n.languages; track language.code) {
+                <button
+                  type="button"
+                  class="navbar__choice"
+                  [class.navbar__choice--active]="_i18n.language() === language.code"
+                  [attr.aria-pressed]="_i18n.language() === language.code"
+                  (click)="setLanguage(language.code)">
+                  {{ language.label }}
+                </button>
+              }
+            </div>
+          </section>
+
+          <section class="navbar__settings-section">
+            <h2>{{ 'settings.appearance' | translate }}</h2>
+            <div class="navbar__choice-group" [attr.aria-label]="'settings.appearance' | translate">
+              @for (preference of _themePreferences; track preference) {
+                <button
+                  type="button"
+                  class="navbar__choice"
+                  [class.navbar__choice--active]="_theme.preference() === preference"
+                  [attr.aria-pressed]="_theme.preference() === preference"
+                  (click)="setThemePreference(preference)">
+                  {{ themePreferenceLabel(preference) }}
+                </button>
+              }
+            </div>
+          </section>
+        </div>
+      </details>
       <details #profileMenu class="navbar__profile-menu">
         <summary class="navbar__profile-trigger" [attr.aria-label]="'nav.profileMenu' | translate">
           <span class="navbar__avatar" aria-hidden="true">{{ _profileInitials() }}</span>

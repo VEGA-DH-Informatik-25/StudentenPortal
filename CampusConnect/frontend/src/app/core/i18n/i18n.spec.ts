@@ -1,0 +1,95 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { I18n } from './i18n';
+
+describe('I18n', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    localStorage.clear();
+    document.documentElement.lang = '';
+  });
+
+  it('defaults to German when no language is stored', () => {
+    const service = TestBed.inject(I18n);
+
+    expect(service.language()).toBe('de');
+    expect(service.locale()).toBe('de-DE');
+    expect(service.translate('login.login')).toBe('Anmelden');
+    expect(document.documentElement.lang).toBe('de');
+  });
+
+  it('loads a stored language preference', () => {
+    localStorage.setItem('campusconnect.language', 'en');
+
+    const service = TestBed.inject(I18n);
+
+    expect(service.language()).toBe('en');
+    expect(service.locale()).toBe('en-US');
+    expect(service.translate('login.login')).toBe('Log in');
+    expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('normalizes a stored language preference', () => {
+    localStorage.setItem('campusconnect.language', ' DE ');
+
+    const service = TestBed.inject(I18n);
+
+    expect(service.language()).toBe('de');
+    expect(localStorage.getItem('campusconnect.language')).toBe('de');
+    expect(document.documentElement.lang).toBe('de');
+  });
+
+  it('ignores invalid language values', () => {
+    const service = TestBed.inject(I18n);
+
+    service.setLanguage('fr');
+
+    expect(service.language()).toBe('de');
+    expect(localStorage.getItem('campusconnect.language')).toBeNull();
+  });
+
+  it('removes invalid stored language values', () => {
+    localStorage.setItem('campusconnect.language', 'fr');
+
+    const service = TestBed.inject(I18n);
+
+    expect(service.language()).toBe('de');
+    expect(localStorage.getItem('campusconnect.language')).toBeNull();
+  });
+
+  it('updates the document language when language changes', () => {
+    const service = TestBed.inject(I18n);
+
+    service.setLanguage('EN');
+
+    expect(service.language()).toBe('en');
+    expect(localStorage.getItem('campusconnect.language')).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('interpolates translation parameters', () => {
+    const service = TestBed.inject(I18n);
+
+    expect(service.translate('admin.courseCreated', { code: 'TIF25A' })).toBe('Kurs TIF25A wurde angelegt.');
+  });
+
+  it('localizes known backend errors', () => {
+    const service = TestBed.inject(I18n);
+    const error = new HttpErrorResponse({
+      error: { error: 'Invalid email address or password.' },
+      status: 401,
+    });
+
+    expect(service.readError(error, 'login.failed')).toBe('Ungültige E-Mail-Adresse oder ungültiges Passwort.');
+  });
+
+  it('uses the localized fallback for unknown backend errors', () => {
+    const service = TestBed.inject(I18n);
+    const error = new HttpErrorResponse({
+      error: { error: 'Unexpected backend detail.' },
+      status: 400,
+    });
+
+    expect(service.readError(error, 'login.failed')).toBe('Anmeldung fehlgeschlagen.');
+  });
+});

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -65,7 +64,7 @@ export class ProfilePage implements OnInit {
         this._isSaving.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('profile.saveError')));
+        this._error.set(this._i18n.readError(error, 'profile.saveError'));
         this._isSaving.set(false);
       },
     });
@@ -95,7 +94,7 @@ export class ProfilePage implements OnInit {
         this._coursesLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('admin.courseLoadError')));
+        this._error.set(this._i18n.readError(error, 'admin.courseLoadError'));
         this._coursesLoading.set(false);
       },
     });
@@ -111,7 +110,7 @@ export class ProfilePage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('profile.loadError')));
+        this._error.set(this._i18n.readError(error, 'profile.loadError'));
         this._isLoading.set(false);
       },
     });
@@ -124,14 +123,5 @@ export class ProfilePage implements OnInit {
     this._form.phoneNumber = profile.phoneNumber;
     this._form.location = profile.location;
     this._form.profileNote = profile.profileNote;
-  }
-
-  private _readError(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? fallback;
-    }
-
-    return fallback;
   }
 }

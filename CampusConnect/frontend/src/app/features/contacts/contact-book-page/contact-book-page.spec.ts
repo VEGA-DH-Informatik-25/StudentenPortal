@@ -28,8 +28,8 @@ describe('ContactBookPage', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Search contacts');
-    expect(text).toContain('My favorites');
+    expect(text).toContain('Kontakte suchen');
+    expect(text).toContain('Meine Favoriten');
     expect(fixture.nativeElement.querySelector('.contact-list')).toBeNull();
   });
 

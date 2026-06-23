@@ -72,7 +72,7 @@ export class OnboardingPage implements OnInit {
     this._auth.changeInitialPassword({ currentPassword: this._passwordForm.currentPassword, newPassword: this._passwordForm.newPassword }).subscribe({
       next: () => this.loadCampusData(),
       error: error => {
-        this._error.set(error.error?.error ?? this._i18n.translate('onboarding.passwordError'));
+        this._error.set(this._i18n.readError(error, 'onboarding.passwordError'));
         this._isSaving.set(false);
       },
     });
@@ -102,7 +102,7 @@ export class OnboardingPage implements OnInit {
     this._auth.completeOnboarding().subscribe({
       next: () => this._router.navigate(['/feed']),
       error: error => {
-        this._error.set(error.error?.error ?? this._i18n.translate('onboarding.finishError'));
+        this._error.set(this._i18n.readError(error, 'onboarding.finishError'));
         this._isSaving.set(false);
       },
     });

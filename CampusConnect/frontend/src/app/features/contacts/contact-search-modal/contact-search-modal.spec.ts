@@ -28,7 +28,7 @@ describe('ContactSearchModal', () => {
   it('should show a minimum length hint before searching', () => {
     const text = fixture.nativeElement.textContent as string;
 
-    expect(text).toContain('Enter at least 3 characters');
+    expect(text).toContain('Gib mindestens 3 Zeichen ein');
     expect(fixture.nativeElement.querySelector('.contact-result-card')).toBeNull();
   });
 

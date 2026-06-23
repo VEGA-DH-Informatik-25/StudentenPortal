@@ -9,62 +9,45 @@ namespace CampusConnect.Application.Tests.Features.Auth;
 public class AuthServiceTests
 {
     [Fact]
-    public async Task RegisterAsync_ReturnsProfileFromRegistrationData()
-    {
-        var users = new FakeUserRepository();
-        var groups = new FakeGroupRepository();
-        var service = CreateService(users, groups: groups);
-
-        var result = await service.RegisterAsync(new RegisterCommand(
-            "alice@dhbw-loerrach.de",
-            "secret",
-            "Alice",
-            "TIF25A"));
-
-        Assert.True(result.IsSuccess);
-        var auth = result.Value!;
-        Assert.Equal("test-token", auth.Token);
-        Assert.Equal("alice@dhbw-loerrach.de", auth.Profile.Email);
-        Assert.Equal("Alice", auth.Profile.DisplayName);
-        Assert.Equal("Computer Science", auth.Profile.StudyProgram);
-        Assert.Equal("TIF25A", auth.Profile.Course);
-
-        var storedUser = await users.FindByEmailAsync("alice@dhbw-loerrach.de");
-        Assert.NotNull(storedUser);
-        Assert.Equal(auth.Profile.Id, storedUser.Id);
-        Assert.Contains(auth.Profile.Id, groups.AssignedUserIdsByCourse["TIF25A"]);
-    }
-
-    [Fact]
-    public async Task RegisterAsync_RejectsUnknownCourse()
-    {
-        var service = CreateService(new FakeUserRepository());
-
-        var result = await service.RegisterAsync(new RegisterCommand(
-            "alice@dhbw-loerrach.de",
-            "secret",
-            "Alice",
-            "UNKNOWN"));
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Choose a valid course.", result.Error);
-    }
-
-    [Fact]
     public async Task LoginAsync_AcceptsEmailWithDifferentCaseAndWhitespace()
     {
         var users = new FakeUserRepository();
         var service = CreateService(users);
-        await service.RegisterAsync(new RegisterCommand(
-            "alice@dhbw-loerrach.de",
-            "secret",
-            "Alice",
-            "TIF25A"));
+        await users.AddAsync(new User
+        {
+            Email = "alice@dhbw-loerrach.de",
+            PasswordHash = CampusConnect.Application.Common.Security.PasswordHasher.Hash("secret"),
+            DisplayName = "Alice",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            IsActive = true
+        });
 
         var result = await service.LoginAsync(new LoginCommand("  ALICE@DHBW-LOERRACH.DE  ", "secret"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("alice@dhbw-loerrach.de", result.Value!.Profile.Email);
+    }
+
+    [Fact]
+    public async Task LoginAsync_RejectsInactiveUser()
+    {
+        var users = new FakeUserRepository();
+        var service = CreateService(users);
+        await users.AddAsync(new User
+        {
+            Email = "inactive@dhbw-loerrach.de",
+            PasswordHash = CampusConnect.Application.Common.Security.PasswordHasher.Hash("secret"),
+            DisplayName = "Inactive User",
+            StudyProgram = "Computer Science",
+            Course = "TIF25A",
+            IsActive = false
+        });
+
+        var result = await service.LoginAsync(new LoginCommand("inactive@dhbw-loerrach.de", "secret"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Invalid email address or password.", result.Error);
     }
 
     [Fact]

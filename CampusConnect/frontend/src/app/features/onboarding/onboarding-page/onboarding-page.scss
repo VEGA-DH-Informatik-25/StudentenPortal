@@ -5,7 +5,7 @@
 .onboarding__card p { color: var(--dhbw-text-muted); margin: 0; }
 .onboarding__card label { display: grid; gap: .35rem; font-weight: 700; }
 .onboarding__card input { border: 1px solid var(--dhbw-border); border-radius: 8px; min-height: 2.5rem; padding: .55rem; }
-.onboarding__card button { background: var(--dhbw-red); border: 0; border-radius: 8px; color: white; cursor: pointer; font-weight: 800; min-height: 2.5rem; padding: .55rem .9rem; }
+.onboarding__card button { background: var(--dhbw-red); border: 0; border-radius: 8px; color: var(--dhbw-on-red); cursor: pointer; font-weight: 800; min-height: 2.5rem; padding: .55rem .9rem; }
 .onboarding__card button.secondary { background: var(--dhbw-surface-muted); color: var(--dhbw-ink); margin-right: .6rem; }
 .onboarding__card article { border-top: 1px solid var(--dhbw-border); display: grid; gap: .4rem; padding-top: 1rem; }
 .onboarding__error { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); padding: 1rem; }

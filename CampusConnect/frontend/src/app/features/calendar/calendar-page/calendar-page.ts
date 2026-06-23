@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,7 +34,7 @@ export class CalendarPage implements OnInit {
         this._exams.set(exams);
         this._error.set(null);
       },
-      error: error => this._error.set(this._readError(error, this._i18n.translate('calendar.loadError'))),
+      error: error => this._error.set(this._i18n.readError(error, 'calendar.loadError')),
     });
   }
 
@@ -70,7 +69,7 @@ export class CalendarPage implements OnInit {
         this._loadExams();
       },
       error: error => {
-        this._error.set(this._readError(error, this._i18n.translate('calendar.saveError')));
+        this._error.set(this._i18n.readError(error, 'calendar.saveError'));
         this._isSubmitting.set(false);
       },
     });
@@ -80,17 +79,8 @@ export class CalendarPage implements OnInit {
     this._error.set(null);
     this._calendarService.deleteExam(id).subscribe({
       next: () => this._exams.update(e => e.filter(x => x.id !== id)),
-      error: error => this._error.set(this._readError(error, this._i18n.translate('calendar.deleteError'))),
+      error: error => this._error.set(this._i18n.readError(error, 'calendar.deleteError')),
     });
-  }
-
-  private _readError(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? fallback;
-    }
-
-    return fallback;
   }
 }
 

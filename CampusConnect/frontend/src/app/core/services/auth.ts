@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { AuthResponse, ChangeInitialPasswordRequest, LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile } from '../models/auth.model';
+import { AuthResponse, ChangeInitialPasswordRequest, LoginRequest, UpdateProfileRequest, UserProfile } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
@@ -27,12 +27,6 @@ export class Auth {
 
   login(req: LoginRequest): Observable<AuthResponse> {
     return this._http.post<AuthResponse>('/api/auth/login', req).pipe(
-      tap(res => this._storeSession(res))
-    );
-  }
-
-  register(req: RegisterRequest): Observable<AuthResponse> {
-    return this._http.post<AuthResponse>('/api/auth/register', req).pipe(
       tap(res => this._storeSession(res))
     );
   }

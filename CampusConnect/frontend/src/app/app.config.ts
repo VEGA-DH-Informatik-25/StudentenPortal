@@ -15,7 +15,7 @@ registerLocaleData(localeEn);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    { provide: LOCALE_ID, useValue: 'en-US' },
+    { provide: LOCALE_ID, useValue: 'de-DE' },
     provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authTokenInterceptor, errorHandlerInterceptor])),

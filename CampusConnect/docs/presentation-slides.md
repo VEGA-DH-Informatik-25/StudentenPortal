@@ -116,7 +116,7 @@ Zentrale Funktionen von CampusConnect:
    • Vernetzung statt Zufall
 
 🔐 AUTHENTIFIZIERUNG
-   • Registrierung nur mit @student.dhbw-loerrach.de
+   • Konten werden durch Admins erstellt
    • Sichere, moderne JWT-basierte Auth
 ```
 

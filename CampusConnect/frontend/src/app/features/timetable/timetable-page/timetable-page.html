@@ -92,7 +92,7 @@
                   <div class="lecture-card__title-row">
                     <h4>{{ event.title }}</h4>
                     @if (event.isOnline) {
-                      <span class="lecture-card__chip">Online</span>
+                      <span class="lecture-card__chip">{{ 'common.online' | translate }}</span>
                     }
                   </div>
                   <div class="lecture-card__meta">
@@ -165,7 +165,7 @@
                       <span class="calendar-event__meta">{{ compactMeta(event) }}</span>
                     }
                     @if (event.isOnline) {
-                      <em class="calendar-event__chip">Online</em>
+                      <em class="calendar-event__chip">{{ 'common.online' | translate }}</em>
                     }
                   </article>
                 }

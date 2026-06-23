@@ -84,6 +84,14 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
+            },
+            OnValidatePrincipal = async context =>
+            {
+                if (await AuthenticatedUserValidator.IsActiveUserAsync(context.Principal, context.HttpContext.RequestServices, context.HttpContext.RequestAborted))
+                    return;
+
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(AuthSchemes.Browser);
             }
         };
     })
@@ -98,6 +106,14 @@ builder.Services.AddAuthentication(options =>
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                if (!await AuthenticatedUserValidator.IsActiveUserAsync(context.Principal, context.HttpContext.RequestServices, context.HttpContext.RequestAborted))
+                    context.Fail("The authenticated user is inactive or no longer exists.");
+            }
         };
     });
 

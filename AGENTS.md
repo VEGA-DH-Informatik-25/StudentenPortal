@@ -86,6 +86,7 @@ Frontend:
 - Zoneless change detection through `provideZonelessChangeDetection()`.
 - Functional guards and functional HTTP interceptors.
 - A custom English/German translation layer under `core/i18n/`.
+- A frontend theme service under `core/services/theme.ts` with light, dark, and system modes.
 - SCSS component styles.
 - npm 11.6.2 package manager metadata.
 - TypeScript 5.9, RxJS 7.8, Zone.js 0.15.
@@ -200,10 +201,12 @@ Git/database note:
 
 Current backend auth flow:
 
-- `POST /api/auth/register` and `POST /api/auth/login` return a JWT and also sign in an HttpOnly browser cookie.
+- User accounts are created only by admins through `POST /api/admin/users`; public self-registration is not available.
+- `POST /api/auth/login` returns a JWT and also signs in an HttpOnly browser cookie.
 - Browser sessions use a cookie scheme with a 15-minute sliding inactivity timeout.
 - API clients may use `Authorization: Bearer <token>`.
 - Browser requests can authenticate through the HttpOnly cookie.
+- JWTs and browser cookies are accepted for protected requests only when their user id still resolves to an active database user.
 - `GET /api/auth/me` refreshes browser session state and returns the current profile.
 - `POST /api/auth/logout` signs out the browser cookie.
 
@@ -218,10 +221,10 @@ Current password hashing:
 - New hashes use PBKDF2-SHA256 with per-password random salt and 210,000 iterations.
 - Legacy SHA-256 verification remains for existing older hashes.
 
-Registration domain rule:
+Account creation domain rule:
 
-- Current implementation accepts `@dhbw-loerrach.de` addresses.
-- Product docs mention stricter student email scope. Do not change this casually; update tests and docs if the rule changes.
+- Admin-created users must use `@dhbw-loerrach.de` addresses.
+- Product docs previously mentioned stricter student email scope. Do not change this casually; update tests and docs if the rule changes.
 
 Local secrets:
 
@@ -247,7 +250,6 @@ Implemented endpoints:
 
 | Method | Endpoint | Auth |
 |---|---|---|
-| POST | `/api/auth/register` | Public |
 | POST | `/api/auth/login` | Public |
 | POST | `/api/auth/logout` | Public |
 | GET | `/api/auth/me` | User |
@@ -257,6 +259,9 @@ Implemented endpoints:
 | GET | `/api/admin/courses` | Admin |
 | POST | `/api/admin/courses` | Admin |
 | GET | `/api/admin/users` | Admin |
+| POST | `/api/admin/users` | Admin |
+| PUT | `/api/admin/users/{id}` | Admin |
+| PATCH | `/api/admin/users/{id}/status` | Admin |
 | PATCH | `/api/admin/users/{id}/role` | Admin |
 | PATCH | `/api/admin/users/{id}/course` | Admin |
 | DELETE | `/api/admin/users/{id}` | Admin |
@@ -348,12 +353,21 @@ Frontend internationalization rules:
 - Import the standalone `TranslatePipe` in components that render translated template text and use `{{ 'translation.key' | translate }}`.
 - Use the injected `I18n` service for translated text or locale-sensitive formatting in TypeScript.
 - Add both English and German values for every new `TranslationKey`.
+- Use `I18n.readError(error, fallbackKey)` for HTTP/API errors shown in the UI. Do not display raw backend `error` strings directly in components.
 - The selected language is a non-sensitive UI preference stored under `campusconnect.language` in `localStorage`. This does not relax the prohibition on storing authentication tokens in browser storage.
-- The initial language follows the saved preference or browser language. `LOCALE_ID` remains `en-US`; runtime date and number formatting that follows the selected language uses `I18n.locale()`.
+- The initial language follows the saved preference or defaults to German. `LOCALE_ID` is `de-DE`; runtime date and number formatting that follows the selected language uses `I18n.locale()`.
+
+Frontend theme rules:
+
+- The settings gear in the navbar contains language and appearance controls.
+- Appearance is managed by `core/services/theme.ts` through the `Theme` service and supports `system`, `light`, and `dark`.
+- The selected appearance preference is a non-sensitive UI preference stored under `campusconnect.theme` in `localStorage`.
+- Without a saved explicit preference, the app uses `system` and follows `prefers-color-scheme`; the service writes the resolved value to `document.documentElement.dataset.theme` and `color-scheme`.
+- Use global theme tokens from `styles.scss` for visible colors. New components must work in both light and dark modes without hard-coded light surfaces.
 
 Frontend configuration facts:
 
-- `app.config.ts` registers German and English locale data, sets the static Angular `LOCALE_ID` to `en-US`, and enables zoneless change detection, router input binding, and auth/error interceptors.
+- `app.config.ts` registers German and English locale data, sets the static Angular `LOCALE_ID` to `de-DE`, and enables zoneless change detection, router input binding, and auth/error interceptors. `App` initializes `I18n` and `Theme` so document language and theme are applied before the shell is used.
 - `proxy.conf.json` proxies `/api` to `http://localhost:5135`.
 - Start the API before using API-backed frontend pages locally.
 

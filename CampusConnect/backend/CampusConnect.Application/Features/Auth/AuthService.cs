@@ -7,7 +7,6 @@ using CampusConnect.Domain.Interfaces;
 
 namespace CampusConnect.Application.Features.Auth;
 
-public record RegisterCommand(string Email, string Password, string DisplayName, string Course);
 public record LoginCommand(string Email, string Password);
 public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
 public record ChangeInitialPasswordCommand(string CurrentPassword, string NewPassword);
@@ -18,46 +17,20 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
 {
     public const string UserProfileNotFoundError = "User profile was not found.";
     private const string InvalidCourseError = "Choose a valid course.";
-
-    public async Task<Result<AuthResult>> RegisterAsync(RegisterCommand cmd)
-    {
-        var email = cmd.Email.Trim().ToLowerInvariant();
-        if (!email.EndsWith("@dhbw-loerrach.de", StringComparison.OrdinalIgnoreCase))
-            return Result<AuthResult>.Failure("Only @dhbw-loerrach.de email addresses are allowed.");
-
-        var validationError = ValidateDisplayName(cmd.DisplayName);
-        if (validationError is not null)
-            return Result<AuthResult>.Failure(validationError);
-
-        var course = await ResolveCourseAsync(cmd.Course, requireActive: true, requireStudentCourse: true);
-        if (course is null)
-            return Result<AuthResult>.Failure(InvalidCourseError);
-
-        if (await userRepo.FindByEmailAsync(email) is not null)
-            return Result<AuthResult>.Failure("This email address is already registered.");
-
-        var user = new User
-        {
-            Email = email,
-            PasswordHash = PasswordHasher.Hash(cmd.Password),
-            DisplayName = cmd.DisplayName.Trim(),
-            StudyProgram = course.StudyProgram,
-            Course = course.Code,
-            OnboardingCompleted = true
-        };
-
-        await userRepo.AddAsync(user);
-        await SyncCourseAssignmentsAsync(course.Code);
-        var token = jwtService.GenerateToken(user);
-        return Result<AuthResult>.Success(new AuthResult(token, ToProfileResult(user)));
-    }
+    private const string InvalidCredentialsError = "Invalid email address or password.";
 
     public async Task<Result<AuthResult>> LoginAsync(LoginCommand cmd)
     {
+        if (string.IsNullOrWhiteSpace(cmd.Email) || string.IsNullOrEmpty(cmd.Password))
+            return Result<AuthResult>.Failure(InvalidCredentialsError);
+
         var email = cmd.Email.Trim().ToLowerInvariant();
         var user = await userRepo.FindByEmailAsync(email);
         if (user is null || !PasswordHasher.Verify(cmd.Password, user.PasswordHash))
-            return Result<AuthResult>.Failure("Invalid email address or password.");
+            return Result<AuthResult>.Failure(InvalidCredentialsError);
+
+        if (!user.IsActive)
+            return Result<AuthResult>.Failure(InvalidCredentialsError);
 
         await SyncProfileMetadataFromCourseAsync(user);
         var token = jwtService.GenerateToken(user);

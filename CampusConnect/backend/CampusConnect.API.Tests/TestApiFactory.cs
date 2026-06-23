@@ -6,6 +6,9 @@ namespace CampusConnect.API.Tests;
 
 public sealed class TestApiFactory : WebApplicationFactory<Program>
 {
+    public const string AdminEmail = "test.admin@dhbw-loerrach.de";
+    public const string AdminPassword = "Admin123!";
+
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-{Guid.NewGuid():N}.db");
 
     public TestApiFactory()
@@ -24,8 +27,9 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
                 ["Jwt:Secret"] = TestJwt.Secret,
                 ["Jwt:Issuer"] = TestJwt.Issuer,
                 ["Jwt:Audience"] = TestJwt.Audience,
-                ["Admin:Email"] = string.Empty,
-                ["Admin:Password"] = string.Empty,
+                ["Admin:Email"] = AdminEmail,
+                ["Admin:Password"] = AdminPassword,
+                ["Admin:DisplayName"] = "Test Admin",
                 ["Admin:Course"] = "TIF25A",
                 ["Admin:StudyProgram"] = "Computer Science",
                 ["Mensa:ApiKey"] = "test-key",
@@ -56,8 +60,9 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Secret", TestJwt.Secret);
         Environment.SetEnvironmentVariable("Jwt__Issuer", TestJwt.Issuer);
         Environment.SetEnvironmentVariable("Jwt__Audience", TestJwt.Audience);
-        Environment.SetEnvironmentVariable("Admin__Email", string.Empty);
-        Environment.SetEnvironmentVariable("Admin__Password", string.Empty);
+        Environment.SetEnvironmentVariable("Admin__Email", AdminEmail);
+        Environment.SetEnvironmentVariable("Admin__Password", AdminPassword);
+        Environment.SetEnvironmentVariable("Admin__DisplayName", "Test Admin");
         Environment.SetEnvironmentVariable("Admin__Course", "TIF25A");
         Environment.SetEnvironmentVariable("Admin__StudyProgram", "Computer Science");
         Environment.SetEnvironmentVariable("Mensa__ApiKey", "test-key");
@@ -74,6 +79,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Audience", null);
         Environment.SetEnvironmentVariable("Admin__Email", null);
         Environment.SetEnvironmentVariable("Admin__Password", null);
+        Environment.SetEnvironmentVariable("Admin__DisplayName", null);
         Environment.SetEnvironmentVariable("Admin__Course", null);
         Environment.SetEnvironmentVariable("Admin__StudyProgram", null);
         Environment.SetEnvironmentVariable("Mensa__ApiKey", null);

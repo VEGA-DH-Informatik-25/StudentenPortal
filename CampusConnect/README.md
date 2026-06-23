@@ -57,7 +57,8 @@ Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenstän
 - **Lazy Loading**: Alle Feature-Bereiche werden über `loadComponent` erst bei Bedarf geladen.
 - **Functional Guards & Interceptors**: `CanActivateFn` und `HttpInterceptorFn`, registriert via `provideHttpClient(withInterceptors([...]))`.
 - **`withComponentInputBinding()`**: Route-Parameter direkt an Component-Inputs bindbar.
-- **Eigene Internationalisierung**: Englisch und Deutsch werden über `core/i18n/translations.ts`, den `TranslatePipe` und den `I18n`-Service bereitgestellt. Neue UI-Texte benötigen immer beide Übersetzungen.
+- **Eigene Internationalisierung**: Deutsch ist die Default-Sprache; Englisch und Deutsch werden über `core/i18n/translations.ts`, den `TranslatePipe` und den `I18n`-Service bereitgestellt. Neue UI-Texte benötigen immer beide Übersetzungen, API-Fehler werden im Frontend über lokalisierte Fallbacks angezeigt.
+- **Einstellungen & Theme**: Sprache und Darstellung werden im Zahnrad-Menü der Navbar gesteuert. Die Sprache liegt unter `campusconnect.language`, die Darstellung unter `campusconnect.theme`; ohne manuelle Auswahl folgt die Darstellung der System-Einstellung und wird über Theme-Tokens in `styles.scss` umgesetzt.
 
 ### Backend-Architektur
 
@@ -84,11 +85,12 @@ Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge werden in
 
 CampusConnect uses JWT-based API authentication and an HttpOnly cookie for browser sessions with a 15-minute sliding idle timeout:
 
-1. The user sends credentials to `POST /api/auth/login`.
-2. The backend validates the credentials, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
-3. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
-4. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
-5. The backend validates authentication on every request and extends the browser session only when there is activity.
+1. Admins create user accounts through `POST /api/admin/users`; public self-registration is not available.
+2. The user sends credentials to `POST /api/auth/login`.
+3. The backend validates the credentials and the active account state, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
+4. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
+5. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
+6. The backend validates authentication against the active database user on every protected request and extends the browser session only when there is activity.
 
 Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.
 
@@ -100,16 +102,18 @@ Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung;
 
 | Methode | Endpunkt | Beschreibung | Authentifizierung |
 |---|---|---|---|
-| POST | `/api/auth/register` | Registrierung mit Hochschul-E-Mail-Adresse | Nein |
 | POST | `/api/auth/login` | Anmeldung und JWT-Empfang | Nein |
 | POST | `/api/auth/logout` | Browser-Sitzung beenden und Auth-Cookie entfernen | Nein |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails aktualisieren | Ja |
-| GET | `/api/courses` | Aktive Kursauswahl für Registrierung und Profil abrufen | Nein |
+| GET | `/api/courses` | Aktive Studienkurse für Profil- und Stundenplanauswahl abrufen | Nein |
 | GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code und Studiengang anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
+| POST | `/api/admin/users` | Benutzer mit Initialpasswort, Rolle und Kurs anlegen | Ja, Admin |
+| PUT | `/api/admin/users/{id}` | Benutzerprofil, Rolle, Kurs und Aktivstatus aktualisieren | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/status` | Benutzer aktiv oder inaktiv setzen | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
 | DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |

@@ -3,6 +3,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 
 import { Auth } from '../../core/services/auth';
+import { I18n } from '../../core/i18n/i18n';
+import { Theme } from '../../core/services/theme';
 import { Navbar } from './navbar';
 
 describe('Navbar', () => {
@@ -10,6 +12,10 @@ describe('Navbar', () => {
   let fixture: ComponentFixture<Navbar>;
 
   beforeEach(async () => {
+    localStorage.clear();
+    document.documentElement.removeAttribute('data-theme');
+    document.documentElement.style.colorScheme = '';
+
     await TestBed.configureTestingModule({
       imports: [Navbar],
       providers: [provideHttpClient(), provideRouter([])],
@@ -49,15 +55,54 @@ describe('Navbar', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Alice Example');
     expect(text).toContain('TIF25A');
-    expect(text).toContain('Edit profile');
+    expect(text).toContain('Profil bearbeiten');
   });
-  it('should close the profile menu when clicking outside it', () => {
-    fixture.detectChanges();
-    const menu = fixture.nativeElement.querySelector('.navbar__profile-menu') as HTMLDetailsElement;
 
-    menu.open = true;
+  it('should switch and persist the selected language', () => {
+    fixture.detectChanges();
+
+    const settingsMenu = fixture.nativeElement.querySelector('.navbar__settings-menu') as HTMLDetailsElement;
+    settingsMenu.open = true;
+    fixture.detectChanges();
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('.navbar__choice')) as HTMLButtonElement[];
+    buttons.find(button => button.textContent?.trim() === 'English')?.click();
+    fixture.detectChanges();
+
+    const i18n = TestBed.inject(I18n);
+    expect(i18n.language()).toBe('en');
+    expect(localStorage.getItem('campusconnect.language')).toBe('en');
+    expect(fixture.nativeElement.textContent).toContain('Language');
+    expect(buttons.find(button => button.textContent?.trim() === 'English')?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should switch and persist the selected theme preference', () => {
+    fixture.detectChanges();
+
+    const settingsMenu = fixture.nativeElement.querySelector('.navbar__settings-menu') as HTMLDetailsElement;
+    settingsMenu.open = true;
+    fixture.detectChanges();
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('.navbar__choice')) as HTMLButtonElement[];
+    buttons.find(button => button.textContent?.trim() === 'Dunkel')?.click();
+    fixture.detectChanges();
+
+    const theme = TestBed.inject(Theme);
+    expect(theme.preference()).toBe('dark');
+    expect(localStorage.getItem('campusconnect.theme')).toBe('dark');
+    expect(document.documentElement.dataset['theme']).toBe('dark');
+  });
+
+  it('should close open menus when clicking outside them', () => {
+    fixture.detectChanges();
+    const settingsMenu = fixture.nativeElement.querySelector('.navbar__settings-menu') as HTMLDetailsElement;
+    const profileMenu = fixture.nativeElement.querySelector('.navbar__profile-menu') as HTMLDetailsElement;
+
+    settingsMenu.open = true;
+    profileMenu.open = true;
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
-    expect(menu.open).toBe(false);
+    expect(settingsMenu.open).toBe(false);
+    expect(profileMenu.open).toBe(false);
   });
 });

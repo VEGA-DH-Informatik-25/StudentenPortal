@@ -333,8 +333,7 @@ export class GroupsPage implements OnInit {
         this._isCreating.set(false);
       },
       error: error => {
-        const body = error?.error as { error?: string } | null;
-        this._error.set(body?.error ?? this._i18n.translate('groups.createError'));
+        this._error.set(this._i18n.readError(error, 'groups.createError'));
         this._isCreating.set(false);
       },
     });

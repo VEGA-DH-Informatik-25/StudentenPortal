@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -10,9 +9,7 @@ public sealed class AdminUsersApiTests(TestApiFactory factory) : IClassFixture<T
     [Fact]
     public async Task AdminCanCreateAndUpdateUser()
     {
-        var client = factory.CreateClient();
-        var adminId = Guid.NewGuid();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(adminId, "Admin"));
+        var client = await factory.CreateAdminClientAsync();
 
         var createResponse = await client.PostAsJsonAsync("/api/admin/users", new
         {
@@ -57,27 +54,18 @@ public sealed class AdminUsersApiTests(TestApiFactory factory) : IClassFixture<T
     [Fact]
     public async Task AdminCannotDeactivateSelf()
     {
+        var setupClient = await factory.CreateAdminClientAsync();
+        var admin = await setupClient.CreateUserAsync("self-admin", role: "Admin", courseCode: "ADMIN");
         var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(Guid.NewGuid(), "Admin"));
-
-        var createResponse = await client.PostAsJsonAsync("/api/admin/users", new
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
         {
-            firstName = "Selma",
-            lastName = "Selfadmin",
-            email = $"selma.selfadmin-{Guid.NewGuid():N}@dhbw-loerrach.de",
-            role = "Admin",
-            courseCode = "ADMIN",
-            initialPassword = "Start123!",
-            isActive = true
+            email = admin.Email,
+            password = admin.Password
         });
 
-        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var createdUser = await createResponse.Content.ReadFromJsonAsync<JsonElement>();
-        var adminId = createdUser.GetProperty("id").GetGuid();
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
 
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TestJwt.CreateToken(adminId, "Admin"));
-
-        var statusResponse = await client.PatchAsJsonAsync($"/api/admin/users/{adminId}/status", new { isActive = false });
+        var statusResponse = await client.PatchAsJsonAsync($"/api/admin/users/{admin.Id}/status", new { isActive = false });
 
         Assert.Equal(HttpStatusCode.BadRequest, statusResponse.StatusCode);
     }

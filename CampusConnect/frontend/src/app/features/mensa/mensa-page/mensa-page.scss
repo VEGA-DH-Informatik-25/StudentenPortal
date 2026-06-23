@@ -180,11 +180,11 @@
   padding: 1rem;
 
   &--vegan {
-    border-left: 4px solid #059669;
+    border-left: 4px solid var(--dhbw-success-text);
   }
 
   &--vegetarian {
-    border-left: 4px solid #ca8a04;
+    border-left: 4px solid var(--dhbw-warning-text);
   }
 
   &__marker {
@@ -284,13 +284,13 @@
   padding: 0.28rem 0.55rem;
 
   &--vegan {
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--dhbw-success-bg);
+    color: var(--dhbw-success-text);
   }
 
   &--veg {
-    background: #fef3c7;
-    color: #713f12;
+    background: var(--dhbw-warning-bg);
+    color: var(--dhbw-warning-text);
   }
 }
 

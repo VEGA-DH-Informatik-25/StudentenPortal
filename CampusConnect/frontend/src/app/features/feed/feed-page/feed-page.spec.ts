@@ -123,13 +123,13 @@ describe('FeedPage', () => {
       'Moodle',
       'Webmail',
       'DUALIS',
-      'Library',
+      'Bibliothek',
     ]);
     expect(links.map(link => link.querySelector('small')?.textContent?.trim())).toEqual([
-      'Courses and materials',
-      'Email and calendar',
-      'Grades and exams',
-      'Catalog and research',
+      'Kurse und Unterlagen',
+      'E-Mails und Kalender',
+      'Noten und Prüfungen',
+      'Katalog und Recherche',
     ]);
     expect(links.map(link => link.href)).toEqual([
       'https://moodle.loerrach.dhbw.de/',
@@ -147,7 +147,7 @@ describe('FeedPage', () => {
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).toBeNull();
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    buttons.find(button => button.textContent?.includes('Comment'))?.click();
+    buttons.find(button => button.textContent?.includes('Kommentieren'))?.click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).not.toBeNull();
@@ -186,7 +186,7 @@ describe('FeedPage', () => {
     fixture.detectChanges();
 
     expect(timetableApi.getTimetable).not.toHaveBeenCalled();
-    expect(component['_scheduleError']()).toBe('Choose a course to see the next events.');
+    expect(component['_scheduleError']()).toBe('Wähle einen Kurs aus, um die nächsten Termine zu sehen.');
   });
 
   it('clears schedule events and shows an error when schedule loading fails', () => {
@@ -195,7 +195,7 @@ describe('FeedPage', () => {
     fixture.detectChanges();
 
     expect(component['_scheduleEvents']()).toEqual([]);
-    expect(component['_scheduleError']()).toBe('The daily schedule could not be loaded.');
+    expect(component['_scheduleError']()).toBe('Der Tagesplan konnte nicht geladen werden.');
   });
 
   it('clears stale feed errors on a successful reload and prevents duplicate posts', () => {

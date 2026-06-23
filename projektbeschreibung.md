@@ -44,7 +44,7 @@ Tabellen oder Notizen verwaltet.
 ## Kernfunktionen
 
 ### Authentifizierung und Profil
-- Registrierung ausschließlich mit `@student.dhbw-loerrach.de` E-Mail-Adresse
+- Benutzerkonten werden durch Admins erstellt; keine öffentliche Selbstregistrierung
 - JWT-basierte Authentifizierung, kein dauerhafter Token im Browser-Speicher
 - Profilseite mit Studiengang, Semester und Kurs
 

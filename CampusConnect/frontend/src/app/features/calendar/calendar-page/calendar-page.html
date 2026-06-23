@@ -35,7 +35,7 @@
           @if (exam.location) { <span>📍 {{ exam.location }}</span> }
           @if (exam.notes) { <span class="exam-card__notes">{{ exam.notes }}</span> }
         </div>
-        <button class="exam-card__delete" (click)="onDelete(exam.id)">✕</button>
+        <button class="exam-card__delete" (click)="onDelete(exam.id)" [attr.aria-label]="'calendar.deleteExam' | translate">✕</button>
       </div>
     }
   </div>

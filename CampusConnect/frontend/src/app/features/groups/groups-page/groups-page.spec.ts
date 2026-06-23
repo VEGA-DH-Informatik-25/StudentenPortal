@@ -85,7 +85,7 @@ describe('GroupsPage', () => {
     (component as any)._searchQuery.set('library');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('There are no groups for this filter yet.');
+    expect(fixture.nativeElement.textContent).toContain('Für diesen Filter gibt es noch keine Gruppen.');
   });
 
   it('shows joinable public groups in explore tab', () => {
@@ -95,7 +95,7 @@ describe('GroupsPage', () => {
     (component as any)._activeTab.set('Explore');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Join');
+    expect(fixture.nativeElement.textContent).toContain('Beitreten');
   });
 
   it('shows only campus group creation to students', () => {
@@ -107,7 +107,7 @@ describe('GroupsPage', () => {
     ).map(element => element.textContent?.trim());
 
     expect(typeCards).toHaveLength(1);
-    expect(typeCards[0]).toContain('Campus group');
+    expect(typeCards[0]).toContain('Campusgruppe');
   });
 
   it('shows course creation to lecturers but not official creation', () => {
@@ -116,8 +116,8 @@ describe('GroupsPage', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
-    expect(text).toContain('Course group');
-    expect(text).not.toContain('Official group');
+    expect(text).toContain('Kursgruppe');
+    expect(text).not.toContain('Offizielle Gruppe');
   });
 
   it('does not submit a group type forbidden for the current role', () => {
@@ -161,6 +161,6 @@ describe('GroupsPage', () => {
     (component as any)._activeTab.set('Explore');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Request to join');
+    expect(fixture.nativeElement.textContent).toContain('Beitritt anfragen');
   });
 });

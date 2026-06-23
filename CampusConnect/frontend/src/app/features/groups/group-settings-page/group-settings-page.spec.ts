@@ -148,6 +148,6 @@ describe('GroupSettingsPage', () => {
     fixture.detectChanges();
 
     expect((component as any)._deleteConfirmationOpen()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Delete permanently');
+    expect(fixture.nativeElement.textContent).toContain('Endgültig löschen');
   });
 });

@@ -92,7 +92,7 @@ describe('TimetablePage', () => {
     expect(component._calendarTimeline().spanMinutes).toBe(600);
     expect(component.calendarEventOffset(lecture)).toBeCloseTo(10);
     expect(component.calendarEventHeight(lecture)).toBeCloseTo(15);
-    expect(component.eventDuration(lecture)).toBe('1 h 30 min');
+    expect(component.eventDuration(lecture)).toBe('1 Std. 30 min');
   });
 
   it('should keep past days visible in the selected week', () => {
@@ -148,7 +148,7 @@ describe('TimetablePage', () => {
 
     expect(component.calendarEventIsCompact(shortLecture)).toBe(true);
     expect(component.calendarEventIsCompact(regularLecture)).toBe(false);
-    expect(component.calendarEventLabel(shortLecture)).toContain('08:30 AM-09:00 AM (30 min)');
+    expect(component.calendarEventLabel(shortLecture)).toContain('08:30 - 09:00 (30 min)');
     expect(component.calendarEventLabel(shortLecture)).toContain('Software Engineering');
     expect(component.calendarEventLabel(shortLecture)).toContain('Auditorium');
   });

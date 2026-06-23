@@ -58,7 +58,7 @@
 .admin-toolbar__primary,
 .admin-editor__primary {
 	background: var(--dhbw-red);
-	color: var(--dhbw-surface);
+	color: var(--dhbw-on-red);
 }
 
 .admin-tabs {
@@ -82,7 +82,7 @@
 
 .admin-tabs__tab--active {
 	background: var(--dhbw-red) !important;
-	color: var(--dhbw-surface) !important;
+	color: var(--dhbw-on-red) !important;
 }
 
 .admin-section {
@@ -218,14 +218,14 @@
 
 .admin-page__message--error {
 	background: var(--dhbw-red-soft);
-	border-color: rgba(226, 0, 26, 0.28);
+	border-color: var(--dhbw-danger-border);
 	color: var(--dhbw-red-dark);
 }
 
 .admin-page__message--success {
-	background: #dcfce7;
-	border-color: #86efac;
-	color: #166534;
+	background: var(--dhbw-success-bg);
+	border-color: var(--dhbw-success-border);
+	color: var(--dhbw-success-text);
 }
 
 .admin-page__state {
@@ -287,10 +287,10 @@
 
 .admin-status {
 	align-items: center;
-	background: #dcfce7;
-	border: 1px solid #86efac;
+	background: var(--dhbw-success-bg);
+	border: 1px solid var(--dhbw-success-border);
 	border-radius: 999px;
-	color: #166534 !important;
+	color: var(--dhbw-success-text) !important;
 	display: inline-flex !important;
 	font-size: 0.78rem !important;
 	font-weight: 800;
@@ -302,7 +302,7 @@
 
 .admin-status--inactive {
 	background: var(--dhbw-red-soft);
-	border-color: rgba(226, 0, 26, 0.28);
+	border-color: var(--dhbw-danger-border);
 	color: var(--dhbw-red-dark) !important;
 }
 
@@ -319,7 +319,7 @@
 }
 
 .admin-editor-backdrop {
-	background: rgba(15, 23, 42, 0.38);
+	background: var(--dhbw-overlay);
 	inset: 0;
 	position: fixed;
 	z-index: 20;
@@ -422,7 +422,7 @@
 
 .admin-status-confirmation {
 	background: var(--dhbw-red-soft);
-	border: 1px solid rgba(226, 0, 26, 0.28);
+	border: 1px solid var(--dhbw-danger-border);
 	border-radius: 8px;
 	display: grid;
 	gap: 0.75rem;

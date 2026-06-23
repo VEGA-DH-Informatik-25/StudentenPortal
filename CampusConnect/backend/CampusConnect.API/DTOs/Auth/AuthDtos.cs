@@ -1,6 +1,5 @@
 namespace CampusConnect.API.DTOs.Auth;
 
-public record RegisterRequest(string Email, string Password, string DisplayName, string Course);
 public record LoginRequest(string Email, string Password);
 public record UpdateProfileRequest(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
 public record ChangeInitialPasswordRequest(string CurrentPassword, string NewPassword);

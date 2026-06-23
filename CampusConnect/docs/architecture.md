@@ -14,7 +14,7 @@ Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenstän
 - **Functional Guards**: Der Auth-Guard ist als `CanActivateFn`-Funktion implementiert (kein Interface-basiertes Klassen-Guard mehr).
 - **Functional Interceptors**: `authTokenInterceptor` und `errorHandlerInterceptor` sind als `HttpInterceptorFn`-Funktionen implementiert und werden über `provideHttpClient(withInterceptors([...]))` registriert.
 - **`withComponentInputBinding()`**: Ermöglicht das direkte Binden von Route-Parametern an Component-Inputs.
-- **`shared/ui`** enthält wiederverwendbare, rein präsentationale Komponenten, beispielsweise `LoadingSpinner`, `ErrorMessage` und `ProfileHoverCard`.
+- **`shared/ui`** enthält wiederverwendbare, rein präsentationale Komponenten, beispielsweise `ProfileHoverCard`.
 
 ### Internationalisierung
 
@@ -23,11 +23,25 @@ Das Frontend besitzt eine eigene, signalbasierte Englisch-/Deutsch-Übersetzungs
 - `translations.ts` definiert die zulässigen Übersetzungsschlüssel und beide Sprachwerte.
 - Der standalone `TranslatePipe` wird für übersetzte Template-Texte importiert.
 - Der `I18n`-Service übersetzt Texte in TypeScript und liefert mit `locale()` die Locale für `Intl`-Formatierung.
+- Der `I18n`-Service bildet bekannte Backend-Fehlertexte mit `readError()` auf Übersetzungsschlüssel ab. Unbekannte API-Details werden nicht roh im UI angezeigt, sondern über den lokalisierten Fallback der jeweiligen Komponente.
 - Die Sprachauswahl wird als nicht sensible UI-Präferenz unter `campusconnect.language` in `localStorage` gespeichert.
-- Die Startsprache folgt einer gespeicherten Auswahl oder der Browsersprache.
-- `app.config.ts` registriert deutsche und englische Locale-Daten, verwendet für Angulars statisches `LOCALE_ID` aber `en-US`. Dynamisch lokalisierte Datums- und Zahlenformate verwenden deshalb `I18n.locale()`.
+- Die Startsprache folgt einer gespeicherten Auswahl oder fällt auf Deutsch zurück.
+- Die Sprache wird im Zahnrad-Menü der Navbar über Buttons gewählt; `document.documentElement.lang` folgt der aktiven Auswahl.
+- `app.config.ts` registriert deutsche und englische Locale-Daten und verwendet für Angulars statisches `LOCALE_ID` `de-DE`. Dynamisch lokalisierte Datums- und Zahlenformate verwenden weiterhin `I18n.locale()`.
 
 Neue nutzerseitige Texte werden nicht direkt in Templates oder Komponenten geschrieben, sondern als englischer und deutscher Schlüssel ergänzt.
+
+### Darstellung und Theme
+
+Das Frontend besitzt einen globalen `Theme`-Service unter `src/app/core/services/theme.ts`:
+
+- Unterstützte Präferenzen sind `system`, `light` und `dark`.
+- Die Auswahl wird als nicht sensible UI-Präferenz unter `campusconnect.theme` in `localStorage` gespeichert.
+- `system` ist der Default und folgt `prefers-color-scheme`, bis der Benutzer explizit Hell oder Dunkel auswählt.
+- Der Service setzt `document.documentElement.dataset.theme` auf `light` oder `dark` und synchronisiert `color-scheme`.
+- Sichtbare Farben werden über globale Tokens in `styles.scss` gesteuert, damit Feature-Seiten, Popover, Statuschips, Modals und Kalender-/Stundenplanflächen in beiden Darstellungen konsistent bleiben.
+
+Sprache und Darstellung werden gemeinsam über das Zahnrad-Menü der Navbar bedient.
 
 ## Backend-Architektur
 
@@ -56,10 +70,11 @@ Der Stundenplan wird im Backend aus iCal-Kalendern geladen. `Timetable:CalendarU
 
 CampusConnect uses JWT-based API authentication and an HttpOnly cookie for browser sessions with a 15-minute sliding idle timeout:
 
-1. The user sends credentials to `POST /api/auth/login`.
-2. The backend validates the credentials, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
-3. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
-4. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
-5. The backend validates authentication on every request and extends the browser session only when there is activity.
+1. Admins create user accounts through `POST /api/admin/users`; public self-registration is not available.
+2. The user sends credentials to `POST /api/auth/login`.
+3. The backend validates the credentials and the active account state, issues a signed JWT, and also sets an HttpOnly cookie for the browser session.
+4. The Angular frontend keeps the token **only in memory** (not in localStorage or sessionStorage); after a reload, the session is restored from the cookie through `GET /api/auth/me`.
+5. API clients can continue to use the `Authorization: Bearer <token>` header. Browsers send the HttpOnly cookie automatically instead.
+6. The backend validates authentication against the active database user on every protected request and extends the browser session only when there is activity.
 
 Bleibt der Benutzer 15 Minuten inaktiv, beendet das Frontend die lokale Sitzung; das Cookie läuft ebenfalls nach 15 Minuten ohne Aktivität ab.

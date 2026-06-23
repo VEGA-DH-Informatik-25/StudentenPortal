@@ -6,59 +6,21 @@
       <p>{{ 'app.campus' | translate }}</p>
     </div>
 
-    <div class="login-card__tabs">
-      <button [class.active]="_mode() === 'login'" (click)="switchMode('login')">{{ 'login.login' | translate }}</button>
-      <button [class.active]="_mode() === 'register'" (click)="switchMode('register')">{{ 'login.register' | translate }}</button>
-    </div>
-
-    @if (_mode() === 'login') {
-      <form (ngSubmit)="onLogin()" class="login-card__form">
-        <label>
-          E-Mail
-          <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
-        </label>
-        <label>
-          {{ 'common.password' | translate }}
-          <input type="password" [(ngModel)]="_loginForm.password" name="password" required />
-        </label>
-        @if (_error()) {
-          <p class="login-card__error">{{ _error() }}</p>
-        }
-        <button type="submit" [disabled]="_isLoading()">
-          {{ _isLoading() ? ('common.wait' | translate) : ('login.login' | translate) }}
-        </button>
-      </form>
-    }
-
-    @if (_mode() === 'register') {
-      <form (ngSubmit)="onRegister()" class="login-card__form">
-        <label>
-          E-Mail (@dhbw-loerrach.de)
-          <input type="email" [(ngModel)]="_registerForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
-        </label>
-        <label>
-          {{ 'common.password' | translate }}
-          <input type="password" [(ngModel)]="_registerForm.password" name="password" required />
-        </label>
-        <label>
-          {{ 'common.displayName' | translate }}
-          <input type="text" [(ngModel)]="_registerForm.displayName" name="displayName" required />
-        </label>
-        <label>
-          {{ 'common.course' | translate }}
-          <select [(ngModel)]="_registerForm.course" name="course" [disabled]="_coursesLoading()" required>
-            @for (course of _courses(); track course.code) {
-              <option [value]="course.code">{{ courseLabel(course) }}</option>
-            }
-          </select>
-        </label>
-        @if (_error()) {
-          <p class="login-card__error">{{ _error() }}</p>
-        }
-        <button type="submit" [disabled]="_isLoading() || _coursesLoading() || !_registerForm.course">
-          {{ _isLoading() ? ('common.wait' | translate) : ('login.registerSubmit' | translate) }}
-        </button>
-      </form>
-    }
+    <form (ngSubmit)="onLogin()" class="login-card__form">
+      <label>
+        E-Mail
+        <input type="email" [(ngModel)]="_loginForm.email" name="email" placeholder="name@dhbw-loerrach.de" required />
+      </label>
+      <label>
+        {{ 'common.password' | translate }}
+        <input type="password" [(ngModel)]="_loginForm.password" name="password" required />
+      </label>
+      @if (_error()) {
+        <p class="login-card__error">{{ _error() }}</p>
+      }
+      <button type="submit" [disabled]="_isLoading()">
+        {{ _isLoading() ? ('common.wait' | translate) : ('login.login' | translate) }}
+      </button>
+    </form>
   </div>
 </div>

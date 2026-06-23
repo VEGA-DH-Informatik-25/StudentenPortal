@@ -1,5 +1,4 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
@@ -21,7 +20,7 @@ interface CalendarTimeline {
 
 const DEFAULT_TIMELINE_START = 8 * 60;
 const DEFAULT_TIMELINE_END = 18 * 60;
-const TIMELINE_PIXELS_PER_MINUTE = 0.85;
+const TIMELINE_PIXELS_PER_MINUTE = 1.15;
 const COMPACT_EVENT_MAX_HEIGHT = 96;
 const DEFAULT_TIMETABLE_LOOKAHEAD_DAYS = 120;
 const WEEK_VIEW_DAYS = 6;
@@ -209,7 +208,7 @@ export class TimetablePage implements OnInit {
       return this._i18n.translate('common.allDay');
     }
 
-    return `${this._formatTime(event.start)}-${this._formatTime(event.end)}`;
+    return `${this._formatTime(event.start)} - ${this._formatTime(event.end)}`;
   }
 
   protected eventDuration(event: TimetableEvent): string | null {
@@ -273,7 +272,7 @@ export class TimetablePage implements OnInit {
       time,
       event.title,
       this.compactMeta(event),
-      event.isOnline ? 'Online' : null,
+      event.isOnline ? this._i18n.translate('common.online') : null,
     ].filter((value): value is string => Boolean(value));
 
     return details.join(' | ');
@@ -335,7 +334,7 @@ export class TimetablePage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'timetable.loadError'));
         this._days.set([]);
         this._course.set(normalizedCourse);
         this._isLoading.set(false);
@@ -392,16 +391,6 @@ export class TimetablePage implements OnInit {
       this._customCourse.set(normalizedCourse);
     }
   }
-
-  private _readError(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? this._i18n.translate('timetable.loadError');
-    }
-
-    return this._i18n.translate('timetable.loadError');
-  }
-
   private _formatTime(value: string): string {
     return new Intl.DateTimeFormat(this._i18n.locale(), {
       hour: '2-digit',

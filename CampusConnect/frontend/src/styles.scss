@@ -7,6 +7,7 @@
   --dhbw-red-dark: #a00014;
   --dhbw-red-deep: #74000e;
   --dhbw-red-soft: #ffe5e8;
+  --dhbw-on-red: #ffffff;
   --dhbw-ink: #1f2328;
   --dhbw-ink-soft: #343b44;
   --dhbw-text-muted: #5c6672;
@@ -17,6 +18,24 @@
   --dhbw-border: #d7dce3;
   --dhbw-focus: rgba(226, 0, 26, 0.2);
   --dhbw-shadow: 0 18px 44px rgba(31, 35, 40, 0.12);
+  --dhbw-page-gradient-start: #eef1f4;
+  --dhbw-overlay: rgba(31, 35, 40, 0.58);
+  --dhbw-success-bg: #dcfce7;
+  --dhbw-success-border: #86efac;
+  --dhbw-success-text: #166534;
+  --dhbw-warning-bg: #fef3c7;
+  --dhbw-warning-text: #713f12;
+  --dhbw-danger-bg: #fff1f0;
+  --dhbw-danger-border: #f7b5be;
+  --dhbw-danger-text: #bf1d1d;
+  --dhbw-online-bg: #dbeafe;
+  --dhbw-online-text: #1d4ed8;
+  --dhbw-calendar-track: linear-gradient(180deg, rgba(238, 241, 245, 0.5), rgba(255, 255, 255, 0));
+  --dhbw-calendar-line: #dfe4eb;
+  --dhbw-calendar-event-shadow: 0 8px 20px rgba(31, 35, 40, 0.08);
+  --dhbw-calendar-event-focus-shadow: 0 10px 24px rgba(31, 35, 40, 0.14);
+  --dhbw-tour-ring: #ffffff;
+  --dhbw-switch-knob: #ffffff;
   --type-page-eyebrow: 0.78rem;
   --type-page-title: 3.2rem;
   --type-section-title: 1.2rem;
@@ -24,10 +43,46 @@
   --type-page-body: 1rem;
 }
 
+:root[data-theme='dark'] {
+  --dhbw-red: #ff5266;
+  --dhbw-red-dark: #ff8a98;
+  --dhbw-red-deep: #5c000c;
+  --dhbw-red-soft: rgba(255, 82, 102, 0.17);
+  --dhbw-on-red: #ffffff;
+  --dhbw-ink: #f4f7fb;
+  --dhbw-ink-soft: #dbe3ee;
+  --dhbw-text-muted: #a8b4c4;
+  --dhbw-bg: #0d1219;
+  --dhbw-bg-accent: #18212d;
+  --dhbw-surface: #141b25;
+  --dhbw-surface-muted: #1b2532;
+  --dhbw-border: #2b3747;
+  --dhbw-focus: rgba(255, 82, 102, 0.34);
+  --dhbw-shadow: 0 22px 58px rgba(0, 0, 0, 0.42);
+  --dhbw-page-gradient-start: #111923;
+  --dhbw-overlay: rgba(5, 8, 13, 0.72);
+  --dhbw-success-bg: rgba(34, 197, 94, 0.16);
+  --dhbw-success-border: rgba(74, 222, 128, 0.45);
+  --dhbw-success-text: #86efac;
+  --dhbw-warning-bg: rgba(245, 158, 11, 0.17);
+  --dhbw-warning-text: #fcd34d;
+  --dhbw-danger-bg: rgba(248, 113, 113, 0.16);
+  --dhbw-danger-border: rgba(248, 113, 113, 0.42);
+  --dhbw-danger-text: #fca5a5;
+  --dhbw-online-bg: rgba(96, 165, 250, 0.18);
+  --dhbw-online-text: #93c5fd;
+  --dhbw-calendar-track: linear-gradient(180deg, rgba(43, 55, 71, 0.45), rgba(20, 27, 37, 0));
+  --dhbw-calendar-line: #303d4f;
+  --dhbw-calendar-event-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+  --dhbw-calendar-event-focus-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+  --dhbw-tour-ring: #f8fafc;
+  --dhbw-switch-knob: #f8fafc;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(180deg, #eef1f4 0%, var(--dhbw-bg) 28rem, var(--dhbw-bg) 100%);
+  background: linear-gradient(180deg, var(--dhbw-page-gradient-start) 0%, var(--dhbw-bg) 28rem, var(--dhbw-bg) 100%);
   color: var(--dhbw-ink);
   font-size: 16px;
 }
@@ -59,7 +114,7 @@ button {
 }
 
 .create-group-modal {
-  background: rgba(31, 35, 40, 0.58);
+  background: var(--dhbw-overlay);
   display: grid;
   inset: 0;
   padding: clamp(0.75rem, 2.5vw, 1.5rem);
@@ -190,7 +245,7 @@ button {
   align-items: center;
   background: var(--dhbw-red);
   border-radius: 50%;
-  color: var(--dhbw-surface);
+  color: var(--dhbw-on-red);
   content: '✓';
   display: inline-flex;
   font-size: 0.66rem;
@@ -393,7 +448,7 @@ button {
 .create-group-dialog__submit {
   background: var(--dhbw-red);
   border: 1px solid var(--dhbw-red);
-  color: var(--dhbw-surface);
+  color: var(--dhbw-on-red);
 }
 
 .create-group-dialog__submit:disabled {
@@ -568,7 +623,7 @@ button {
     background: var(--dhbw-ink);
     border: 1px solid var(--dhbw-ink);
     border-radius: 999px;
-    color: var(--dhbw-surface);
+    color: var(--dhbw-on-red);
     cursor: pointer;
     font-size: 0.78rem;
     font-weight: 900;
@@ -752,7 +807,7 @@ button {
     background: var(--dhbw-red);
     border: 0;
     border-radius: 8px;
-    color: var(--dhbw-surface);
+    color: var(--dhbw-on-red);
     cursor: pointer;
     font-weight: 800;
     min-height: 2.5rem;

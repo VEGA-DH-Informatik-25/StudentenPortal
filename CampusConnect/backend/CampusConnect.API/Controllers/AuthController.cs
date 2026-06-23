@@ -15,23 +15,12 @@ namespace CampusConnect.API.Controllers;
 public class AuthController(AuthService authService) : ControllerBase
 {
     [AllowAnonymous]
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-    {
-        var result = await authService.RegisterAsync(new RegisterCommand(
-            request.Email, request.Password, request.DisplayName, request.Course));
-
-        if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
-
-        await SignInBrowserSessionAsync(result.Value!);
-        return Ok(ToAuthResponse(result.Value!));
-    }
-
-    [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest? request)
     {
+        if (request is null)
+            return Unauthorized(new { error = "Invalid email address or password." });
+
         var result = await authService.LoginAsync(new LoginCommand(request.Email, request.Password));
 
         if (!result.IsSuccess)

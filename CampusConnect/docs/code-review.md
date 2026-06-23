@@ -36,12 +36,12 @@ This report lists verified weaknesses, bugs, and risk areas found during a code 
 - Risk: Empty or very weak passwords can be registered. JSON `null` for email/password can produce unhandled exceptions instead of validation responses.
 - Recommendation: Add request DTO validation and service guards for email, password, display name, and course. Enforce a minimum password policy and return controlled `400` responses for malformed auth requests.
 
-### 4. Login and registration endpoints have no rate limiting
+### 4. Login endpoint has no rate limiting
 
-- Location: [AuthController.cs](../backend/CampusConnect.API/Controllers/AuthController.cs#L15), [AuthController.cs](../backend/CampusConnect.API/Controllers/AuthController.cs#L28)
-- Evidence: Public auth endpoints accept unlimited attempts; no ASP.NET rate limiter or throttling middleware is configured in [Program.cs](../backend/CampusConnect.API/Program.cs).
-- Risk: Brute-force attacks and credential stuffing are possible. Registration can also be abused for account creation attempts.
-- Recommendation: Add IP/user/email based rate limiting for login and registration, with conservative limits and tests for throttling behavior.
+- Location: [AuthController.cs](../backend/CampusConnect.API/Controllers/AuthController.cs), [Program.cs](../backend/CampusConnect.API/Program.cs)
+- Evidence: The public login endpoint accepts unlimited attempts; no ASP.NET rate limiter or throttling middleware is configured.
+- Risk: Brute-force attacks and credential stuffing are possible.
+- Recommendation: Add IP/user/email based rate limiting for login, with conservative limits and tests for throttling behavior.
 
 ### 5. JWT signing secret only has a non-empty check
 

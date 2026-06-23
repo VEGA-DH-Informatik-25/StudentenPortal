@@ -9,10 +9,8 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
     [Fact]
     public async Task GroupModerationWorkflow_ShouldPublishPendingPostAndDeleteGroup()
     {
-        var ownerClient = factory.CreateClient();
-        var memberClient = factory.CreateClient();
-        var ownerId = await RegisterAsync(ownerClient, "owner");
-        var memberId = await RegisterAsync(memberClient, "member");
+        var (ownerClient, _) = await factory.CreateAuthenticatedUserClientAsync("owner");
+        var (memberClient, member) = await factory.CreateAuthenticatedUserClientAsync("member");
 
         var missingGroup = await ownerClient.GetAsync($"/api/groups/{Guid.NewGuid()}/pending-posts");
         Assert.Equal(HttpStatusCode.BadRequest, missingGroup.StatusCode);
@@ -32,7 +30,7 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.Created, createGroup.StatusCode);
         var groupId = await ReadGuidAsync(createGroup, "id");
 
-        var addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { memberId } });
+        var addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { member.Id } });
         Assert.Equal(HttpStatusCode.OK, addMember.StatusCode);
 
         var createPost = await memberClient.PostAsJsonAsync("/api/feed", new
@@ -68,10 +66,8 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
     [Fact]
     public async Task LeaveGroup_ShouldRemoveMemberAndTransferOwner()
     {
-        var ownerClient = factory.CreateClient();
-        var memberClient = factory.CreateClient();
-        _ = await RegisterAsync(ownerClient, "leave-owner");
-        var memberId = await RegisterAsync(memberClient, "leave-member");
+        var (ownerClient, _) = await factory.CreateAuthenticatedUserClientAsync("leave-owner");
+        var (memberClient, member) = await factory.CreateAuthenticatedUserClientAsync("leave-member");
 
         var createGroup = await ownerClient.PostAsJsonAsync("/api/groups", new
         {
@@ -88,7 +84,7 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.Created, createGroup.StatusCode);
         var groupId = await ReadGuidAsync(createGroup, "id");
 
-        var addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { memberId } });
+        var addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { member.Id } });
         Assert.Equal(HttpStatusCode.OK, addMember.StatusCode);
 
         var memberLeave = await memberClient.PostAsJsonAsync($"/api/groups/{groupId}/leave", new { });
@@ -96,35 +92,19 @@ public sealed class GroupModerationApiTests(TestApiFactory factory) : IClassFixt
         var memberLeaveBody = await memberLeave.Content.ReadFromJsonAsync<JsonElement>();
         Assert.False(memberLeaveBody.GetProperty("deleted").GetBoolean());
 
-        addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { memberId } });
+        addMember = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/members", new { userIds = new[] { member.Id } });
         Assert.Equal(HttpStatusCode.OK, addMember.StatusCode);
 
-        var ownerLeave = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/leave", new { newOwnerUserId = memberId });
+        var ownerLeave = await ownerClient.PostAsJsonAsync($"/api/groups/{groupId}/leave", new { newOwnerUserId = member.Id });
         Assert.Equal(HttpStatusCode.OK, ownerLeave.StatusCode);
         var ownerLeaveBody = await ownerLeave.Content.ReadFromJsonAsync<JsonElement>();
         Assert.False(ownerLeaveBody.GetProperty("deleted").GetBoolean());
-        Assert.Equal(memberId, ownerLeaveBody.GetProperty("group").GetProperty("ownerUserId").GetGuid());
+        Assert.Equal(member.Id, ownerLeaveBody.GetProperty("group").GetProperty("ownerUserId").GetGuid());
 
         var formerOwnerGroups = await ownerClient.GetFromJsonAsync<JsonElement[]>("/api/groups");
         Assert.NotNull(formerOwnerGroups);
         Assert.Contains(formerOwnerGroups!, group => group.GetProperty("id").GetGuid() == groupId && !group.GetProperty("isAssigned").GetBoolean());
 
-    }
-
-    private static async Task<Guid> RegisterAsync(HttpClient client, string prefix)
-    {
-        var response = await client.PostAsJsonAsync("/api/auth/register", new
-        {
-            email = $"{prefix}-{Guid.NewGuid():N}@dhbw-loerrach.de",
-            password = "secret123",
-            displayName = prefix,
-            course = "TIF25A"
-        });
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var profile = await client.GetAsync("/api/auth/me");
-        Assert.Equal(HttpStatusCode.OK, profile.StatusCode);
-        return await ReadGuidAsync(profile, "id");
     }
 
     private static async Task<Guid> ReadGuidAsync(HttpResponseMessage response, string property)

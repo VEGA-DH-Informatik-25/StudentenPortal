@@ -1,5 +1,4 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
@@ -133,7 +132,7 @@ export class AdminPage implements OnInit {
         this._isLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isLoading.set(false);
       },
     });
@@ -148,7 +147,7 @@ export class AdminPage implements OnInit {
         this._coursesLoading.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._coursesLoading.set(false);
       },
     });
@@ -183,7 +182,7 @@ export class AdminPage implements OnInit {
         this._isCreatingCourse.set(false);
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isCreatingCourse.set(false);
       },
     });
@@ -295,7 +294,7 @@ export class AdminPage implements OnInit {
         this.loadUsers();
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isSaving.set(false);
       },
     });
@@ -331,7 +330,7 @@ export class AdminPage implements OnInit {
         this.loadUsers();
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isSaving.set(false);
       },
     });
@@ -373,7 +372,7 @@ export class AdminPage implements OnInit {
         this.loadUsers();
       },
       error: error => {
-        this._error.set(this._readError(error));
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isChangingStatus.set(false);
       },
     });
@@ -501,14 +500,5 @@ export class AdminPage implements OnInit {
   private _clearMessages(): void {
     this._error.set(null);
     this._success.set(null);
-  }
-
-  private _readError(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as { error?: string } | null;
-      return body?.error ?? this._i18n.translate('admin.dataLoadError');
-    }
-
-    return this._i18n.translate('admin.dataLoadError');
   }
 }
