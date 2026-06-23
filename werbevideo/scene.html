@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--red:#c1121f;--red-dark:#8e0d17;--ink:#0f172a;--muted:#52617a;--bg1:#eef2f6;--bg2:#fff;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:#fff;}
+  body{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:radial-gradient(120% 120% at 82% -10%, var(--bg2) 0%, var(--bg1) 55%, #e3e8ee 100%);position:relative;}
+  .pagebar{position:absolute;top:0;left:0;width:100%;height:10px;background:var(--red);z-index:6;}
+  .accent{position:absolute;top:0;right:0;width:820px;height:1080px;overflow:hidden;z-index:0;}
+  .accent:before{content:"";position:absolute;top:-260px;right:-360px;width:900px;height:900px;
+    background:linear-gradient(135deg,var(--red),var(--red-dark));transform:rotate(32deg);border-radius:90px;opacity:.10;}
+  .accent:after{content:"";position:absolute;bottom:-300px;right:-160px;width:560px;height:560px;
+    background:var(--red);transform:rotate(20deg);border-radius:70px;opacity:.06;}
+
+  .stage{position:relative;z-index:2;display:flex;height:100%;align-items:center;}
+  .copy{width:700px;padding:0 60px 0 110px;flex:0 0 auto;}
+  .kicker{display:inline-flex;align-items:center;gap:12px;font-size:24px;font-weight:800;letter-spacing:3px;
+    text-transform:uppercase;color:var(--red);margin-bottom:26px;opacity:0;}
+  .kicker .dot{width:14px;height:14px;border-radius:4px;background:var(--red);}
+  h1{font-size:80px;line-height:1.03;font-weight:820;color:var(--ink);letter-spacing:-1.5px;margin-bottom:26px;opacity:0;}
+  h1 .hl{color:var(--red);}
+  .sub{font-size:30px;line-height:1.4;color:var(--muted);font-weight:500;margin-bottom:40px;max-width:560px;opacity:0;}
+  .bullets{list-style:none;display:flex;flex-direction:column;gap:18px;}
+  .bullets li{display:flex;align-items:center;gap:18px;font-size:27px;font-weight:600;color:var(--ink);opacity:0;}
+  .check{flex:0 0 auto;width:40px;height:40px;border-radius:12px;background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;
+    box-shadow:0 8px 20px rgba(193,18,31,.32);}
+
+  .device-wrap{flex:1 1 auto;height:100%;display:flex;align-items:center;justify-content:center;padding-right:90px;opacity:0;}
+
+  .laptop{position:relative;width:1010px;filter:drop-shadow(0 50px 70px rgba(15,23,42,.30));}
+  .laptop .bezel{background:#11151c;border-radius:24px;padding:16px;}
+  .laptop .screen{height:600px;overflow:hidden;border-radius:10px;background:#fff;}
+  .laptop .screen img{width:100%;display:block;will-change:transform;transform-origin:0 0;}
+  .laptop .base{position:relative;width:1150px;height:34px;margin:0 0 0 -70px;
+    background:linear-gradient(#d7dde4,#aeb7c2);border-radius:0 0 22px 22px;}
+  .laptop .base:after{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:180px;height:14px;background:#9aa4b0;border-radius:0 0 12px 12px;}
+
+  .tablet{position:relative;width:1080px;background:#11151c;border-radius:42px;padding:26px 28px;
+    filter:drop-shadow(0 50px 70px rgba(15,23,42,.32));}
+  .tablet .screen{height:660px;overflow:hidden;border-radius:16px;background:#fff;}
+  .tablet .screen img{width:100%;display:block;will-change:transform;transform-origin:0 0;}
+  .tablet:before{content:"";position:absolute;top:50%;right:11px;transform:translateY(-50%);
+    width:10px;height:78px;background:#272d36;border-radius:6px;}
+
+  .brand{position:absolute;left:110px;bottom:64px;display:flex;align-items:center;gap:16px;z-index:3;}
+  .brand .txt b{display:block;font-size:25px;font-weight:850;color:var(--ink);letter-spacing:.5px;line-height:1.05;}
+  .brand .txt span{font-size:19px;font-weight:600;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="pagebar"></div>
+  <div class="accent"></div>
+  <div class="stage">
+    <div class="copy">
+      <div class="kicker" id="kicker"><span class="dot"></span><span id="kickerTxt">FEATURE</span></div>
+      <h1 id="title">Titel</h1>
+      <p class="sub" id="sub">Untertitel</p>
+      <ul class="bullets" id="bullets"></ul>
+    </div>
+    <div class="device-wrap" id="deviceWrap"></div>
+  </div>
+  <div class="brand"><div class="txt"><b>CampusConnect</b><span>DHBW Lörrach</span></div></div>
+
+<script>
+const DIR="app-screenshots/";
+const SLIDES={
+  feed:{kicker:"NEWS-FEED",title:'Alles an <span class="hl">einem Ort</span>.',
+    sub:"News, Tagesplan und DHBW-Dienste – kompakt auf einem Dashboard.",
+    bullets:["Campus-Feed mit Reaktionen","Tagesplan & Stundenplan","Moodle, Webmail & DUALIS"],
+    device:"laptop",img:"full-feed.png"},
+  mensa:{kicker:"MENSA-SPEISEPLAN",title:'Mensaplan, <span class="hl">tagesaktuell</span>.',
+    sub:"Gerichte, Preise und Kennzeichnungen der Mensa Lörrach – jeden Tag frisch.",
+    bullets:["Preise & Wochenansicht","Vegan & vegetarisch markiert","Allergene auf einen Blick"],
+    device:"laptop",img:"cc-mensa.png"},
+  timetable:{kicker:"STUNDENPLAN",title:'Dein <span class="hl">Stundenplan</span>.',
+    sub:"Vorlesungen, Räume und Zeiten für deinen Kurs – Liste, Woche oder Tag.",
+    bullets:["Automatisch für deinen Kurs","Räume & Uhrzeiten","Live aktualisiert"],
+    device:"laptop",img:"full-timetable.png"},
+  grades:{kicker:"NOTEN & PRÜFUNGEN",title:'Noten <span class="hl">im Blick</span>.',
+    sub:"Schnitt nach ECTS berechnen, Szenarien testen und Prüfungen planen.",
+    bullets:["Notenschnitt automatisch","Was-wäre-wenn-Rechner","Prüfungskalender"],
+    device:"laptop",img:"cc-grades.png"},
+  groups:{kicker:"LERNGRUPPEN & KONTAKTE",title:'Gemeinsam <span class="hl">stärker</span>.',
+    sub:"Finde Lerngruppen nach Modul und Kurs – und die richtigen Kontakte am Campus.",
+    bullets:["Lerngruppen-Matching","Offizielle & Campus-Gruppen","Kontaktbuch der DHBW"],
+    device:"tablet",img:"full-groups.png"}
+};
+const P=new URLSearchParams(location.search);
+const key=P.get("slide")||"feed";
+const DUR=parseInt(P.get("dur")||"2600",10);
+const s=SLIDES[key];
+document.getElementById("kickerTxt").textContent=s.kicker;
+document.getElementById("title").innerHTML=s.title;
+document.getElementById("sub").textContent=s.sub;
+document.getElementById("bullets").innerHTML=s.bullets.map(b=>`<li><span class="check">✓</span>${b}</li>`).join("");
+const dw=document.getElementById("deviceWrap");
+if(s.device==="laptop"){
+  dw.innerHTML=`<div class="laptop"><div class="bezel"><div class="screen"><img id="shot" src="${DIR+s.img}"></div></div><div class="base"></div></div>`;
+}else{
+  dw.innerHTML=`<div class="tablet"><div class="screen"><img id="shot" src="${DIR+s.img}"></div></div>`;
+}
+
+const EASE="cubic-bezier(.22,.61,.36,1)";
+function animIn(el,delay,dx){el.animate([{opacity:0,transform:`translateX(${dx}px)`},{opacity:1,transform:"translateX(0)"}],
+  {duration:620,delay,easing:EASE,fill:"both"});}
+
+// Per-slide camera INTENT:
+//  - 'scroll': calm, uniform (linear) vertical scroll through a list page, no zoom.
+//  - 'focus' : deliberate ease-in onto one meaningful element (fx/fy = focal point
+//              as fraction of the shot), holding briefly first. No scroll.
+const MOTION={
+  feed:     {type:"scroll", scrollPx:560},
+  mensa:    {type:"focus",  fx:0.44, fy:0.50, scale:1.55},
+  timetable:{type:"scroll", scrollPx:860},
+  grades:   {type:"focus",  fx:0.85, fy:0.135, scale:1.50},
+  groups:   {type:"scroll", scrollPx:300}
+};
+function start(){
+  const screen=document.querySelector(".screen");
+  const sw=screen.clientWidth, sh=screen.clientHeight;
+  const img=document.getElementById("shot");
+  const W=img.clientWidth, H=img.clientHeight;
+  const m=MOTION[key]||{type:"scroll",scrollPx:0};
+  // device fade/scale in
+  document.getElementById("deviceWrap").animate(
+    [{opacity:0,transform:"translateX(60px) scale(.97)"},{opacity:1,transform:"translateX(0) scale(1)"}],
+    {duration:760,easing:EASE,fill:"both"});
+
+  if(m.type==="focus"){
+    const s=m.scale, vw=sw/s, vh=sh/s;
+    let tlx=m.fx*W - vw/2, tly=m.fy*H - vh/2;        // center on focal point
+    tlx=Math.max(0,Math.min(tlx,Math.max(0,W-vw)));  // clamp inside image (no empty edges)
+    tly=Math.max(0,Math.min(tly,Math.max(0,H-vh)));
+    const tx=-s*tlx, ty=-s*tly;
+    img.animate(
+      [{transform:"translate(0px,0px) scale(1)"},
+       {transform:"translate(0px,0px) scale(1)",offset:0.14},      // brief establishing hold
+       {transform:`translate(${tx}px,${ty}px) scale(${s})`}],
+      {duration:DUR,easing:"cubic-bezier(.22,.61,.36,1)",fill:"both"}); // ease-out settle
+  } else {
+    const vh=sh; // scale 1.0
+    const end=Math.min(m.scrollPx, Math.max(0,H-vh));
+    img.animate(
+      [{transform:"translate(0px,0px) scale(1)"},
+       {transform:`translate(0px,${-end}px) scale(1)`}],
+      {duration:DUR,easing:"linear",fill:"both"}); // perfectly uniform scroll
+  }
+  // staggered text
+  animIn(document.getElementById("kicker"),120,-40);
+  animIn(document.getElementById("title"),240,-40);
+  animIn(document.getElementById("sub"),420,-40);
+  [...document.querySelectorAll(".bullets li")].forEach((li,i)=>animIn(li,640+i*150,-30));
+  window.__sceneReady=true;
+}
+const img0=document.getElementById("shot");
+if(img0.complete) start(); else img0.addEventListener("load",start);
+</script>
+</body>
+</html>

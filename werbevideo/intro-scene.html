@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<style>
+  :root{--red:#c1121f;--red-dark:#8e0d17;--ink:#0f172a;--muted:#52617a;--bg1:#eef2f6;--bg2:#fff;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:#fff;}
+  body{font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:radial-gradient(120% 120% at 82% -10%, var(--bg2) 0%, var(--bg1) 55%, #e3e8ee 100%);position:relative;}
+  .pagebar{position:absolute;top:0;left:0;width:100%;height:10px;background:var(--red);z-index:6;}
+  .accent{position:absolute;top:0;right:0;width:900px;height:1080px;overflow:hidden;z-index:0;}
+  .accent:before{content:"";position:absolute;top:-260px;right:-340px;width:920px;height:920px;
+    background:linear-gradient(135deg,var(--red),var(--red-dark));transform:rotate(32deg);border-radius:90px;opacity:.10;}
+  .accent:after{content:"";position:absolute;bottom:-320px;right:-120px;width:600px;height:600px;
+    background:var(--red);transform:rotate(20deg);border-radius:70px;opacity:.06;}
+
+  .stage{position:relative;z-index:2;display:flex;height:100%;align-items:center;}
+  .copy{width:770px;padding:0 20px 0 100px;flex:0 0 auto;}
+  .kicker{display:inline-flex;align-items:center;gap:12px;font-size:26px;font-weight:800;letter-spacing:4px;
+    text-transform:uppercase;color:var(--red);margin-bottom:28px;opacity:0;}
+  .kicker .dot{width:15px;height:15px;border-radius:4px;background:var(--red);}
+  h1{font-size:84px;line-height:1.04;font-weight:900;color:var(--ink);letter-spacing:-1.5px;margin-bottom:30px;}
+  h1 .l1,h1 .l2{display:block;opacity:0;white-space:nowrap;}
+  h1 .red{color:var(--red);}
+  .sub{font-size:30px;line-height:1.4;color:var(--muted);font-weight:500;margin-bottom:36px;max-width:560px;opacity:0;}
+  .badge{display:inline-flex;align-items:center;gap:14px;background:#fff;border:2px solid #e2e8f0;
+    border-radius:999px;padding:14px 26px;font-size:24px;font-weight:800;color:var(--ink);
+    box-shadow:0 12px 28px rgba(15,23,42,.08);opacity:0;}
+  .badge .ic{font-size:26px;}
+  .badge .sep{color:#cbd5e1;font-weight:600;}
+
+  .device-wrap{flex:1 1 auto;height:100%;display:flex;align-items:center;justify-content:center;}
+  .duo{position:relative;width:1060px;height:760px;}
+
+  /* laptop */
+  .laptop{position:absolute;top:60px;left:10px;width:760px;opacity:0;
+    filter:drop-shadow(0 50px 70px rgba(15,23,42,.30));}
+  .laptop .bezel{background:#11151c;border-radius:20px;padding:13px;}
+  .laptop .bezel img{display:block;width:100%;border-radius:8px;}
+  .laptop .base{position:relative;width:880px;height:28px;margin:0 0 0 -60px;
+    background:linear-gradient(#d7dde4,#aeb7c2);border-radius:0 0 18px 18px;}
+  .laptop .base:after{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:150px;height:12px;background:#9aa4b0;border-radius:0 0 10px 10px;}
+
+  /* tablet, front-right */
+  .tablet{position:absolute;bottom:8px;right:0;width:392px;background:#11151c;border-radius:30px;padding:18px 16px;
+    transform:rotate(-3deg);z-index:3;opacity:0;filter:drop-shadow(0 40px 60px rgba(15,23,42,.34));}
+  .tablet img{display:block;width:100%;border-radius:12px;}
+  .tablet:before{content:"";position:absolute;top:50%;right:7px;transform:translateY(-50%);
+    width:7px;height:54px;background:#272d36;border-radius:5px;}
+
+  .brand{position:absolute;left:110px;bottom:64px;display:flex;align-items:center;gap:16px;z-index:3;}
+  .brand .txt b{display:block;font-size:25px;font-weight:850;color:var(--ink);letter-spacing:.5px;line-height:1.05;}
+  .brand .txt span{font-size:19px;font-weight:600;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="pagebar"></div>
+  <div class="accent"></div>
+  <div class="stage">
+    <div class="copy">
+      <div class="kicker" id="kicker"><span class="dot"></span>DHBW Lörrach</div>
+      <h1><span class="l1" id="l1">Schluss mit dem</span><span class="l2 red" id="l2">Info-Chaos.</span></h1>
+      <p class="sub" id="sub">WhatsApp, E-Mail, Aushänge – ab jetzt alles in einer App.</p>
+      <div class="badge" id="badge"><span class="ic">💻</span> Laptop <span class="sep">&amp;</span> <span class="ic">📱</span> Tablet</div>
+    </div>
+    <div class="device-wrap">
+      <div class="duo" id="duo">
+        <div class="laptop" id="laptop"><div class="bezel"><img src="app-screenshots/cc-feed.png"></div><div class="base"></div></div>
+        <div class="tablet" id="tablet"><img src="app-screenshots/cc-mensa.png"></div>
+      </div>
+    </div>
+  </div>
+  <div class="brand"><div class="txt"><b>CampusConnect</b><span>DHBW Lörrach</span></div></div>
+
+<script>
+const DUR=parseInt(new URLSearchParams(location.search).get("dur")||"3500",10);
+const EASE="cubic-bezier(.22,.61,.36,1)";
+function inX(el,delay,dx){el.animate([{opacity:0,transform:`translateX(${dx}px)`},{opacity:1,transform:"translateX(0)"}],
+  {duration:640,delay,easing:EASE,fill:"both"});}
+function start(){
+  // text
+  inX(document.getElementById("kicker"),100,-40);
+  inX(document.getElementById("l1"),240,-44);
+  inX(document.getElementById("l2"),380,-44);
+  inX(document.getElementById("sub"),560,-36);
+  document.getElementById("badge").animate(
+    [{opacity:0,transform:"translateY(24px) scale(.92)"},{opacity:1,transform:"translateY(0) scale(1)"}],
+    {duration:600,delay:760,easing:"cubic-bezier(.34,1.56,.64,1)",fill:"both"});
+  // laptop in from right
+  document.getElementById("laptop").animate(
+    [{opacity:0,transform:"translateX(80px) scale(.96)"},{opacity:1,transform:"translateX(0) scale(1)"}],
+    {duration:820,delay:200,easing:EASE,fill:"both"});
+  // tablet up from bottom (keep its -3deg tilt)
+  document.getElementById("tablet").animate(
+    [{opacity:0,transform:"translateY(90px) rotate(-3deg) scale(.95)"},{opacity:1,transform:"translateY(0) rotate(-3deg) scale(1)"}],
+    {duration:820,delay:520,easing:EASE,fill:"both"});
+  // whole duo gentle, uniform zoom for life
+  document.getElementById("duo").animate(
+    [{transform:"scale(1)"},{transform:"scale(1.05)"}],
+    {duration:DUR,easing:"linear",fill:"both"});
+  window.__sceneReady=true;
+}
+const imgs=[...document.querySelectorAll("img")];
+Promise.all(imgs.map(i=>i.complete?1:new Promise(r=>i.addEventListener("load",r)))).then(start);
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Heavy / regenerable intermediates – not needed in the repo
+bilder/
+check/
+clips/
+seg/
+slides/
+slide-*.png
+intro-scene-preview.png
+intro-hook-green.png
+tools/node_modules/
+tools/package-lock.json
+.server.pid
+.DS_Store
+
+# Superseded one-off iterations
+slide.html
+cta.html
+intro-card.html
+intro-hook-green.html
+
+# never commit DB backups
+*.corrupt-*
