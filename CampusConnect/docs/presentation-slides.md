@@ -290,6 +290,8 @@ Das bitten wir vom Sponsor:
 ✅ 5. Nach dem MVP
    • Perspektive für produktiven Betrieb klären
    • Wer macht Updates & Support?
+
+✅ 6. Moderatione von Chat Foren
 ```
 
 ### Sprechtext
