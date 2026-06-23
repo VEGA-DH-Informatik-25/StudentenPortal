@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile } from '../models/auth.model';
+import { AuthResponse, ChangeInitialPasswordRequest, LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class Auth {
@@ -47,6 +47,14 @@ export class Auth {
     return this._http.put<UserProfile>('/api/auth/me', req).pipe(
       tap(profile => this._storeProfile(profile))
     );
+  }
+
+  changeInitialPassword(req: ChangeInitialPasswordRequest): Observable<UserProfile> {
+    return this._http.post<UserProfile>('/api/auth/change-initial-password', req).pipe(tap(profile => this._storeProfile(profile)));
+  }
+
+  completeOnboarding(): Observable<UserProfile> {
+    return this._http.post<UserProfile>('/api/auth/onboarding/complete', {}).pipe(tap(profile => this._storeProfile(profile)));
   }
 
   logout(): void {
@@ -123,6 +131,9 @@ export class Auth {
       location: '',
       profileNote: '',
       role: res.role,
+      mustChangePassword: false,
+      onboardingCompleted: true,
+      onboardingCompletedAt: null,
       createdAt: '',
     };
   }

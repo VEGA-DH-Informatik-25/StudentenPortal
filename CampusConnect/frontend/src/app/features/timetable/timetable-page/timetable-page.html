@@ -1,4 +1,4 @@
-<div class="timetable-page">
+<div data-tour="timetable-page" class="timetable-page">
   @if (!_course()) {
     <section class="course-setup">
       <header class="timetable-hero">
@@ -24,10 +24,10 @@
 
           <label class="course-field course-field--manual">
             <span>{{ 'common.courseCode' | translate }}</span>
-            <input type="text" [placeholder]="'timetable.courseInputPlaceholder' | translate" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
+            <input data-tour="timetable-course" type="text" [placeholder]="'timetable.courseInputPlaceholder' | translate" [ngModel]="_customCourse()" (ngModelChange)="_customCourse.set($event)" (keyup.enter)="loadCustomCourse()" />
           </label>
 
-          <button class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" [attr.aria-label]="'timetable.showCourse' | translate">⌕</button>
+          <button data-tour="timetable-submit" class="icon-action" type="button" (click)="loadCustomCourse()" [disabled]="_isLoading() || !_customCourse()" [attr.aria-label]="'timetable.showCourse' | translate">⌕</button>
         </div>
 
         <div class="course-history" [attr.aria-label]="'timetable.courseHistory' | translate">

@@ -19,7 +19,7 @@
     <p class="groups-page__state">{{ 'groups.loading' | translate }}</p>
   } @else {
     <div class="groups-layout">
-      <aside class="groups-navigation" [attr.aria-label]="'groups.header' | translate">
+      <aside data-tour="groups-types" class="groups-navigation" [attr.aria-label]="'groups.header' | translate">
         <div class="section-heading">
           <span>{{ 'groups.heroLabel' | translate }}</span>
           <strong>{{ 'groups.directory' | translate }}</strong>
@@ -43,6 +43,7 @@
         <div class="group-tabs" role="tablist" [attr.aria-label]="'groups.filter.allRules' | translate">
           @for (tab of _tabs(); track tab.id) {
             <button
+              [attr.data-tour]="tab.id === 'Explore' ? 'groups-discover' : null"
               type="button"
               role="tab"
               [attr.aria-selected]="_activeTab() === tab.id"

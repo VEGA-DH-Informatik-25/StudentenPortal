@@ -1,5 +1,5 @@
 <nav class="navbar" [attr.aria-label]="'nav.main' | translate">
-  <a class="navbar__brand" routerLink="/feed" routerLinkActive="navbar__brand--active" [routerLinkActiveOptions]="{ exact: true }" [attr.aria-label]="'nav.feedOpen' | translate">
+  <a data-tour="feed" class="navbar__brand" routerLink="/feed" routerLinkActive="navbar__brand--active" [routerLinkActiveOptions]="{ exact: true }" [attr.aria-label]="'nav.feedOpen' | translate">
     <span class="navbar__mark" aria-hidden="true"></span>
     <span class="navbar__brand-copy">
       <span class="navbar__overline">DHBW</span>
@@ -19,12 +19,12 @@
 
   <div class="navbar__menu" [class.navbar__menu--open]="_isMenuOpen()">
     <ul class="navbar__links">
-      <li><a routerLink="/mensa" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.mensa' | translate }}</a></li>
-      <li><a routerLink="/timetable" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.timetable' | translate }}</a></li>
-      <li><a routerLink="/calendar" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.calendar' | translate }}</a></li>
-      <li><a routerLink="/grades" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.grades' | translate }}</a></li>
-      <li><a routerLink="/groups" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.groups' | translate }}</a></li>
-      <li><a routerLink="/contacts" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.contacts' | translate }}</a></li>
+      <li><a data-tour="mensa" routerLink="/mensa" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.mensa' | translate }}</a></li>
+      <li><a data-tour="timetable" routerLink="/timetable" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.timetable' | translate }}</a></li>
+      <li><a data-tour="calendar" routerLink="/calendar" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.calendar' | translate }}</a></li>
+      <li><a data-tour="grades" routerLink="/grades" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.grades' | translate }}</a></li>
+      <li><a data-tour="groups" routerLink="/groups" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.groups' | translate }}</a></li>
+      <li><a data-tour="contacts" routerLink="/contacts" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.contacts' | translate }}</a></li>
       <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.admin' | translate }}</a></li>
     </ul>
     <div class="navbar__user">

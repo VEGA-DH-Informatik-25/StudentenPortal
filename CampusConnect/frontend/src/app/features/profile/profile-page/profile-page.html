@@ -25,7 +25,7 @@
     <section class="profile-summary" [attr.aria-label]="'profile.overview' | translate">
       <div>
         <span>{{ 'common.role' | translate }}</span>
-        <strong>{{ roleLabel(profile.role) }}</strong>
+        <strong>{{ roleLabel(profile.role) }} @if (isNewHere(profile)) { <small>{{ 'profile.newHere' | translate }}</small> }</strong>
       </div>
       <div>
         <span>{{ 'common.studyProgram' | translate }}</span>

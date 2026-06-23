@@ -5,7 +5,7 @@
       <h1>{{ 'calendar.header' | translate }}</h1>
       <p>{{ 'calendar.subtitle' | translate }}</p>
     </div>
-    <button (click)="_showForm.set(!_showForm())">{{ 'calendar.addExam' | translate }}</button>
+    <button data-tour="calendar-add" (click)="_showForm.set(!_showForm())">{{ 'calendar.addExam' | translate }}</button>
   </header>
 
   @if (_showForm()) {

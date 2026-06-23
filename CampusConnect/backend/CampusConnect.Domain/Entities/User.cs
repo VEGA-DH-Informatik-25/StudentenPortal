@@ -15,5 +15,8 @@ public class User
     public string ProfileNote { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Student;
     public bool IsActive { get; set; } = true;
+    public bool MustChangePassword { get; set; }
+    public bool OnboardingCompleted { get; set; } = true;
+    public DateTime? OnboardingCompletedAt { get; set; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }

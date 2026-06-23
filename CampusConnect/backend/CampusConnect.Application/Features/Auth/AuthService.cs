@@ -10,7 +10,8 @@ namespace CampusConnect.Application.Features.Auth;
 public record RegisterCommand(string Email, string Password, string DisplayName, string Course);
 public record LoginCommand(string Email, string Password);
 public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
-public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, DateTime CreatedAt);
+public record ChangeInitialPasswordCommand(string CurrentPassword, string NewPassword);
+public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo)
@@ -41,7 +42,8 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
             PasswordHash = PasswordHasher.Hash(cmd.Password),
             DisplayName = cmd.DisplayName.Trim(),
             StudyProgram = course.StudyProgram,
-            Course = course.Code
+            Course = course.Code,
+            OnboardingCompleted = true
         };
 
         await userRepo.AddAsync(user);
@@ -104,8 +106,46 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         return Result<UserProfileResult>.Success(ToProfileResult(user));
     }
 
+    public async Task<Result<UserProfileResult>> ChangeInitialPasswordAsync(Guid id, ChangeInitialPasswordCommand cmd)
+    {
+        var user = await userRepo.FindByIdAsync(id);
+        if (user is null)
+            return Result<UserProfileResult>.Failure(UserProfileNotFoundError);
+
+        if (!PasswordHasher.Verify(cmd.CurrentPassword, user.PasswordHash))
+            return Result<UserProfileResult>.Failure("The current password is incorrect.");
+
+        var passwordError = ValidatePassword(cmd.NewPassword);
+        if (passwordError is not null)
+            return Result<UserProfileResult>.Failure(passwordError);
+
+        user.PasswordHash = PasswordHasher.Hash(cmd.NewPassword);
+        user.MustChangePassword = false;
+        await userRepo.UpdateAsync(user);
+        return Result<UserProfileResult>.Success(ToProfileResult(user));
+    }
+
+    public async Task<Result<UserProfileResult>> CompleteOnboardingAsync(Guid id)
+    {
+        var user = await userRepo.FindByIdAsync(id);
+        if (user is null)
+            return Result<UserProfileResult>.Failure(UserProfileNotFoundError);
+
+        if (user.MustChangePassword)
+            return Result<UserProfileResult>.Failure("Change the initial password before completing onboarding.");
+
+        if (!user.OnboardingCompleted)
+        {
+            user.OnboardingCompleted = true;
+            user.OnboardingCompletedAt = DateTime.UtcNow;
+            await userRepo.UpdateAsync(user);
+        }
+
+        return Result<UserProfileResult>.Success(ToProfileResult(user));
+    }
+
     private static UserProfileResult ToProfileResult(User user) =>
-        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.CreatedAt);
+        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.MustChangePassword, user.OnboardingCompleted, user.OnboardingCompletedAt, user.CreatedAt);
 
     private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive, bool requireStudentCourse)
     {
@@ -187,4 +227,14 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static string NormalizeOptional(string? value) => value?.Trim() ?? string.Empty;
+
+    private static string? ValidatePassword(string password)
+    {
+        if (password.Length < 8)
+            return "Password must be at least 8 characters long.";
+        if (!password.Any(char.IsUpper) || !password.Any(char.IsLower) || !password.Any(char.IsDigit) || !password.Any(character => !char.IsLetterOrDigit(character)))
+            return "Password must contain uppercase and lowercase letters, a number, and a special character.";
+
+        return null;
+    }
 }

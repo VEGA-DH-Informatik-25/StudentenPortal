@@ -85,6 +85,36 @@ public class AuthController(AuthService authService) : ControllerBase
         return Ok(ToUserProfileResponse(result.Value!));
     }
 
+    [HttpPost("change-initial-password")]
+    public async Task<IActionResult> ChangeInitialPassword([FromBody] ChangeInitialPasswordRequest request)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await authService.ChangeInitialPasswordAsync(userId.Value, new ChangeInitialPasswordCommand(request.CurrentPassword, request.NewPassword));
+        if (!result.IsSuccess)
+            return ToProfileError(result);
+
+        await SignInBrowserSessionAsync(result.Value!);
+        return Ok(ToUserProfileResponse(result.Value!));
+    }
+
+    [HttpPost("onboarding/complete")]
+    public async Task<IActionResult> CompleteOnboarding()
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null)
+            return Unauthorized(new { error = "User could not be resolved from the token." });
+
+        var result = await authService.CompleteOnboardingAsync(userId.Value);
+        if (!result.IsSuccess)
+            return ToProfileError(result);
+
+        await SignInBrowserSessionAsync(result.Value!);
+        return Ok(ToUserProfileResponse(result.Value!));
+    }
+
     private Guid? GetCurrentUserId()
         => CurrentUser.GetUserId(User);
 
@@ -127,5 +157,5 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private static UserProfileResponse ToUserProfileResponse(UserProfileResult profile) =>
-        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.CreatedAt);
+        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.MustChangePassword, profile.OnboardingCompleted, profile.OnboardingCompletedAt, profile.CreatedAt);
 }
