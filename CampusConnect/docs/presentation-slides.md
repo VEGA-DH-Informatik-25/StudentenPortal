@@ -226,7 +226,7 @@ Kurz gefasst – Die technische Grundlage:
 ```
 
 ### Sprechtext
-"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bedarf s[...]
+"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bedarf s[...] Damit geben wir euch eine solide Grundlage – jetzt zeige ich euch, was wir konkret brauchen, um erfolgreich zu sein."
 
 ---
 
@@ -289,7 +289,7 @@ Das bitten wir vom Sponsor:
 
 ✅ 5. Nach dem MVP
    • Perspektive für produktiven Betrieb klären
-   • Wer macht Updates & Support? 
+   • Wer macht Updates & Support?
 ```
 
 ### Sprechtext
@@ -360,24 +360,27 @@ Kontakt – Fragen sind willkommen!
 ---
 
 
-# Ausführliche Redner-Notizen (gekürzt)
+# Ausführliche Redner-Notizen
 
-## Person 1 (Slides 1–3)
+## Person 1 (Folien 1–3)
 - Fokus: Einstieg, Problem, Zielsetzung
 - Zeit: 3:45 am Stück
+- Abschluss: "Mit CampusConnect lösen wir diese Probleme – jetzt übergebe ich an Person 2, die euch zeigt, wie das konkret aussieht."
 
-## Person 2 (Slides 4–5)
+## Person 2 (Folien 4–5)
 - Fokus: Features & Mehrwert für Sponsor
 - Zeit: 3:45 am Stück
+- Abschluss: "Diese Features bringen echten Nutzen für die DHBW. Aber wer steht dahinter? Das erklärt euch Person 3."
 
-## Person 3 (Slides 6–7)
+## Person 3 (Folien 6–7)
 - Fokus: Team, Qualifikation & Technisches Overview
 - Zeit: 3:45 am Stück
+- Abschluss: "Wir sind bereit und haben die richtige Basis. Aber wir brauchen auch eure Unterstützung – Person 4 erklärt, was wir genau brauchen."
 
-## Person 4 (Slides 8–11)
+## Person 4 (Folien 8–11)
 - Fokus: Risiken, was wir brauchen, Fazit & Kontakt
 - Zeit: 3:45 am Stück
-
+- Abschluss: Offene Fragen beantworten
 
 ---
 
@@ -386,6 +389,5 @@ Kontakt – Fragen sind willkommen!
 - Font: Sans-Serif, gut lesbar
 - Pro Folie: Eine Hauptaussage, 3–5 Stichpunkte
 - Mockups/Screenshots: auf Folien 4–5 integrieren
-
 
 Viel Erfolg bei der Präsentation! 🎉
