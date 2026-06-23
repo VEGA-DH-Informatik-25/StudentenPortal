@@ -164,7 +164,7 @@ Konkrete Vorteile für die DHBW Lörrach:
 ---
 
 
-## FOLIE 7: Technisches Überblick – Warum das funktioniert
+## FOLIE 6: Technisches Überblick – Warum das funktioniert
 **Dauer:** 2 Minuten 30 Sekunden  
 **Redner:** Person 3 (Fortsetzung)
 
@@ -199,7 +199,7 @@ Kurz gefasst – Die technische Grundlage:
 
 ---
 
-## FOLIE 8: Risiken & wie wir sie mindern
+## FOLIE 7: Risiken & wie wir sie mindern
 **Dauer:** 30 Sekunden  
 **Redner:** Person 4
 
@@ -228,7 +228,7 @@ Mögliche Herausforderungen – und unsere Strategie:
 "Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein re[...]
 
 ---
-## FOLIE 6: Warum wir geeignet sind – Team & Qualifikation
+## FOLIE 8: Warum wir geeignet sind – Team & Qualifikation
 **Dauer:** 1 Minute 15 Sekunden  
 **Redner:** Person 3
 
