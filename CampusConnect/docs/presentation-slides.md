@@ -19,7 +19,7 @@ Ein Projekt der DHBW Informatik – Mai bis Juli 2026
 ```
 
 ### Sprechtext (Person 1 — Moderator)
-"Guten Tag! Mein Name ist [Name] und wir sind ein Team aus vier Informatikstudierenden. Heute stellen wir euch CampusConnect vor – eine Lösung, die den Studienalltag an der DHBW Lörrach fundamenta[...]
+"Guten Tag! Mein Name ist [Name] und wir sind ein Team aus vier Informatikstudierenden. Heute stellen wir euch CampusConnect vor – eine Lösung, die den Studienalltag an der DHBW Lörrach fundamenta[...] 
 
 ---
 
@@ -53,7 +53,7 @@ Herausforderung im Studienalltag der DHBW Lörrach:
 ```
 
 ### Sprechtext
-"An der DHBW Lörrach gibt es aktuell kein zentrales System für den Studienalltag. Informationen verteilen sich über WhatsApp-Gruppen, E-Mails und Aushänge – das ist ineffizient und fehleranfäll[...]
+"An der DHBW Lörrach gibt es aktuell kein zentrales System für den Studienalltag. Informationen verteilen sich über WhatsApp-Gruppen, E-Mails und Aushänge – das ist ineffizient und fehleranf[...]
 
 ---
 
@@ -78,7 +78,7 @@ Was CampusConnect löst:
 ```
 
 ### Sprechtext
-"Mit CampusConnect schaffen wir eine zentrale, benutzerfreundliche Plattform. Alle Informationen sind an einer Stelle. Studierende haben einen einzigen Anlaufpunkt – fertig. Der Mensa-Plan wird auto[...]
+"Mit CampusConnect schaffen wir eine zentrale, benutzerfreundliche Plattform. Alle Informationen sind an einer Stelle. Studierende haben einen einzigen Anlaufpunkt – fertig. Der Mensa-Plan wird [...] 
 
 ---
 
@@ -121,7 +121,7 @@ Zentrale Funktionen von CampusConnect:
 ```
 
 ### Sprechtext
-"Das sind die Kernfunktionen: Ein News-Feed für zentrale Infos, ein Schwarzes Brett für private Angebote und Gesuche, der automatische Mensa-Plan – täglich aktuell ohne manuelle Eingabe. Dann der[...]
+"Das sind die Kernfunktionen: Ein News-Feed für zentrale Infos, ein Schwarzes Brett für private Angebote und Gesuche, der automatische Mensa-Plan – täglich aktuell ohne manuelle Eingabe. Dan[...]
 
 ---
 
@@ -159,7 +159,7 @@ Konkrete Vorteile für die DHBW Lörrach:
 ```
 
 ### Sprechtext
-"Warum sollte die DHBW in CampusConnect investieren? Weil es messbare Vorteile bringt: bessere Lernergebnisse durch strukturierte Gruppen, weniger Kommunikationschaos für Verwaltung und Studierende, [...]
+"Warum sollte die DHBW in CampusConnect investieren? Weil es messbare Vorteile bringt: bessere Lernergebnisse durch strukturierte Gruppen, weniger Kommunikationschaos für Verwaltung und Studiere[...]
 
 ---
 
@@ -191,7 +191,7 @@ Warum CampusConnect in den richtigen Händen ist:
 ```
 
 ### Sprechtext
-"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch und f[...]
+"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch [...]
 
 ---
 
@@ -226,7 +226,7 @@ Kurz gefasst – Die technische Grundlage:
 ```
 
 ### Sprechtext
-"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bedarf s[...] Damit geben wir euch eine solide Grundlage – jetzt zeige ich euch, was wir konkret brauchen, um erfolgreich zu sein."
+"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bed[...]
 
 ---
 
@@ -256,7 +256,7 @@ Mögliche Herausforderungen – und unsere Strategie:
 ```
 
 ### Sprechtext
-"Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein realis[...]
+"Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein re[...]
 
 ---
 
