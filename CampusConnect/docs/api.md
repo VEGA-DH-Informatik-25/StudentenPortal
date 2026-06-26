@@ -15,7 +15,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | POST | `/api/auth/change-initial-password` | Initialpasswort nach Prüfung des aktuellen Passworts ändern | Ja |
 | POST | `/api/auth/onboarding/complete` | Onboarding nach dem Passwortwechsel abschließen | Ja |
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
-| PUT | `/api/auth/me` | Anzeigename, Kurs und optionale Kontaktdetails des eigenen Profils aktualisieren | Ja |
+| PUT | `/api/auth/me` | Anzeigename und optionale Kontaktdetails des eigenen Profils aktualisieren; die Kurszuordnung muss unverändert bleiben | Ja |
 | GET | `/api/courses` | Aktive Studienkurse für Profil- und Stundenplanauswahl abrufen | Nein |
 | GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen (`query` optional, `limit` optional) | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
@@ -72,7 +72,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 
 Benutzerkonten werden ausschließlich durch Admins über `POST /api/admin/users` erstellt. Eine öffentliche Selbstregistrierung gibt es nicht. Admins vergeben Initialpasswort, Rolle, Aktivstatus und Kurs; neue Nutzer müssen ihr Initialpasswort im Onboarding ändern.
 
-Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `isActive` und `createdAt`. Profiländerungen senden nur den Kurscode; der Studiengang wird serverseitig aus dem Kurskatalog übernommen. Die öffentliche Kursliste `/api/courses` liefert nur Studienkurse. Die Admin-Kursliste `/api/admin/courses` enthält zusätzlich die Systemkurse `ADMIN`, `LECTURER` und `MANAGEMENT`, damit Admins, Lehrende und Verwaltung ebenfalls eine Kurszuordnung erhalten können.
+Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `isActive` und `createdAt`. Profiländerungen über `PUT /api/auth/me` dürfen die eigene Kurszuordnung nicht ändern; sendet ein Client dort einen abweichenden Kurscode, antwortet die API mit `400 Bad Request`. Kurswechsel laufen über die Admin-Endpunkte wie `PATCH /api/admin/users/{id}/course` oder `PUT /api/admin/users/{id}`. Die öffentliche Kursliste `/api/courses` liefert nur Studienkurse. Die Admin-Kursliste `/api/admin/courses` enthält zusätzlich die Systemkurse `ADMIN`, `LECTURER` und `MANAGEMENT`, damit Admins, Lehrende und Verwaltung ebenfalls eine Kurszuordnung erhalten können.
 
 Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs existiert eine Kursgruppe mit identischem `courseCode`. Die Mitgliedschaft dieser Kursgruppen wird aus den Benutzerprofilen abgeleitet und automatisch synchronisiert; manuelle Mitgliederänderungen in den Gruppeneinstellungen sind deshalb für Kursgruppen gesperrt. Offizielle Gruppen und Campusgruppen verwalten ihre Mitglieder manuell. Ein ganzer Kurs kann über `POST /api/groups/{id}/members/course` einmalig als Momentaufnahme in eine Nicht-Kursgruppe übernommen werden; spätere Kursänderungen wirken sich dann nicht mehr automatisch auf diese Gruppe aus.
 

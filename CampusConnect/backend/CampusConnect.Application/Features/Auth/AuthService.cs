@@ -17,6 +17,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
 {
     public const string UserProfileNotFoundError = "User profile was not found.";
     public const string LoginRateLimitExceededError = "Too many login attempts. Please try again later.";
+    public const string CourseChangeNotAllowedError = "Course changes must be managed by an administrator.";
     private const string InvalidCourseError = "Choose a valid course.";
     private const string InvalidCredentialsError = "Invalid email address or password.";
 
@@ -80,9 +81,12 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         if (user is null)
             return Result<UserProfileResult>.Failure(UserProfileNotFoundError);
 
+        if (!IsCurrentCourse(cmd.Course, user.Course))
+            return Result<UserProfileResult>.Failure(CourseChangeNotAllowedError);
+
         var course = await ResolveCourseAsync(
-            cmd.Course,
-            requireActive: !string.Equals(user.Course, cmd.Course, StringComparison.OrdinalIgnoreCase),
+            user.Course,
+            requireActive: false,
             requireStudentCourse: user.Role == Domain.Enums.UserRole.Student);
         if (course is null)
             return Result<UserProfileResult>.Failure(InvalidCourseError);
@@ -221,6 +225,17 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static string NormalizeOptional(string? value) => value?.Trim() ?? string.Empty;
+
+    private static bool IsCurrentCourse(string requestedCourse, string currentCourse)
+    {
+        if (string.IsNullOrWhiteSpace(requestedCourse) || string.IsNullOrWhiteSpace(currentCourse))
+            return false;
+
+        return string.Equals(
+            CoursesService.NormalizeCourseCode(requestedCourse),
+            CoursesService.NormalizeCourseCode(currentCourse),
+            StringComparison.Ordinal);
+    }
 
     private static string NormalizeLoginAccount(string email) =>
         email.Trim().ToLowerInvariant();

@@ -32,6 +32,7 @@ const apiErrorTranslations: Record<string, TranslationKey> = {
   'Content cannot be empty.': 'apiError.contentEmpty',
   'Course already exists.': 'apiError.courseAlreadyExists',
   'Course code must be at most 40 characters long.': 'apiError.courseCodeTooLong',
+  'Course changes must be managed by an administrator.': 'apiError.courseChangeNotAllowed',
   'Course group membership is managed through course assignments.': 'apiError.courseManagedGroup',
   'Description must be at most 240 characters long.': 'apiError.descriptionTooLong',
   'Display name is required.': 'apiError.displayNameRequired',

@@ -241,6 +241,11 @@ Account creation domain rule:
 - Admin-created users must use `@dhbw-loerrach.de` addresses.
 - Product docs previously mentioned stricter student email scope. Do not change this casually; update tests and docs if the rule changes.
 
+Course assignment rule:
+
+- Users cannot change their own course through `PUT /api/auth/me` or the profile edit UI. Self-service profile edits may update display name and contact/profile details only.
+- Course changes are administrative assignments and must go through admin user-management endpoints such as `PATCH /api/admin/users/{id}/course` or `PUT /api/admin/users/{id}`.
+
 Local secrets:
 
 - `Jwt:Secret` is required outside `appsettings.json`.

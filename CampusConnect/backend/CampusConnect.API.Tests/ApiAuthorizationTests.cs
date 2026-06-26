@@ -103,6 +103,45 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     }
 
     [Fact]
+    public async Task UpdateProfile_WithChangedCourse_ReturnsBadRequestAndKeepsAssignedCourse()
+    {
+        var adminClient = await factory.CreateAdminClientAsync();
+        var createCourseResponse = await adminClient.PostAsJsonAsync("/api/admin/courses", new
+        {
+            code = "TIF25B",
+            studyProgram = "Computer Science"
+        });
+        Assert.Equal(HttpStatusCode.Created, createCourseResponse.StatusCode);
+        var student = await adminClient.CreateUserAsync("self-course-change");
+        var client = factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = student.Email,
+            password = student.Password
+        });
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+
+        var response = await client.PutAsJsonAsync("/api/auth/me", new
+        {
+            displayName = "Changed Course",
+            course = "TIF25B",
+            phoneNumber = "+49 7621 555555",
+            location = "Campus",
+            profileNote = "Trying to move courses."
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var profileResponse = await client.GetAsync("/api/auth/me");
+        var profile = await profileResponse.Content.ReadFromJsonAsync<UserProfileResponse>();
+        Assert.NotNull(profile);
+        Assert.Equal("TIF25A", profile!.Course);
+        Assert.Equal("self-course-change User", profile.DisplayName);
+        Assert.Equal(string.Empty, profile.PhoneNumber);
+        Assert.Equal(string.Empty, profile.Location);
+        Assert.Equal(string.Empty, profile.ProfileNote);
+    }
+
+    [Fact]
     public async Task ProtectedEndpoint_WithTokenMissingUserId_ReturnsUnauthorized()
     {
         var client = factory.CreateClient();
@@ -157,4 +196,5 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
 
     private sealed record GradeSummaryResponse(IReadOnlyList<object> Grades, decimal WeightedAverage, int TotalEcts);
     private sealed record CourseResponse(string Code, string StudyProgram, bool IsActive, DateTime CreatedAt);
+    private sealed record UserProfileResponse(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
 }

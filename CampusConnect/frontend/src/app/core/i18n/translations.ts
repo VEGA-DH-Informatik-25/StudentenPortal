@@ -531,6 +531,7 @@ export const enTranslations = {
   'apiError.commentsClosed': 'Comments are closed in this group.',
   'apiError.contentEmpty': 'Content cannot be empty.',
   'apiError.courseAlreadyExists': 'This course already exists.',
+  'apiError.courseChangeNotAllowed': 'Course changes must be managed by an administrator.',
   'apiError.courseCodeRequired': 'Enter a course code for the course group.',
   'apiError.courseCodeTooLong': 'Course code must be at most 40 characters long.',
   'apiError.courseFieldsRequired': 'Fill in all course fields.',
@@ -1285,6 +1286,7 @@ export const deTranslations: Record<TranslationKey, string> = {
   'apiError.commentsClosed': 'Kommentare sind in dieser Gruppe geschlossen.',
   'apiError.contentEmpty': 'Der Inhalt darf nicht leer sein.',
   'apiError.courseAlreadyExists': 'Dieser Kurs existiert bereits.',
+  'apiError.courseChangeNotAllowed': 'Kurswechsel müssen durch die Administration verwaltet werden.',
   'apiError.courseCodeRequired': 'Gib einen Kurscode für die Kursgruppe ein.',
   'apiError.courseCodeTooLong': 'Der Kurscode darf höchstens 40 Zeichen lang sein.',
   'apiError.courseFieldsRequired': 'Bitte fülle alle Kursfelder aus.',
@@ -1509,4 +1511,3 @@ export const translations: Record<LanguageCode, Record<TranslationKey, string>> 
   en: enTranslations,
   de: deTranslations,
 };
-

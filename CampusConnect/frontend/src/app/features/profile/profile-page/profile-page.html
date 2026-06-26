@@ -51,19 +51,12 @@
 
         <label>
           {{ 'common.course' | translate }}
-          <select name="course" [(ngModel)]="_form.course" [disabled]="_coursesLoading()" required>
-            @if (_form.course && !selectedCourse()) {
-              <option [value]="_form.course">{{ _form.course }} · {{ 'common.notSet' | translate }}</option>
-            }
-            @for (course of _courses(); track course.code) {
-              <option [value]="course.code">{{ courseLabel(course) }}</option>
-            }
-          </select>
+          <input type="text" name="course" [value]="profile.course" readonly required />
         </label>
 
         <label>
           {{ 'common.studyProgram' | translate }}
-          <input type="text" [value]="selectedCourse()?.studyProgram ?? profile.studyProgram" readonly />
+          <input type="text" name="studyProgram" [value]="profile.studyProgram" readonly />
         </label>
 
         <label>
@@ -83,7 +76,7 @@
       </div>
 
       <div class="profile-form__actions">
-        <button type="submit" [disabled]="_isSaving() || _coursesLoading() || !_form.course">
+        <button type="submit" [disabled]="_isSaving() || !profile.course">
           {{ _isSaving() ? ('profile.saving' | translate) : ('profile.save' | translate) }}
         </button>
       </div>

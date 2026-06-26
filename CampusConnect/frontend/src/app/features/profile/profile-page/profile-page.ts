@@ -3,9 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Auth } from '../../../core/services/auth';
-import { Course } from '../../../core/models/course.model';
 import { UserProfile } from '../../../core/models/auth.model';
-import { Courses } from '../../../core/services/courses';
 
 @Component({
   selector: 'app-profile-page',
@@ -17,13 +15,10 @@ import { Courses } from '../../../core/services/courses';
 })
 export class ProfilePage implements OnInit {
   private readonly _auth = inject(Auth);
-  private readonly _coursesService = inject(Courses);
   private readonly _i18n = inject(I18n);
 
   protected readonly _profile = signal<UserProfile | null>(null);
-  protected readonly _courses = signal<Course[]>([]);
   protected readonly _isLoading = signal(false);
-  protected readonly _coursesLoading = signal(false);
   protected readonly _isSaving = signal(false);
   protected readonly _error = signal('');
   protected readonly _success = signal('');
@@ -42,7 +37,6 @@ export class ProfilePage implements OnInit {
       this._setProfile(cachedProfile);
     }
 
-    this._loadCourses();
     this._loadProfile();
   }
 
@@ -70,34 +64,12 @@ export class ProfilePage implements OnInit {
     });
   }
 
-  protected selectedCourse(): Course | null {
-    return this._courses().find(course => course.code === this._form.course) ?? null;
-  }
-
-  protected courseLabel(course: Course): string {
-    return `${course.code} · ${course.studyProgram}`;
-  }
-
   protected roleLabel(role: string): string {
     return this._i18n.roleLabel(role);
   }
 
   protected isNewHere(profile: UserProfile): boolean {
     return Date.now() - new Date(profile.createdAt).getTime() < 14 * 24 * 60 * 60 * 1000;
-  }
-
-  private _loadCourses(): void {
-    this._coursesLoading.set(true);
-    this._coursesService.getCourses().subscribe({
-      next: courses => {
-        this._courses.set(courses);
-        this._coursesLoading.set(false);
-      },
-      error: error => {
-        this._error.set(this._i18n.readError(error, 'admin.courseLoadError'));
-        this._coursesLoading.set(false);
-      },
-    });
   }
 
   private _loadProfile(): void {

@@ -133,7 +133,7 @@ public class AuthServiceTests
 
         var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand(
             "Bob B.",
-            "TIF25B",
+            "WWI25A",
             " +49 7621 123456 ",
             " Library ",
             " Looking for a project partner for web development. "));
@@ -143,15 +143,48 @@ public class AuthServiceTests
         Assert.Equal(user.Id, profile.Id);
         Assert.Equal("bob@dhbw-loerrach.de", profile.Email);
         Assert.Equal("Bob B.", profile.DisplayName);
-        Assert.Equal("Computer Science", profile.StudyProgram);
-        Assert.Equal("TIF25B", profile.Course);
+        Assert.Equal("Business Informatics", profile.StudyProgram);
+        Assert.Equal("WWI25A", profile.Course);
         Assert.Equal("+49 7621 123456", profile.PhoneNumber);
         Assert.Equal("Library", profile.Location);
         Assert.Equal("Looking for a project partner for web development.", profile.ProfileNote);
-        Assert.Contains(user.Id, groups.AssignedUserIdsByCourse["TIF25B"]);
 
         var storedUser = await users.FindByIdAsync(user.Id);
         Assert.Equal("hash", storedUser!.PasswordHash);
+    }
+
+    [Fact]
+    public async Task UpdateProfileAsync_RejectsSelfServiceCourseChanges()
+    {
+        var users = new FakeUserRepository();
+        var user = new User
+        {
+            Email = "student@dhbw-loerrach.de",
+            PasswordHash = "hash",
+            DisplayName = "Student",
+            StudyProgram = "Business Informatics",
+            Course = "WWI25A"
+        };
+        await users.AddAsync(user);
+        var service = CreateService(users);
+
+        var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand(
+            "Student New",
+            "TIF25A",
+            "+49 7621 555555",
+            "Campus",
+            "Updated profile note."));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(AuthService.CourseChangeNotAllowedError, result.Error);
+
+        var storedUser = await users.FindByIdAsync(user.Id);
+        Assert.Equal("Student", storedUser!.DisplayName);
+        Assert.Equal("Business Informatics", storedUser.StudyProgram);
+        Assert.Equal("WWI25A", storedUser.Course);
+        Assert.Empty(storedUser.PhoneNumber);
+        Assert.Empty(storedUser.Location);
+        Assert.Empty(storedUser.ProfileNote);
     }
 
     [Fact]

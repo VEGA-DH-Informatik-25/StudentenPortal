@@ -8,6 +8,7 @@ import { ProfilePage } from './profile-page';
 describe('ProfilePage', () => {
   let fixture: ComponentFixture<ProfilePage>;
   let http: HttpTestingController;
+  let storage: Record<string, string>;
 
   const profile: UserProfile = {
     id: 'user-1',
@@ -26,6 +27,20 @@ describe('ProfilePage', () => {
   };
 
   beforeEach(async () => {
+    storage = {};
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => storage[key] ?? null),
+      setItem: vi.fn((key: string, value: string) => {
+        storage[key] = value;
+      }),
+      removeItem: vi.fn((key: string) => {
+        delete storage[key];
+      }),
+      clear: vi.fn(() => {
+        storage = {};
+      }),
+    });
+
     await TestBed.configureTestingModule({
       imports: [ProfilePage],
       providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
@@ -36,17 +51,12 @@ describe('ProfilePage', () => {
   });
 
   afterEach(() => {
-    http.verify();
+    http?.verify();
+    vi.unstubAllGlobals();
   });
 
   it('should load the current user profile', () => {
     fixture.detectChanges();
-
-    const coursesRequest = http.expectOne('/api/courses');
-    expect(coursesRequest.request.method).toBe('GET');
-    coursesRequest.flush([
-      { code: 'TIF25A', studyProgram: 'Computer Science', isActive: true, createdAt: '2026-04-27T10:00:00Z' },
-    ]);
 
     const request = http.expectOne('/api/auth/me');
     expect(request.request.method).toBe('GET');
@@ -57,5 +67,25 @@ describe('ProfilePage', () => {
     expect(text).toContain('alice@dhbw-loerrach.de');
     expect(text).toContain('TIF25A');
     expect(text).toContain('Profilnotiz');
+  });
+
+  it('shows the assigned course as read-only profile data', () => {
+    fixture.detectChanges();
+
+    const request = http.expectOne('/api/auth/me');
+    request.flush(profile);
+    fixture.detectChanges();
+
+    http.expectNone('/api/courses');
+    const courseSelect = fixture.nativeElement.querySelector('select[name="course"]');
+    expect(courseSelect).toBeNull();
+
+    const courseInput = fixture.nativeElement.querySelector('input[name="course"]') as HTMLInputElement | null;
+    expect(courseInput?.readOnly).toBe(true);
+    expect(courseInput?.value).toBe('TIF25A');
+
+    const studyProgramInput = fixture.nativeElement.querySelector('input[name="studyProgram"]') as HTMLInputElement | null;
+    expect(studyProgramInput?.readOnly).toBe(true);
+    expect(studyProgramInput?.value).toBe('Computer Science');
   });
 });
