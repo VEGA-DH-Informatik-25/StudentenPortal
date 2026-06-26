@@ -3,12 +3,12 @@
 ## Präsentationsformat
 - **Gesamtdauer:** 15 Minuten
 - **Teamgröße:** 4 Personen
-- **Aufteilung:** Jeder redet am Stück — Person 1, Person 2, Person 3, Person 4 (jeweils ca. 3:45 Minuten)
+- **Aufteilung:** Julius Allgaier, Simon Wörner, Jakob Wußler, Theo Pfaff (jeweils ca. 3:45 Minuten)
 
 ---
 
-## FOLIE 1: Titel und Einstieg
-**Dauer:** 30 Sekunden
+## 1: Titel und Einstieg
+**Redner:** Julius Allgaier
 
 ### Inhalt
 ```
@@ -17,15 +17,10 @@ Das zentrale Studierendenportal der DHBW Lörrach
 
 Ein Projekt der DHBW Informatik – Mai bis Juli 2026
 ```
-
-### Sprechtext (Person 1 — Moderator)
-"Guten Tag! Mein Name ist [Name] und wir sind ein Team aus vier Informatikstudierenden. Heute stellen wir euch CampusConnect vor – eine Lösung, die den Studienalltag an der DHBW Lörrach fundamenta[...] 
-
 ---
 
-## FOLIE 2: Das Problem – Ausgangssituation
-**Dauer:** 1 Minute 30 Sekunden  
-**Redner:** Person 1
+## 2: Das Problem – Ausgangssituation 
+**Redner:** Julius Allgaier
 
 ### Inhalt – Stichpunkte
 ```
@@ -51,15 +46,10 @@ Herausforderung im Studienalltag der DHBW Lörrach:
    • Erstsemester werden nicht optimal betreut
    • Zeitaufwand für Studis höher als nötig
 ```
-
-### Sprechtext
-"An der DHBW Lörrach gibt es aktuell kein zentrales System für den Studienalltag. Informationen verteilen sich über WhatsApp-Gruppen, E-Mails und Aushänge – das ist ineffizient und fehleranf[...]
-
 ---
 
-## FOLIE 3: Ziel und Anforderungen
-**Dauer:** 1 Minute 45 Sekunden  
-**Redner:** Person 1 (Fortsetzung)
+## 3: Ziel und Anforderungen
+**Redner:** Julius Allgaier
 
 ### Inhalt – Stichpunkte
 ```
@@ -72,19 +62,14 @@ Was CampusConnect löst:
 ✓ Noten- und ECTS-Tracker
 ✓ Intelligentes Lerngruppen-Matching
 ✓ Strukturierter Onboarding-Prozess für Erstsemester
-✓ Schwarzes Brett für WG-Suche, Mitfahrgelegenheiten, Gesuche
+✓ Schwarzes Brett für WG-Suche, Mitfahrgelegenheiten
 
 → Ziel: Ein Portal statt zehn Chaos-Kanäle
 ```
-
-### Sprechtext
-"Mit CampusConnect schaffen wir eine zentrale, benutzerfreundliche Plattform. Alle Informationen sind an einer Stelle. Studierende haben einen einzigen Anlaufpunkt – fertig. Der Mensa-Plan wird [...] 
-
 ---
 
-## FOLIE 4: Die Lösung – Kern-Features
-**Dauer:** 1 Minute 45 Sekunden  
-**Redner:** Person 2
+## 4: Die Lösung – Kern-Features
+**Redner:** Simon Wörner
 
 ### Inhalt – Stichpunkte
 ```
@@ -119,15 +104,10 @@ Zentrale Funktionen von CampusConnect:
    • Konten werden durch Admins erstellt
    • Sichere, moderne JWT-basierte Auth
 ```
-
-### Sprechtext
-"Das sind die Kernfunktionen: Ein News-Feed für zentrale Infos, ein Schwarzes Brett für private Angebote und Gesuche, der automatische Mensa-Plan – täglich aktuell ohne manuelle Eingabe. Dan[...]
-
 ---
 
-## FOLIE 5: Praktischer Mehrwert für den Sponsor
-**Dauer:** 2 Minuten  
-**Redner:** Person 2 (Fortsetzung)
+## 5: Praktischer Mehrwert für den Sponsor
+**Redner:** ?
 
 ### Inhalt – Stichpunkte
 ```
@@ -157,16 +137,11 @@ Konkrete Vorteile für die DHBW Lörrach:
    → DHBW Lörrach zeigt: Wir kümmern uns um digitale Infrastruktur
    → Innovative Lösung, die Studierenden begeistert
 ```
-
-### Sprechtext
-"Warum sollte die DHBW in CampusConnect investieren? Weil es messbare Vorteile bringt: bessere Lernergebnisse durch strukturierte Gruppen, weniger Kommunikationschaos für Verwaltung und Studiere[...]
-
 ---
 
 
-## FOLIE 6: Technisches Überblick – Warum das funktioniert
-**Dauer:** 2 Minuten 30 Sekunden  
-**Redner:** Person 3 (Fortsetzung)
+## 6: Technisches Überblick – Warum das funktioniert 
+**Redner:** ?
 
 ### Inhalt – Stichpunkte (Optional – Tiefe für Sponsor, wenn gewünscht)
 ```
@@ -193,15 +168,11 @@ Kurz gefasst – Die technische Grundlage:
    • Lazy Loading im Frontend
    • Caching wo sinnvoll (Speiseplan, Kursinformationen)
 ```
-
-### Sprechtext
-"Ein kurzer Blick hinter die Kulissen: Wir nutzen bewährte, moderne Technologien. Sicherheit und Wartbarkeit sind von Anfang an berücksichtigt. Wir planen für ein wartbares System, das bei Bed[...]
-
 ---
 
-## FOLIE 7: Risiken & wie wir sie mindern
-**Dauer:** 30 Sekunden  
-**Redner:** Person 4
+## 7: Risiken & wie wir sie mindern
+
+**Redner:** ?
 
 ### Inhalt – Stichpunkte
 ```
@@ -223,21 +194,16 @@ Mögliche Herausforderungen – und unsere Strategie:
    → Von Anfang an beachtet
    → Regelmäßige Security-Reviews
 ```
-
-### Sprechtext
-"Wir haben die Risiken identifiziert und Gegenmaßnahmen definiert: lokale Testdaten als Fallback, strikter MVP-Fokus, agile Sprints und fortlaufende Security-Reviews. Damit geben wir euch ein re[...]
-
 ---
-## FOLIE 8: Warum wir geeignet sind – Team & Qualifikation
-**Dauer:** 1 Minute 15 Sekunden  
-**Redner:** Person 3
+## 8: Warum wir geeignet sind – Team & Qualifikation
+**Redner:** ?
 
 ### Inhalt – Stichpunkte
 ```
 Warum CampusConnect in den richtigen Händen ist:
 
 👥 Unser Team – 4 erfahrene Informatiker
-   • 3. Semester – bereits umfangreiche Projekte umgesetzt
+   • 2. Semester – bereits umfangreiche Projekte umgesetzt
    • Verschiedene Spezialisierungen (Frontend, Backend, QA/DevOps)
    • Starke Teamkommunikation und gemeinsame Grundsätze
 
@@ -254,15 +220,10 @@ Warum CampusConnect in den richtigen Händen ist:
 ⏰ Realistische Umsetzung
    • MVP-Fokus: Wir bauen, was notwendig ist, nicht mehr
 ```
-
-### Sprechtext
-"Wir sind ein kompaktes, erfahrenes Team mit klaren Rollen. Wir nutzen bewährte Technologien und professionelle Workflows: Code Reviews, automatisierte Tests und CI/CD. Wir arbeiten realistisch [...]
-
 ---
 
-## FOLIE 9: Was wir vom Sponsor brauchen
-**Dauer:** 1 Minute 30 Sekunden  
-**Redner:** Person 4 (Fortsetzung)
+## 9: Was wir vom Sponsor brauchen
+**Redner:** ?
 
 ### Inhalt – Stichpunkte
 ```
@@ -276,7 +237,6 @@ Das bitten wir vom Sponsor:
    • Stundenplan-Datenquellen (iCal URLs pro Kurs)
    • Kursstruktur und Kurscodes
    • Kontakt zur SWFR für Mensa-API-Schlüssel
-   • Optional: Zugang zum Dualis-System (für Noten, später)
 
 ✅ 3. Test-Nutzende
    • Kleine Gruppe von Studierenden für Beta-Testing
@@ -293,15 +253,10 @@ Das bitten wir vom Sponsor:
 
 ✅ 6. Moderatione von Chat Foren
 ```
-
-### Sprechtext
-"Damit das Projekt erfolgreich ist, brauchen wir Feedback, Zugang zu relevanten Datenquellen (z. B. iCal für Stundenpläne), Test-Nutzende für Beta-Tests und Entscheidungen zu Hosting und Daten[...]
-
 ---
 
-## FOLIE 10: Fazit – Warum CampusConnect jetzt
-**Dauer:** 1 Minute  
-**Redner:** Person 4 (Fortsetzung)
+## 10: Fazit – Warum CampusConnect jetzt
+**Redner:** ?
 
 ### Inhalt – Stichpunkte
 ```
@@ -315,7 +270,6 @@ Zusammenfassung:
 💡 UNSERE LÖSUNG
    ✓ Zentrale Plattform – ein Ort für alles
    ✓ Modern, sicher, professionell
-   ✓ Bis Juli realisierbar
 
 👥 WARUM WIR
    ✓ Erfahrenes Team mit klaren Rollen
@@ -325,17 +279,11 @@ Zusammenfassung:
 📊 NÄCHSTE SCHRITTE
    ✓ Feedback vom Sponsor
    ✓ Zugang zu notwendigen Informationen
-   ✓ Sprint 1 starten
 ```
-
-### Sprechtext
-"Kurz gesagt: Wir bieten eine zentrale, wartbare Plattform, die den Studienalltag verbessert. Wir sind bereit, starten nach Ihrem Feedback und mit den nötigen Zugängen."
-
 ---
 
-## FOLIE 11: Kontakt und offene Fragen
-**Dauer:** 45 Sekunden (Diskussion)  
-**Redner:** Person 4 (Abschluss)
+## 11: Kontakt und offene Fragen
+**Redner:** ?
 
 ### Inhalt
 ```
@@ -355,42 +303,3 @@ Kontakt – Fragen sind willkommen!
    API-Doku:            /CampusConnect/docs/api.md
 
 ❓ Fragen?
-```
-
-### Sprechtext
-"Vielen Dank für eure Aufmerksamkeit. Wir freuen uns auf Feedback und Fragen."
-
----
-
-
-# Ausführliche Redner-Notizen
-
-## Person 1 (Folien 1–3)
-- Fokus: Einstieg, Problem, Zielsetzung
-- Zeit: 3:45 am Stück
-- Abschluss: "Mit CampusConnect lösen wir diese Probleme – jetzt übergebe ich an Person 2, die euch zeigt, wie das konkret aussieht."
-
-## Person 2 (Folien 4–5)
-- Fokus: Features & Mehrwert für Sponsor
-- Zeit: 3:45 am Stück
-- Abschluss: "Diese Features bringen echten Nutzen für die DHBW. Aber wer steht dahinter? Das erklärt euch Person 3."
-
-## Person 3 (Folien 6–7)
-- Fokus: Team, Qualifikation & Technisches Overview
-- Zeit: 3:45 am Stück
-- Abschluss: "Wir sind bereit und haben die richtige Basis. Aber wir brauchen auch eure Unterstützung – Person 4 erklärt, was wir genau brauchen."
-
-## Person 4 (Folien 8–11)
-- Fokus: Risiken, was wir brauchen, Fazit & Kontakt
-- Zeit: 3:45 am Stück
-- Abschluss: Offene Fragen beantworten
-
----
-
-## Designtipps für Folien (kurz)
-- Farben: DHBW-Markenfarben oder Blau/Weiß
-- Font: Sans-Serif, gut lesbar
-- Pro Folie: Eine Hauptaussage, 3–5 Stichpunkte
-- Mockups/Screenshots: auf Folien 4–5 integrieren
-
-Viel Erfolg bei der Präsentation! 🎉
