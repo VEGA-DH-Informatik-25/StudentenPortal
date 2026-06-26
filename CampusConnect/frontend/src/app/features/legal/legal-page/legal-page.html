@@ -17,9 +17,9 @@
     <span>{{ content.body | translate }}</span>
   </section>
 
-  <section class="legal-page__notice" [attr.aria-label]="'legal.placeholderTitle' | translate">
-    <strong>{{ 'legal.placeholderTitle' | translate }}</strong>
-    <p>{{ 'legal.placeholderBody' | translate }}</p>
+  <section class="legal-page__notice" [attr.aria-label]="content.noticeTitle | translate">
+    <strong>{{ content.noticeTitle | translate }}</strong>
+    <p>{{ content.noticeBody | translate }}</p>
   </section>
 
   <div class="legal-page__content">
