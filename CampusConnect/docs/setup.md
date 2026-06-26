@@ -10,6 +10,7 @@ Stand: 2026-06-24
 ```powershell
 cd CampusConnect/backend
 dotnet user-secrets set "Jwt:Secret" "<at-least-32-character-secret>" --project .\CampusConnect.API\CampusConnect.API.csproj
+dotnet user-secrets set "Mensa:ApiKey" "<swfr-mensa-api-key>" --project .\CampusConnect.API\CampusConnect.API.csproj
 ```
 
 2. API starten:
