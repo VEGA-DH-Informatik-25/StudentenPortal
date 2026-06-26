@@ -107,7 +107,7 @@ Zentrale Funktionen von CampusConnect:
 ---
 
 ## 5: Praktischer Mehrwert für den Sponsor
-**Redner:** ?
+**Redner:** Theo Pfaff
 
 ### Inhalt – Stichpunkte
 ```
@@ -141,7 +141,7 @@ Konkrete Vorteile für die DHBW Lörrach:
 
 
 ## 6: Technisches Überblick – Warum das funktioniert 
-**Redner:** ?
+**Redner:** Theo Pfaff
 
 ### Inhalt – Stichpunkte (Optional – Tiefe für Sponsor, wenn gewünscht)
 ```
@@ -172,7 +172,7 @@ Kurz gefasst – Die technische Grundlage:
 
 ## 7: Risiken & wie wir sie mindern
 
-**Redner:** ?
+**Redner:** Theo Pfaff
 
 ### Inhalt – Stichpunkte
 ```
@@ -196,7 +196,7 @@ Mögliche Herausforderungen – und unsere Strategie:
 ```
 ---
 ## 8: Warum wir geeignet sind – Team & Qualifikation
-**Redner:** ?
+**Redner:** Theo Pfaff
 
 ### Inhalt – Stichpunkte
 ```
@@ -223,7 +223,7 @@ Warum CampusConnect in den richtigen Händen ist:
 ---
 
 ## 9: Was wir vom Sponsor brauchen
-**Redner:** ?
+**Redner:** Jakob Wußler
 
 ### Inhalt – Stichpunkte
 ```
@@ -256,7 +256,7 @@ Das bitten wir vom Sponsor:
 ---
 
 ## 10: Fazit – Warum CampusConnect jetzt
-**Redner:** ?
+**Redner:** Jakob Wußler
 
 ### Inhalt – Stichpunkte
 ```
@@ -283,7 +283,7 @@ Zusammenfassung:
 ---
 
 ## 11: Kontakt und offene Fragen
-**Redner:** ?
+**Redner:** Jakob Wußler
 
 ### Inhalt
 ```
