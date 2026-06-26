@@ -1,8 +1,7 @@
-# Demo-Checkliste
+# Setup-Checkliste
 
 Stand: 2026-06-24
 
-Diese Checkliste bereitet eine reproduzierbare Vorführung der zentralen CampusConnect-Funktionen vor. Sie nutzt lokale Demo-Daten und vermeidet echte personenbezogene Daten.
 
 ## Vorbereitung
 

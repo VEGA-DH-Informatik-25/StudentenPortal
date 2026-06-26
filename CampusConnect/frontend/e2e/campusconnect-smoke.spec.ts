@@ -56,7 +56,7 @@ test('demo student can sign in, navigate core features, and sign out', async ({ 
   await expect(page.getByRole('heading', { name: 'Mensa' })).toBeVisible();
 
   await navigateTo(page, 'Stundenplan', /\/timetable$/);
-  await expect(page.getByRole('heading', { name: /Vorlesungsplan|TIF25A/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Vorlesungsplan|TIF25A/, level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Woche' }).click();
   await expect(page.getByRole('button', { name: 'Heute' })).toBeVisible();
   await expectNoPageHorizontalOverflow(page);
@@ -100,12 +100,12 @@ test('demo admin can open the admin area', async ({ page }) => {
 
   await navigateTo(page, 'Admin', /\/admin$/);
   await expect(page.getByRole('heading', { name: 'Administration' })).toBeVisible();
-  await page.getByRole('button', { name: 'Benutzer' }).click();
+  await page.getByRole('button', { name: 'Benutzer', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Benutzerverwaltung' })).toBeVisible();
   await page.getByRole('button', { name: '+ Neuer Nutzer' }).click();
   await expect(page.getByRole('dialog', { name: 'Neuer Nutzer' })).toBeVisible();
   await page.getByRole('button', { name: 'Editor schließen' }).click();
-  await page.getByRole('button', { name: 'Kurse' }).click();
+  await page.getByRole('button', { name: 'Kurse', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Kursverwaltung' })).toBeVisible();
   await expectNoPageHorizontalOverflow(page);
 });

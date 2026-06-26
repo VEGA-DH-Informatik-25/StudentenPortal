@@ -14,6 +14,7 @@ export default defineConfig({
   testDir: './e2e',
   outputDir: path.join(e2eRoot, 'test-results'),
   timeout: 45_000,
+  workers: 1,
   expect: {
     timeout: 10_000,
   },
@@ -38,6 +39,7 @@ export default defineConfig({
       name: 'tablet-portrait',
       use: {
         ...devices['iPad (gen 7)'],
+        browserName: 'chromium',
         viewport: { width: 768, height: 1024 },
         isMobile: false,
         hasTouch: true,
@@ -47,6 +49,7 @@ export default defineConfig({
       name: 'tablet-landscape',
       use: {
         ...devices['iPad (gen 7) landscape'],
+        browserName: 'chromium',
         viewport: { width: 1024, height: 768 },
         isMobile: false,
         hasTouch: true,
