@@ -67,6 +67,19 @@ describe('LegalPage', () => {
     expect(text).not.toContain('vor Veröffentlichung geprüft');
   });
 
+  it('links the legal brand back to the authenticated home area', () => {
+    legalPage = 'nutzungsordnung';
+    fixture = TestBed.createComponent(LegalPage);
+    fixture.detectChanges();
+
+    const brand = fixture.nativeElement.querySelector('.legal-page__brand') as HTMLAnchorElement;
+
+    expect(brand.getAttribute('href')).toBe('/feed');
+    expect(brand.querySelector('.legal-page__mark')).toBeTruthy();
+    expect(brand.textContent).toContain('DHBW');
+    expect(brand.textContent).toContain('CampusConnect');
+  });
+
   function renderPage(page: string): string {
     legalPage = page;
     fixture = TestBed.createComponent(LegalPage);

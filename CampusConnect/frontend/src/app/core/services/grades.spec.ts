@@ -31,29 +31,12 @@ describe('Grades', () => {
   });
 
   it('should add a grade through the API', () => {
-    service.addGrade({ moduleCode: 'T4INF1001', value: 1.7 }).subscribe();
+    service.addGrade({ moduleName: 'Mathematics I', value: 1.7, ects: 5 }).subscribe();
 
     const request = http.expectOne('/api/grades');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ moduleCode: 'T4INF1001', value: 1.7 });
+    expect(request.request.body).toEqual({ moduleName: 'Mathematics I', value: 1.7, ects: 5 });
     request.flush({ id: 'grade-1', moduleCode: 'T4INF1001', moduleName: 'Mathematics I', value: 1.7, ects: 5, createdAt: '2026-04-28T10:00:00Z' });
-  });
-
-  it('should load the current course grade plan', () => {
-    service.getGradePlan().subscribe(response => {
-      expect(response.courseCode).toBe('TIF25A');
-      expect(response.modules.length).toBe(1);
-    });
-
-    const request = http.expectOne('/api/grades/plan');
-    expect(request.request.method).toBe('GET');
-    request.flush({
-      courseCode: 'TIF25A',
-      studyProgram: 'Computer Science',
-      sourceUrl: 'https://example.invalid/computer-science.pdf',
-      retrievedAt: '2026-04-29T10:00:00Z',
-      modules: [{ code: 'T4INF1001', name: 'Mathematics I', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] }],
-    });
   });
 
   it('should delete a grade through the API', () => {

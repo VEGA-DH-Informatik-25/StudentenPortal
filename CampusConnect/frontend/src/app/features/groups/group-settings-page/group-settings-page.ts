@@ -245,6 +245,10 @@ export class GroupSettingsPage implements OnInit {
       return;
     }
 
+    if (!globalThis.confirm(this._i18n.translate('feed.confirmDeletePost'))) {
+      return;
+    }
+
     this._busyPostId.set(post.id);
     this._error.set('');
     this._feedService.deletePost(post.id).subscribe({

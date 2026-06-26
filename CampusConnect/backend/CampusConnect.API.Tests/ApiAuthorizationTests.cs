@@ -12,7 +12,6 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
     [InlineData("/api/groups/00000000-0000-0000-0000-000000000001/pending-posts")]
     [InlineData("/api/groups")]
     [InlineData("/api/grades")]
-    [InlineData("/api/grades/plan")]
     [InlineData("/api/calendar")]
     [InlineData("/api/contacts")]
     [InlineData("/api/timetable")]

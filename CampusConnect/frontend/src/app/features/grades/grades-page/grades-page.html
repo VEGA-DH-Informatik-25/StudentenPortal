@@ -10,69 +10,40 @@
     <div class="hero-card">
       <span>{{ 'grades.currentAverage' | translate }}</span>
       <strong>{{ format(weightedAverage()) }}</strong>
-      <small>{{ 'grades.passedCredits' | translate:{ credits: passedCredits() } }} · {{ 'grades.failedExams' | translate:{ count: failedCount() } }}</small>
+      <small>{{ 'grades.passedCredits' | translate:{ credits: passedCredits() } }} &middot; {{ 'grades.failedExams' | translate:{ count: failedCount() } }}</small>
     </div>
   </header>
 
   <div class="content-grid">
     <form data-tour="grades-form" class="panel grade-form" #gradeForm="ngForm" (ngSubmit)="addGrade(gradeForm)">
       <h2>{{ 'grades.addGrade' | translate }}</h2>
-      @if (planModules().length > 0) {
-        @if (hasOpenPlanModules()) {
-          <label>
-            {{ 'grades.selectPlanModule' | translate }}
-            <select name="selectedModuleCode" [(ngModel)]="selectedModuleCode" required>
-              @for (module of openPlanModules(); track module.code) {
-                <option [value]="module.code">{{ module.name }} · {{ module.ects }} ECTS</option>
-              }
-            </select>
-          </label>
-          @if (selectedPlanModule(); as selectedModule) {
-            <div class="selected-module">
-              <strong>{{ selectedModule.code }}</strong>
-              <span>{{ selectedModule.name }}</span>
-              <small>{{ examText(selectedModule) }}</small>
-            </div>
-          }
-        } @else {
-          <span class="form-note">{{ 'grades.allModulesRecorded' | translate }}</span>
-        }
-      } @else {
-        <label>
-          {{ 'grades.moduleOrExam' | translate }}
-          <input
-            name="moduleName"
-            [(ngModel)]="moduleName"
-            #moduleInput="ngModel"
-            [placeholder]="'grades.modulePlaceholder' | translate"
-            aria-describedby="module-error"
-            required
-          />
-        </label>
-        @if (moduleInput.invalid && (moduleInput.touched || gradeForm.submitted)) {
-          <span id="module-error" class="field-error">{{ 'grades.enterModule' | translate }}</span>
-        }
+      <label>
+        {{ 'grades.moduleOrExam' | translate }}
+        <input
+          name="moduleName"
+          [(ngModel)]="moduleName"
+          #moduleInput="ngModel"
+          [placeholder]="'grades.modulePlaceholder' | translate"
+          aria-describedby="module-error"
+          required
+        />
+      </label>
+      @if (moduleInput.invalid && (moduleInput.touched || gradeForm.submitted)) {
+        <span id="module-error" class="field-error">{{ 'grades.enterModule' | translate }}</span>
       }
       <div class="form-row">
         <label>
           {{ 'grades.grade' | translate }}
           <input name="grade" type="number" min="1" max="5" step="0.1" [(ngModel)]="grade" />
         </label>
-        @if (planModules().length === 0) {
-          <label>
-            ECTS
-            <input name="ects" type="number" min="1" step="1" [(ngModel)]="ects" />
-          </label>
-        }
+        <label>
+          ECTS
+          <input name="ects" type="number" min="1" step="1" [(ngModel)]="ects" />
+        </label>
       </div>
-      <button type="submit" [disabled]="_isSubmitting() || (planModules().length > 0 && !hasOpenPlanModules())">{{ 'grades.saveGrade' | translate }}</button>
+      <button type="submit" [disabled]="_isSubmitting()">{{ 'grades.saveGrade' | translate }}</button>
       @if (_error()) {
         <span class="field-error">{{ _error() }}</span>
-      }
-      @if (_isPlanLoading()) {
-        <span class="form-note">{{ 'grades.planLoading' | translate }}</span>
-      } @else if (_planNotice()) {
-        <span class="form-note">{{ _planNotice() }}</span>
       }
     </form>
 
@@ -114,35 +85,7 @@
       <span>{{ 'grades.bestGrade' | translate }}</span>
       <strong>{{ format(bestGrade()) }}</strong>
     </article>
-    <article>
-      <span>{{ 'grades.coursePlan' | translate }}</span>
-      <strong>{{ completedPlanModules() }}/{{ planModules().length }}</strong>
-    </article>
   </section>
-
-  @if (planModules().length > 0) {
-    <section class="panel">
-      <div class="section-header">
-        <h2>{{ 'grades.coursePlan' | translate }}</h2>
-        <span>{{ _plan()?.courseCode }} · {{ _plan()?.studyProgram }}</span>
-      </div>
-      <div class="plan-grid">
-        @for (module of planModules(); track module.code) {
-          <article class="plan-module" [class.completed]="module.isCompleted">
-            <div>
-              <span>{{ module.code }}</span>
-              <strong>{{ module.name }}</strong>
-            </div>
-            <small>{{ module.studyYear ? ('grades.studyYear' | translate:{ year: module.studyYear }) + ' · ' : '' }}{{ module.ects }} ECTS</small>
-            <small>{{ examText(module) }}</small>
-            @if (module.isCompleted) {
-              <span class="plan-status">{{ 'grades.gradeValue' | translate:{ grade: format(module.grade ?? 0) } }}</span>
-            }
-          </article>
-        }
-      </div>
-    </section>
-  }
 
   <section class="panel">
     <div class="section-header">
@@ -175,7 +118,7 @@
           <tbody>
             @for (entry of grades(); track entry.id) {
               <tr>
-                <td>{{ entry.moduleCode || '–' }}</td>
+                <td>{{ entry.moduleCode || '-' }}</td>
                 <td>{{ entry.moduleName }}</td>
                 <td>
                   <span class="grade-badge" [class.failed]="entry.value > 4">{{ format(entry.value) }}</span>
@@ -201,7 +144,7 @@
         <article class="module-card">
           <span>{{ summary.module }}</span>
           <strong>{{ format(summary.average) }}</strong>
-          <small>{{ 'grades.performanceCount' | translate:{ count: summary.count } }} · {{ 'grades.completedCredits' | translate:{ credits: summary.credits } }}</small>
+          <small>{{ 'grades.performanceCount' | translate:{ count: summary.count } }} &middot; {{ 'grades.completedCredits' | translate:{ credits: summary.credits } }}</small>
         </article>
       }
     </div>

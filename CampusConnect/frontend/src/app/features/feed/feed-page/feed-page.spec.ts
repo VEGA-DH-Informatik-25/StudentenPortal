@@ -111,6 +111,10 @@ describe('FeedPage', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -168,6 +172,23 @@ describe('FeedPage', () => {
     (component as any).onPickReaction(post, '🚀');
 
     expect(feedApi.toggleReaction).toHaveBeenCalledWith('post-1', { emoji: '🚀' });
+  });
+
+  it('does not delete posts when confirmation is cancelled', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+
+    (component as any).onDelete('post-1');
+
+    expect(feedApi.deletePost).not.toHaveBeenCalled();
+  });
+
+  it('deletes posts after confirmation', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+
+    (component as any).onDelete('post-1');
+
+    expect(globalThis.confirm).toHaveBeenCalledWith('Diesen Beitrag endgültig löschen?');
+    expect(feedApi.deletePost).toHaveBeenCalledWith('post-1');
   });
 
   it('loads and sorts the current day schedule', () => {

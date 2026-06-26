@@ -413,14 +413,6 @@ Program.cs
  microsoft.identitymodel.protocols/8.0.1/lib/net9.0/Microsoft.IdentityModel.Protocols.dll
  microsoft.identitymodel.tokens/8.0.1/lib/net9.0/Microsoft.IdentityModel.Tokens.dll
  microsoft.openapi/2.4.1/lib/net8.0/Microsoft.OpenApi.dll
- pdfpig/0.1.14/lib/net8.0/
-  UglyToad.PdfPig.Core.dll
-  UglyToad.PdfPig.dll
-  UglyToad.PdfPig.DocumentLayoutAnalysis.dll
-  UglyToad.PdfPig.Fonts.dll
-  UglyToad.PdfPig.Package.dll
-  UglyToad.PdfPig.Tokenization.dll
-  UglyToad.PdfPig.Tokens.dll
  sqlitepclraw.bundle_e_sqlite3/2.1.11/lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll
  sqlitepclraw.core/2.1.11/lib/netstandard2.0/SQLitePCLRaw.core.dll
  sqlitepclraw.provider.e_sqlite3/2.1.11/lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll

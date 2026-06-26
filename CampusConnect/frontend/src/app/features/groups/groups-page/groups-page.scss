@@ -369,11 +369,11 @@
   }
 
   &__join {
-    background: var(--dhbw-ink);
+    background: var(--dhbw-red);
 
     &:hover,
     &:focus-visible {
-      background: var(--dhbw-ink-soft);
+      background: var(--dhbw-red-dark);
     }
   }
 }

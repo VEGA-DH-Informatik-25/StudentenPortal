@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { Grade, GradePlan, GradeSummary } from '../../../core/models/grade.model';
+import { Grade, GradeSummary } from '../../../core/models/grade.model';
 import { Grades } from '../../../core/services/grades';
 import { GradesPage } from './grades-page';
 
@@ -9,57 +9,30 @@ describe('GradesPage', () => {
   let component: GradesPage;
   let fixture: ComponentFixture<GradesPage>;
   let summary: GradeSummary;
-  let plan: GradePlan;
   let gradesService: {
     getGrades: ReturnType<typeof vi.fn>;
-    getGradePlan: ReturnType<typeof vi.fn>;
     addGrade: ReturnType<typeof vi.fn>;
     deleteGrade: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
     summary = { grades: [], weightedAverage: 0, totalEcts: 0 };
-    plan = {
-      courseCode: 'TIF25A',
-      studyProgram: 'Computer Science',
-      sourceUrl: 'https://example.invalid/computer-science.pdf',
-      retrievedAt: '2026-04-29T10:00:00Z',
-      modules: [
-        { code: 'T4INF1001', name: 'Mathematics I', studyYear: 1, ects: 10, isRequired: true, isCompleted: false, grade: null, exams: [{ name: 'Written exam', scope: 'See exam regulations', isGraded: true }] },
-        { code: 'T4INF1004', name: 'Programming', studyYear: 1, ects: 5, isRequired: true, isCompleted: false, grade: null, exams: [] },
-      ],
-    };
     gradesService = {
       getGrades: vi.fn(() => of(summary)),
-      getGradePlan: vi.fn(() => of(plan)),
       addGrade: vi.fn((request: { moduleName?: string | null; moduleCode?: string | null; value: number; ects?: number | null }) => {
-        const plannedModule = plan.modules.find(module => module.code === request.moduleCode);
         const grade: Grade = {
           id: `grade-${summary.grades.length + 1}`,
-          moduleCode: plannedModule?.code ?? null,
-          moduleName: plannedModule?.name ?? request.moduleName ?? '',
+          moduleCode: request.moduleCode ?? null,
+          moduleName: request.moduleName ?? '',
           value: request.value,
-          ects: plannedModule?.ects ?? request.ects ?? 0,
+          ects: request.ects ?? 0,
           createdAt: '2026-04-28T10:00:00Z',
         };
         summary = createSummary([...summary.grades, grade]);
-        plan = {
-          ...plan,
-          modules: plan.modules.map(module => module.code === grade.moduleCode
-            ? { ...module, isCompleted: true, grade: grade.value }
-            : module),
-        };
         return of(grade);
       }),
       deleteGrade: vi.fn((id: string) => {
-        const deleted = summary.grades.find(grade => grade.id === id);
         summary = createSummary(summary.grades.filter(grade => grade.id !== id));
-        plan = {
-          ...plan,
-          modules: plan.modules.map(module => module.code === deleted?.moduleCode
-            ? { ...module, isCompleted: false, grade: null }
-            : module),
-        };
         return of(undefined);
       }),
     };
@@ -81,20 +54,21 @@ describe('GradesPage', () => {
 
   it('should load grades from the backend service', () => {
     expect(gradesService.getGrades).toHaveBeenCalled();
-    expect(gradesService.getGradePlan).toHaveBeenCalled();
     expect(component['grades']()).toEqual([]);
   });
 
-  it('should add grades through the backend service and calculate weighted averages', () => {
-    component['selectedModuleCode'] = 'T4INF1001';
+  it('should add manual grades through the backend service and calculate weighted averages', () => {
+    component['moduleName'] = 'Mathematics I';
     component['grade'] = 2;
+    component['ects'] = 10;
     component['addGrade']();
 
-    component['selectedModuleCode'] = 'T4INF1004';
+    component['moduleName'] = 'Programming';
     component['grade'] = 1;
+    component['ects'] = 5;
     component['addGrade']();
 
-    expect(gradesService.addGrade).toHaveBeenCalledWith({ moduleCode: 'T4INF1001', value: 2 });
+    expect(gradesService.addGrade).toHaveBeenCalledWith({ moduleName: 'Mathematics I', value: 2, ects: 10 });
     expect(component['grades']().length).toBe(2);
     expect(component['weightedAverage']()).toBeCloseTo(1.67, 1);
     expect(component['passedCredits']()).toBe(15);
@@ -102,8 +76,9 @@ describe('GradesPage', () => {
   });
 
   it('should preview additional grades without saving them', () => {
-    component['selectedModuleCode'] = 'T4INF1001';
+    component['moduleName'] = 'Mathematics I';
     component['grade'] = 3;
+    component['ects'] = 10;
     component['addGrade']();
     component['simulationGrade'] = 1;
     component['simulationEcts'] = 5;
@@ -113,7 +88,7 @@ describe('GradesPage', () => {
   });
 
   it('should delete grades through the backend service', () => {
-    component['selectedModuleCode'] = 'T4INF1001';
+    component['moduleName'] = 'Mathematics I';
     component['addGrade']();
 
     component['removeGrade']('grade-1');
@@ -122,22 +97,13 @@ describe('GradesPage', () => {
     expect(component['grades']()).toEqual([]);
   });
 
-  it('should not select a completed course-plan module when no open modules remain', () => {
-    plan = {
-      ...plan,
-      modules: plan.modules.map(module => ({ ...module, isCompleted: true, grade: 1.7 })),
-    };
-
-    component['_loadPlan']();
-
-    expect(component['openPlanModules']()).toEqual([]);
-    expect(component['selectedModuleCode']).toBe('');
-    expect(component['selectedPlanModule']()).toBeNull();
+  it('should reject empty manual module names', () => {
+    component['moduleName'] = '';
 
     component['addGrade']();
 
     expect(gradesService.addGrade).not.toHaveBeenCalled();
-    expect(component['_error']()).toBe('Alle Module aus deinem Kursplan sind bereits erfasst.');
+    expect(component['_error']()).toBe('Bitte gib ein Modul oder eine Prüfung ein.');
   });
 });
 

@@ -91,6 +91,7 @@ Der Smoke-Test startet API und Frontend mit isolierter E2E-SQLite-Datenbank. Er 
 
 ## Fallbacks für die Vorführung
 
-- Wenn externe Mensa-/Stundenplan-/Studienplanquellen nicht verfügbar sind, den freundlichen Fehlerzustand zeigen und auf Backend-Kapselung verweisen.
+- Wenn externe Mensa-/Stundenplanquellen nicht verfügbar sind, den freundlichen Fehlerzustand zeigen und auf Backend-Kapselung verweisen.
 - Wenn eine lokale Datenbank unerwartete alte Demo-Daten enthält, für die Demo eine frische Datenbank verwenden oder die Playwright-E2E-Datenbank als technisches Referenzszenario nutzen.
 - Falls Browser-Demo nicht möglich ist, Screenshots und Werbevideo aus [`media/werbevideo.md`](media/werbevideo.md) verwenden.
+

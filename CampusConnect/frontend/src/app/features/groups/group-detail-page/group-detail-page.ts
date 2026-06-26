@@ -147,6 +147,11 @@ export class GroupDetailPage implements OnInit {
   }
 
   protected onDelete(id: string): void {
+    if (!globalThis.confirm(this._i18n.translate('feed.confirmDeletePost'))) {
+      return;
+    }
+
+    this._error.set('');
     this._feedService.deletePost(id).subscribe({
       next: () => this._posts.update(posts => posts.filter(post => post.id !== id)),
       error: () => this._error.set(this._i18n.translate('feed.deletePostError')),

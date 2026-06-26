@@ -11,6 +11,11 @@ import { GroupSettingsDetails } from '../../../core/models/group.model';
 describe('GroupSettingsPage', () => {
   let component: GroupSettingsPage;
   let fixture: ComponentFixture<GroupSettingsPage>;
+  let feedApi: {
+    getPendingPosts: ReturnType<typeof vi.fn>;
+    approvePost: ReturnType<typeof vi.fn>;
+    deletePost: ReturnType<typeof vi.fn>;
+  };
 
   const details: GroupSettingsDetails = {
     group: {
@@ -53,6 +58,12 @@ describe('GroupSettingsPage', () => {
   };
 
   beforeEach(async () => {
+    feedApi = {
+      getPendingPosts: vi.fn(() => of([])),
+      approvePost: vi.fn(() => of({})),
+      deletePost: vi.fn(() => of(void 0)),
+    };
+
     await TestBed.configureTestingModule({
       imports: [GroupSettingsPage],
       providers: [
@@ -83,11 +94,7 @@ describe('GroupSettingsPage', () => {
         },
         {
           provide: Feed,
-          useValue: {
-            getPendingPosts: () => of([]),
-            approvePost: () => of({}),
-            deletePost: () => of(void 0),
-          },
+          useValue: feedApi,
         },
       ],
     }).compileComponents();
@@ -95,6 +102,10 @@ describe('GroupSettingsPage', () => {
     fixture = TestBed.createComponent(GroupSettingsPage);
     component = fixture.componentInstance;
     await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('should create', () => {
@@ -138,6 +149,49 @@ describe('GroupSettingsPage', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Bitte freigeben');
+  });
+
+  it('does not reject pending posts when confirmation is cancelled', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    const post = {
+      id: 'post-1',
+      authorName: 'Bob',
+      group: details.group,
+      content: 'Bitte freigeben',
+      createdAt: '2026-06-12T10:00:00Z',
+      status: 'Pending' as const,
+      allowComments: true,
+      canDelete: true,
+      canComment: false,
+      comments: [],
+      reactions: [],
+    };
+
+    (component as any).rejectPost(post);
+
+    expect(feedApi.deletePost).not.toHaveBeenCalled();
+  });
+
+  it('rejects pending posts after confirmation', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+    const post = {
+      id: 'post-1',
+      authorName: 'Bob',
+      group: details.group,
+      content: 'Bitte freigeben',
+      createdAt: '2026-06-12T10:00:00Z',
+      status: 'Pending' as const,
+      allowComments: true,
+      canDelete: true,
+      canComment: false,
+      comments: [],
+      reactions: [],
+    };
+
+    (component as any).rejectPost(post);
+
+    expect(globalThis.confirm).toHaveBeenCalledWith('Diesen Beitrag endgültig löschen?');
+    expect(feedApi.deletePost).toHaveBeenCalledWith('post-1');
   });
 
   it('requires a second step before group deletion', () => {

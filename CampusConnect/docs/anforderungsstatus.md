@@ -26,7 +26,7 @@ Dieses Dokument ist die aktuelle Statusmatrix zur geschützten MVP-PRD. Es ände
 | Must | Gruppenbasierter News-Feed | erfüllt | Feed mit Gruppen, Kommentaren, Reaktionen, Moderation, API-/Frontend-Tests |
 | Must | Gruppen | erfüllt | Gruppenübersicht, Details, Einstellungen, Join/Request/Invite/Leave, Moderation und Tests |
 | Must | Mensa-Speiseplan | erfüllt | Backend-Proxy und Frontend-Seite; externe Verfügbarkeit bleibt abhängig von SWFR-Konfiguration |
-| Must | Noten-Tracker | erfüllt | Manuelle Noten, Durchschnitt, Studienplan-Fallbacks, Service- und UI-Tests |
+| Must | Noten-Tracker | erfüllt | Manuelle Noten, Durchschnitt, Was-waere-wenn-Rechner, Service- und UI-Tests |
 | Must | Stundenplan | erfüllt | Backend-iCal-Service, Kursauswahl, Wochen-/Tagesansicht und Tests |
 | Must | Kontaktbuch | erfüllt | Suche und Favoriten-UI; Datenschutzfreigabe für reale Nutzung bleibt offen |
 | Must | Admin-Bereich | erfüllt | Benutzer-/Kursverwaltung, Admin-Guard, API- und UI-Tests |
@@ -50,7 +50,7 @@ Dieses Dokument ist die aktuelle Statusmatrix zur geschützten MVP-PRD. Es ände
 - Docker Compose ist weiterhin nicht produktionsreif und darf nur als Platzhalter erwähnt werden.
 - Echte SSO-Integration, produktives Hosting, Monitoring, Backups und Betriebshandbuch sind nicht implementiert.
 - Kontaktbuch und Gruppenverwaltung können personenbezogene Daten sichtbar machen; für reale Nutzung ist eine Datenschutz-/Berechtigungsfreigabe nötig.
-- Externe Mensa-, Stundenplan- und Studienplanquellen können in Demos ausfallen; Demo und Tests müssen mit Fallback-Erklärung vorbereitet werden.
+- Externe Mensa- und Stundenplanquellen können in Demos ausfallen; Demo und Tests müssen mit Fallback-Erklärung vorbereitet werden.
 - Der Frontend-Produktionsbuild ist erfolgreich, meldet aber SCSS-Budget-Warnungen für mehrere Komponenten.
 
 ## Mockup- und Nachweisartefakte
@@ -59,3 +59,4 @@ Dieses Dokument ist die aktuelle Statusmatrix zur geschützten MVP-PRD. Es ände
 - Werbevideo: `../../werbevideo/CampusConnect-Werbevideo.mp4`
 - Video-Dokumentation: [`media/werbevideo.md`](media/werbevideo.md)
 - Konzepte, die nicht automatisch Implementierungsstand sind: [`concepts/`](concepts/), [`onboarding.md`](onboarding.md)
+

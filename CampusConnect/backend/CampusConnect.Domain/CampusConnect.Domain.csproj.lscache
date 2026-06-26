@@ -61,7 +61,6 @@ Entities/
  FeedPost.cs
  Grade.cs
  GroupSettings.cs
- StudyPlan.cs
  User.cs
 Enums/
  GroupMemberPermission.cs

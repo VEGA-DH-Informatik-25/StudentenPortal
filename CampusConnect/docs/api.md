@@ -39,7 +39,6 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | POST | `/api/calendar` | Persönlichen Prüfungseintrag hinzufügen | Ja |
 | DELETE | `/api/calendar/{id}` | Eigenen Prüfungseintrag löschen | Ja |
 | GET | `/api/grades` | Noteneinträge abrufen | Ja |
-| GET | `/api/grades/plan` | Aus dem zugeordneten Kurs abgeleiteten DHBW-Studienplan mit Modulen und Prüfungsformen abrufen | Ja |
 | POST | `/api/grades` | Noteneintrag hinzufügen | Ja |
 | DELETE | `/api/grades/{id}` | Eigenen Noteneintrag löschen | Ja |
 | GET | `/api/timetable` | Stundenplan für den Profilkurs oder einen explizit gewählten Kurs abrufen (`course` optional, `days` optional) | Ja |
@@ -81,11 +80,9 @@ Jeder Benutzer hat genau einen Kurscode im Profil. Für jeden aktiven Kurs exist
 
 `GET /api/timetable` verwendet ohne `course`-Query den Kurscode des angemeldeten Profils. Dadurch können Clients den eigenen Stundenplan kursneutral abrufen. Wird `course` gesetzt, kann derselbe Endpunkt jeden Kurs aus dem Kurskatalog oder einen manuell eingegebenen Kurscode laden. `days` steuert die Länge des geladenen Zeitfensters; mit `from` kann ein Startdatum im Format `yyyy-MM-dd` gesetzt werden, damit Kalenderansichten auch vergangene Wochen gezielt nachladen können. Ohne `from` startet das Zeitfenster am Montag der aktuellen Woche. Die externe iCal-URL und optionale Kurs-Aliase werden über `Timetable:CalendarUrlTemplate`, `Timetable:MaxLookaheadDays` und `Timetable:CourseAliases` konfiguriert, damit neue Kurse oder abweichende Kalenderpostfächer ohne Codeänderung ergänzt werden können.
 
-## Noten und Studienplan
+## Noten
 
-Der Notenbereich liest den Studienplan nicht aus einer manuell gepflegten Modulliste, sondern löst den Kurs des angemeldeten Nutzers gegen die öffentlichen DHBW-Studienplan-Indexseiten auf. Für Lörrach werden die dort verlinkten Modulhandbuch-PDFs geladen und serverseitig geparst. `GET /api/grades/plan` liefert die Module, ECTS, Studienjahr, Prüfungsform und den Erfassungsstatus für den aktuellen Kurs zurück. Wenn für einen Kurs kein eindeutiger Plan gefunden wird, antwortet der Endpunkt mit `404 Not Found` und einer `{ error = ... }`-Meldung.
-
-`POST /api/grades` akzeptiert bevorzugt `moduleCode` aus diesem Plan und `value`; Modulname und ECTS werden dann serverseitig aus dem Studienplan übernommen. Für Kurse ohne gefundenen Plan bleibt die manuelle Eingabe mit `moduleName`, `ects` und `value` möglich. Eine `moduleCode`, die nicht im Kursplan des angemeldeten Nutzers vorkommt, wird abgelehnt.
+Der Notenbereich ist manuell gepflegt. `GET /api/grades` liefert die eigenen Noteneintraege, den gewichteten Durchschnitt und die Summe der ECTS. `POST /api/grades` erwartet `moduleName`, `value` und `ects`; `moduleCode` ist optional fuer vorhandene oder manuell gepflegte Daten. `DELETE /api/grades/{id}` entfernt nur eigene Noteneintraege.
 
 ## Gruppen und Feed
 

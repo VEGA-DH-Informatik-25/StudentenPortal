@@ -1,4 +1,3 @@
-using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Features.Grades;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Interfaces;
@@ -38,22 +37,13 @@ public sealed class GradesServiceTests
     }
 
     [Fact]
-    public async Task AddGradeAsync_WithPlannedModule_ShouldUsePlanModuleNameAndEcts()
+    public async Task AddGradeAsync_ShouldSaveManualGrade()
     {
         var userId = Guid.NewGuid();
-        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science" };
         var repository = new FakeGradeRepository();
-        var service = CreateService(
-            repository,
-            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram }),
-            new FakeCourseRepository(course),
-            new FakeStudyPlanProvider(new StudyPlan(
-                "Computer Science",
-                "https://example.invalid/computer-science.pdf",
-                DateTime.UtcNow,
-                [new StudyPlanModule("T4INF1001", "Mathematics I", 1, 5, true, [new StudyPlanExam("Written exam", "See exam regulations", true)])])));
+        var service = CreateService(repository);
 
-        var result = await service.AddGradeAsync(new AddGradeCommand(userId, null, 1.7m, null, "T4INF1001"));
+        var result = await service.AddGradeAsync(new AddGradeCommand(userId, "Mathematics I", 1.7m, 5, "T4INF1001"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("T4INF1001", result.Value!.ModuleCode);
@@ -61,32 +51,6 @@ public sealed class GradesServiceTests
         Assert.Equal(5, result.Value.Ects);
         var saved = Assert.Single(await repository.GetByUserAsync(userId));
         Assert.Equal("T4INF1001", saved.ModuleCode);
-    }
-
-    [Fact]
-    public async Task GetPlanAsync_ShouldMarkCompletedModulesFromExistingGrades()
-    {
-        var userId = Guid.NewGuid();
-        var course = new Course { Code = "TIF25A", StudyProgram = "Computer Science" };
-        var service = CreateService(
-            new FakeGradeRepository(new Grade { UserId = userId, ModuleCode = "T4INF1001", ModuleName = "Mathematics I", Value = 2.0m, Ects = 5 }),
-            new FakeUserRepository(new User { Id = userId, Course = course.Code, StudyProgram = course.StudyProgram }),
-            new FakeCourseRepository(course),
-            new FakeStudyPlanProvider(new StudyPlan(
-                "Computer Science",
-                "https://example.invalid/computer-science.pdf",
-                DateTime.UtcNow,
-                [
-                    new StudyPlanModule("T4INF1001", "Mathematics I", 1, 5, true, []),
-                    new StudyPlanModule("T4INF1002", "Theoretical Computer Science I", 1, 5, true, [])
-                ])));
-
-        var result = await service.GetPlanAsync(userId);
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value!.Modules.Count);
-        Assert.True(result.Value.Modules.Single(module => module.Code == "T4INF1001").IsCompleted);
-        Assert.False(result.Value.Modules.Single(module => module.Code == "T4INF1002").IsCompleted);
     }
 
     [Fact]
@@ -106,16 +70,7 @@ public sealed class GradesServiceTests
         Assert.Single(await repository.GetByUserAsync(otherUserId));
     }
 
-    private static GradesService CreateService(
-        FakeGradeRepository gradeRepository,
-        IUserRepository? userRepository = null,
-        ICourseRepository? courseRepository = null,
-        IStudyPlanProvider? studyPlanProvider = null) =>
-        new(
-            gradeRepository,
-            userRepository ?? new FakeUserRepository(),
-            courseRepository ?? new FakeCourseRepository(),
-            studyPlanProvider ?? new FakeStudyPlanProvider(null));
+    private static GradesService CreateService(FakeGradeRepository gradeRepository) => new(gradeRepository);
 
     private sealed class FakeGradeRepository(params Grade[] grades) : IGradeRepository
     {
@@ -137,63 +92,4 @@ public sealed class GradesServiceTests
         }
     }
 
-    private sealed class FakeUserRepository(params User[] users) : IUserRepository
-    {
-        private readonly Dictionary<Guid, User> _users = users.ToDictionary(user => user.Id);
-
-        public Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<User>>(_users.Values.ToList());
-
-        public Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default) =>
-            Task.FromResult(_users.Values.FirstOrDefault(user => user.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
-
-        public Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            _users.TryGetValue(id, out var user);
-            return Task.FromResult(user);
-        }
-
-        public Task AddAsync(User user, CancellationToken cancellationToken = default)
-        {
-            _users[user.Id] = user;
-            return Task.CompletedTask;
-        }
-
-        public Task UpdateAsync(User user, CancellationToken cancellationToken = default)
-        {
-            _users[user.Id] = user;
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
-        {
-            _users.Remove(id);
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class FakeCourseRepository(params Course[] courses) : ICourseRepository
-    {
-        private readonly Dictionary<string, Course> _courses = courses.ToDictionary(course => course.Code, StringComparer.OrdinalIgnoreCase);
-
-        public Task<IReadOnlyList<Course>> GetAllAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<Course>>(_courses.Values.ToList());
-
-        public Task<Course?> FindByCodeAsync(string code, CancellationToken cancellationToken = default)
-        {
-            _courses.TryGetValue(code, out var course);
-            return Task.FromResult(course);
-        }
-
-        public Task AddAsync(Course course, CancellationToken cancellationToken = default)
-        {
-            _courses[course.Code] = course;
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class FakeStudyPlanProvider(StudyPlan? plan) : IStudyPlanProvider
-    {
-        public Task<StudyPlan?> GetPlanForCourseAsync(Course course, CancellationToken cancellationToken = default) => Task.FromResult(plan);
-    }
 }

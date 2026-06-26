@@ -1,8 +1,11 @@
 <main class="legal-page">
   <nav class="legal-page__nav" [attr.aria-label]="'legal.navigation' | translate">
-    <a class="legal-page__brand" routerLink="/login">
-      <span aria-hidden="true"></span>
-      <strong>{{ 'app.name' | translate }}</strong>
+    <a class="legal-page__brand" routerLink="/feed" [attr.aria-label]="'nav.feedOpen' | translate">
+      <span class="legal-page__mark" aria-hidden="true"></span>
+      <span class="legal-page__brand-copy">
+        <span class="legal-page__overline">DHBW</span>
+        <strong>{{ 'app.name' | translate }}</strong>
+      </span>
     </a>
     <div class="legal-page__links">
       @for (link of _links; track link.kind) {

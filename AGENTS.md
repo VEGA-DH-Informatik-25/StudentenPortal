@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-24. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
+This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-26. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
 
 ## Project Identity
 
@@ -14,7 +14,7 @@ Core product areas:
 - News feed with grouped announcements, posts, comments, and reactions.
 - Mensa menu integration through the SWFR XML API.
 - Exam calendar and DHBW timetable views.
-- Grade tracking with optional DHBW study-plan parsing.
+- Manual grade tracking with weighted-average simulation.
 - Learning and campus group discovery, membership, and permissions.
 - Contact book for campus contacts and profile details.
 - Admin user and course management.
@@ -116,7 +116,6 @@ Backend:
 - OpenAPI and Swagger through `Microsoft.AspNetCore.OpenApi` and `Swashbuckle.AspNetCore`.
 - Authentication supports JWT Bearer API clients and HttpOnly browser cookies.
 - EF Core 10.0.7 with SQLite provider.
-- PdfPig for DHBW study-plan PDF parsing.
 - xUnit tests.
 
 Data and external systems:
@@ -124,7 +123,6 @@ Data and external systems:
 - SQLite database through Entity Framework Core migrations.
 - SWFR Mensa XML API through backend infrastructure only.
 - DHBW timetable service through backend infrastructure only, with iCal URL template and course aliases configured under `Timetable`.
-- DHBW study-plan index/PDF parsing through backend infrastructure only.
 
 Infrastructure status:
 
@@ -181,7 +179,7 @@ Infrastructure rules:
 
 - Repositories implement interfaces from Domain or Application.
 - External APIs are called only from Infrastructure services.
-- The frontend must never call SWFR, DHBW timetable, or study-plan sources directly.
+- The frontend must never call SWFR or DHBW timetable sources directly.
 - JWT creation lives in Infrastructure behind `IJwtService`.
 
 ## Current Persistence State
@@ -294,7 +292,6 @@ Implemented endpoints:
 | POST | `/api/calendar` | User |
 | DELETE | `/api/calendar/{id}` | User |
 | GET | `/api/grades` | User |
-| GET | `/api/grades/plan` | User |
 | POST | `/api/grades` | User |
 | DELETE | `/api/grades/{id}` | User |
 | GET | `/api/timetable` | User |
@@ -405,12 +402,6 @@ Timetable:
 - Frontend calls only the backend `/api/timetable` endpoint.
 - `GET /api/timetable` can omit `course`; the API then uses the authenticated user's profile course.
 - `Timetable:CalendarUrlTemplate` contains `{course}` for iCal lookup, and `Timetable:CourseAliases` maps visible course codes to calendar mailbox aliases.
-
-Study plan:
-
-- Backend services: `DhbwStudyPlanProvider` and `DhbwStudyPlanParser`.
-- Parser uses PdfPig.
-- `GET /api/grades/plan` resolves the logged-in user's course to DHBW study-plan data where possible.
 
 ## Commands
 

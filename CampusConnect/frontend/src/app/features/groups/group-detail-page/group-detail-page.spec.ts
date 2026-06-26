@@ -110,6 +110,10 @@ describe('GroupDetailPage', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('shows the selected group posts', () => {
     fixture.detectChanges();
 
@@ -142,5 +146,22 @@ describe('GroupDetailPage', () => {
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
     expect(feedApi.createComment).toHaveBeenCalledWith('post-1', { content: 'Bin dabei' });
+  });
+
+  it('does not delete group posts when confirmation is cancelled', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+
+    (component as any).onDelete('post-1');
+
+    expect(feedApi.deletePost).not.toHaveBeenCalled();
+  });
+
+  it('deletes group posts after confirmation', () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+
+    (component as any).onDelete('post-1');
+
+    expect(globalThis.confirm).toHaveBeenCalledWith('Diesen Beitrag endgültig löschen?');
+    expect(feedApi.deletePost).toHaveBeenCalledWith('post-1');
   });
 });

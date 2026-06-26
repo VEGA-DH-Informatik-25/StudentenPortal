@@ -57,7 +57,6 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 Common/Interfaces/
  IJwtService.cs
  IMensaService.cs
- IStudyPlanProvider.cs
  ITimetableService.cs
 Common/
  Result.cs

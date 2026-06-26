@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormsModule, NgForm } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
-import { Grade, GradePlan, GradePlanModule, GradeSummary } from '../../../core/models/grade.model';
+import { Grade, GradeSummary } from '../../../core/models/grade.model';
 import { Grades } from '../../../core/services/grades';
 
 interface ModuleSummary {
@@ -26,14 +26,10 @@ export class GradesPage implements OnInit {
   protected readonly _i18n = inject(I18n);
 
   protected readonly _summary = signal<GradeSummary>({ grades: [], weightedAverage: 0, totalEcts: 0 });
-  protected readonly _plan = signal<GradePlan | null>(null);
   protected readonly _isLoading = signal(false);
-  protected readonly _isPlanLoading = signal(false);
   protected readonly _isSubmitting = signal(false);
   protected readonly _error = signal<string | null>(null);
-  protected readonly _planNotice = signal<string | null>(null);
 
-  protected selectedModuleCode = '';
   protected moduleName = '';
   protected grade = 2.0;
   protected ects = 5;
@@ -42,10 +38,6 @@ export class GradesPage implements OnInit {
   protected targetAverage = 2.5;
 
   protected readonly grades = computed(() => this._summary().grades);
-  protected readonly planModules = computed(() => this._plan()?.modules ?? []);
-  protected readonly openPlanModules = computed(() => this.planModules().filter(module => !module.isCompleted));
-  protected readonly hasOpenPlanModules = computed(() => this.openPlanModules().length > 0);
-  protected readonly completedPlanModules = computed(() => this.planModules().filter(module => module.isCompleted).length);
   protected readonly totalEcts = computed(() => this._summary().totalEcts);
   protected readonly weightedAverage = computed(() => this.grades().length === 0 ? Number.NaN : this._summary().weightedAverage);
   protected readonly passedCredits = computed(() =>
@@ -103,25 +95,12 @@ export class GradesPage implements OnInit {
 
   ngOnInit(): void {
     this._loadGrades();
-    this._loadPlan();
   }
 
   protected addGrade(form?: NgForm): void {
-    const selectedModule = this.selectedPlanModule();
-    const hasPlan = this.planModules().length > 0;
     const moduleName = this.moduleName.trim();
 
-    if (hasPlan && !this.hasOpenPlanModules()) {
-      this._error.set(this._i18n.translate('grades.allModulesRecorded'));
-      return;
-    }
-
-    if (hasPlan && !selectedModule) {
-      this._error.set(this._i18n.translate('grades.selectPlanModule'));
-      return;
-    }
-
-    if (!hasPlan && !moduleName) {
+    if (!moduleName) {
       this._error.set(this._i18n.translate('grades.enterModule'));
       return;
     }
@@ -129,30 +108,22 @@ export class GradesPage implements OnInit {
     this._isSubmitting.set(true);
     this._error.set(null);
 
-    this._gradesService.addGrade(selectedModule
-      ? {
-          moduleCode: selectedModule.code,
-          value: this.normalizeGrade(this.grade),
-        }
-      : {
-          moduleName,
-          value: this.normalizeGrade(this.grade),
-          ects: this.normalizeEcts(this.ects),
-        }).subscribe({
+    this._gradesService.addGrade({
+      moduleName,
+      value: this.normalizeGrade(this.grade),
+      ects: this.normalizeEcts(this.ects),
+    }).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         form?.resetForm({
-          selectedModuleCode: this.nextOpenModuleCode(),
           moduleName: '',
           grade: 2.0,
           ects: 5,
         });
-        this.selectedModuleCode = this.nextOpenModuleCode();
         this.moduleName = '';
         this.grade = 2.0;
         this.ects = 5;
         this._loadGrades();
-        this._loadPlan();
       },
       error: error => {
         this._error.set(this._i18n.readError(error, 'grades.saveError'));
@@ -165,29 +136,14 @@ export class GradesPage implements OnInit {
     this._gradesService.deleteGrade(id).subscribe({
       next: () => {
         this._summary.set(this.createSummary(this.grades().filter(entry => entry.id !== id)));
-        this._loadPlan();
       },
       error: error => this._error.set(this._i18n.readError(error, 'grades.deleteError')),
     });
   }
 
-  protected selectedPlanModule(): GradePlanModule | null {
-    return this.openPlanModules().find(module => module.code === this.selectedModuleCode) ?? null;
-  }
-
-  protected examText(module: GradePlanModule): string {
-    if (module.exams.length === 0) {
-      return this._i18n.translate('grades.examFormatMissing');
-    }
-
-    return module.exams
-      .map(exam => [exam.name, exam.scope].filter(Boolean).join(' · '))
-      .join(', ');
-  }
-
   protected format(value: number): string {
     if (!Number.isFinite(value)) {
-      return '–';
+      return '-';
     }
 
     return value.toLocaleString(this._i18n.locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 });
@@ -223,27 +179,6 @@ export class GradesPage implements OnInit {
       error: error => {
         this._error.set(this._i18n.readError(error, 'grades.loadError'));
         this._isLoading.set(false);
-      },
-    });
-  }
-
-  private _loadPlan(): void {
-    this._isPlanLoading.set(true);
-    this._planNotice.set(null);
-
-    this._gradesService.getGradePlan().subscribe({
-      next: plan => {
-        this._plan.set(plan);
-        if (!this.selectedModuleCode || !this.planModules().some(module => module.code === this.selectedModuleCode && !module.isCompleted)) {
-          this.selectedModuleCode = this.nextOpenModuleCode();
-        }
-        this._isPlanLoading.set(false);
-      },
-      error: error => {
-        this._plan.set(null);
-        this._planNotice.set(this._i18n.readError(error, 'grades.planLoadError'));
-        this.selectedModuleCode = '';
-        this._isPlanLoading.set(false);
       },
     });
   }
@@ -285,9 +220,4 @@ export class GradesPage implements OnInit {
     const weightedAverage = totalEcts === 0 ? 0 : Math.round((this.weightedSum(grades) / totalEcts) * 100) / 100;
     return { grades, weightedAverage, totalEcts };
   }
-
-  private nextOpenModuleCode(): string {
-    return this.openPlanModules()[0]?.code ?? '';
-  }
-
 }

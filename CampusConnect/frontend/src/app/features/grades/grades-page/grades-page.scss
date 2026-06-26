@@ -119,7 +119,6 @@ select {
   }
 }
 
-.selected-module,
 .form-note {
   background: var(--dhbw-bg-accent, #f7f9fc);
   border: 1px solid var(--dhbw-border, #dce4ef);
@@ -128,15 +127,6 @@ select {
   display: grid;
   gap: 0.25rem;
   padding: 0.85rem;
-}
-
-.selected-module strong {
-  color: var(--dhbw-red-dark, #12376f);
-}
-
-.selected-module span {
-  color: var(--dhbw-ink, #10213f);
-  font-weight: 800;
 }
 
 .form-note {
@@ -178,7 +168,7 @@ button:hover {
 .stats {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .stats article {
@@ -301,55 +291,14 @@ th {
   font-size: 2rem;
 }
 
-.plan-grid {
-  display: grid;
-  gap: 0.85rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-
-.plan-module {
-  background: var(--dhbw-bg-accent, #f7f9fc);
-  border: 1px solid var(--dhbw-border, #dce4ef);
-  border-radius: 8px;
-  display: grid;
-  gap: 0.45rem;
-  padding: 1rem;
-}
-
-.plan-module.completed {
-  border-color: var(--dhbw-success-border);
-}
-
-.plan-module div {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.plan-module span,
-.plan-module small {
-  color: var(--dhbw-text-muted, #60708d);
-}
-
-.plan-module strong {
-  color: var(--dhbw-ink, #10213f);
-}
-
-.plan-status {
-  background: var(--dhbw-success-bg);
-  border-radius: 999px;
-  color: var(--dhbw-success-text) !important;
-  display: inline-block;
-  font-size: 0.85rem;
-  font-weight: 800;
-  justify-self: start;
-  padding: 0.3rem 0.6rem;
-}
-
 @media (max-width: 1024px) {
   .hero,
-  .content-grid,
   .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
   }
 }
 
