@@ -3,7 +3,7 @@
 ## Präsentationsformat
 - **Gesamtdauer:** 15 Minuten
 - **Teamgröße:** 4 Personen
-- **Aufteilung:** Julius Allgaier, Simon Wörner, Jakob Wußler, Theo Pfaff (jeweils ca. 3:45 Minuten)
+- **Teammitglieder:** Julius Allgaier, Simon Wörner, Jakob Wußler, Theo Pfaff
 
 ---
 
