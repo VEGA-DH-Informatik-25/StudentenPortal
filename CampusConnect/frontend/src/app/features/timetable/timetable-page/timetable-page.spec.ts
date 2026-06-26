@@ -15,8 +15,10 @@ interface TimetablePageHarness {
   _course: WritableSignal<string>;
   _courseSelection: WritableSignal<string>;
   _days: WritableSignal<TimetableDay[]>;
+  _now: WritableSignal<Date>;
   _calendarDays: () => TimetableDay[];
   _calendarTimeline: () => { startMinutes: number; endMinutes: number; spanMinutes: number };
+  _currentTimeMarker: () => { date: string; offset: number; label: string } | null;
   calendarEventHeight(event: TimetableEvent): number;
   calendarEventOffset(event: TimetableEvent): number;
   calendarEventIsCompact(event: TimetableEvent): boolean;
@@ -181,6 +183,26 @@ describe('TimetablePage', () => {
 
     expect(component._calendarTimeline().startMinutes).toBe(7 * 60);
     expect(component._calendarTimeline().endMinutes).toBe(20 * 60);
+  });
+
+  it('should position the current time marker on the visible day', () => {
+    component._activeView.set('week');
+    component._anchorDate.set('2026-04-27');
+    component._now.set(new Date('2026-04-28T08:30:00Z'));
+
+    const marker = component._currentTimeMarker();
+
+    expect(marker?.date).toBe('2026-04-28');
+    expect(marker?.offset).toBeCloseTo(25);
+    expect(marker?.label).toContain('10:30');
+  });
+
+  it('should hide the current time marker outside the visible timeline', () => {
+    component._activeView.set('day');
+    component._anchorDate.set('2026-04-28');
+    component._now.set(new Date('2026-04-28T18:30:00Z'));
+
+    expect(component._currentTimeMarker()).toBeNull();
   });
 });
 

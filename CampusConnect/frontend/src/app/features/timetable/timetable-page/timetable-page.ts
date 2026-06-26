@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -17,6 +17,12 @@ interface CalendarTimeline {
   spanMinutes: number;
   height: number;
   hours: number[];
+}
+
+interface CurrentTimeMarker {
+  date: string;
+  offset: number;
+  label: string;
 }
 
 const DEFAULT_TIMELINE_START = 8 * 60;
@@ -41,7 +47,7 @@ interface TimetableRange {
   styleUrl: './timetable-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TimetablePage implements OnInit {
+export class TimetablePage implements OnInit, OnDestroy {
   private readonly _auth = inject(Auth);
   private readonly _coursesService = inject(Courses);
   protected readonly _i18n = inject(I18n);
@@ -58,6 +64,8 @@ export class TimetablePage implements OnInit {
   protected readonly _error = signal<string | null>(null);
   protected readonly _activeView = signal<TimetableView>(this._storedView());
   protected readonly _anchorDate = signal(this._dateKey(new Date()));
+  protected readonly _now = signal(new Date());
+  private _timeTickerId: ReturnType<typeof setInterval> | null = null;
 
   protected readonly _eventCount = computed(() =>
     this._days().reduce((count, day) => count + day.events.length, 0)
@@ -112,11 +120,49 @@ export class TimetablePage implements OnInit {
     };
   });
 
+  protected readonly _currentTimeMarker = computed<CurrentTimeMarker | null>(() => {
+    if (this._activeView() === 'list') {
+      return null;
+    }
+
+    const now = this._now();
+    const timeline = this._calendarTimeline();
+    const currentMinutes = this._minutesInTimezone(now.toISOString());
+
+    if (currentMinutes < timeline.startMinutes || currentMinutes > timeline.endMinutes) {
+      return null;
+    }
+
+    const today = this._dateKeyInTimezone(now, this._timezone());
+    const isVisible = this._calendarDays().some(day => day.date === today);
+    if (!isVisible) {
+      return null;
+    }
+
+    return {
+      date: today,
+      offset: this._percentage(currentMinutes - timeline.startMinutes),
+      label: this._formatTime(now.toISOString()),
+    };
+  });
+
   ngOnInit(): void {
+    this._startClock();
+
     this._coursesService.getCourses().subscribe({
       next: courses => this._initializeCourseOptions(courses.map(course => course.code)),
       error: () => this._initializeCourseOptions([]),
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this._timeTickerId !== null) {
+      clearInterval(this._timeTickerId);
+    }
+  }
+
+  private _startClock(): void {
+    this._timeTickerId = setInterval(() => this._now.set(new Date()), 60_000);
   }
 
   private _initializeCourseOptions(courseCodes: string[]): void {
@@ -443,6 +489,21 @@ export class TimetablePage implements OnInit {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private _dateKeyInTimezone(date: Date, timeZone: string): string {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      day: '2-digit',
+      month: '2-digit',
+      timeZone,
+      year: 'numeric',
+    }).formatToParts(date);
+
+    const year = parts.find(part => part.type === 'year')?.value ?? '0000';
+    const month = parts.find(part => part.type === 'month')?.value ?? '01';
+    const day = parts.find(part => part.type === 'day')?.value ?? '01';
+
     return `${year}-${month}-${day}`;
   }
 

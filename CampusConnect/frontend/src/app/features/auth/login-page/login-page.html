@@ -22,5 +22,11 @@
         {{ _isLoading() ? ('common.wait' | translate) : ('login.login' | translate) }}
       </button>
     </form>
+
+    <nav class="login-card__legal" [attr.aria-label]="'legal.navigation' | translate">
+      <a routerLink="/legal/impressum">{{ 'legal.impressum.link' | translate }}</a>
+      <a routerLink="/legal/datenschutz">{{ 'legal.privacy.link' | translate }}</a>
+      <a routerLink="/legal/nutzungsordnung">{{ 'legal.usage.link' | translate }}</a>
+    </nav>
   </div>
 </div>

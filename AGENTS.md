@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-11. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
+This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-24. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
 
 ## Project Identity
 
@@ -41,11 +41,15 @@ The Git repository root is this workspace root. The main application lives in `C
       README.md
       api.md
       architecture.md
+      abgabe-und-uebergabe.md
       code-review.md
       contributing.md
+      demo-checkliste.md
       demo-data.md
       frontend.md
+      anforderungsstatus.md
       project-overview.md
+      qa-nachweis.md
       roles.md
       testing.md
       concepts/
@@ -77,6 +81,10 @@ Important source documents:
 - `CampusConnect/docs/README.md`: central documentation index.
 - `CampusConnect/docs/project-overview.md`: setup overview, stack summary, local URLs, and documentation map.
 - `CampusConnect/docs/product/projektbeschreibung.md`: product scope, MVP boundaries, target users, and feature list.
+- `CampusConnect/docs/abgabe-und-uebergabe.md`: delivery, handover, evidence, and readiness checklist.
+- `CampusConnect/docs/anforderungsstatus.md`: current requirements status matrix against the protected MVP PRD.
+- `CampusConnect/docs/demo-checkliste.md`: reproducible demo flows and fallback guidance.
+- `CampusConnect/docs/qa-nachweis.md`: QA evidence, commands, test counts, CI gates, and known QA gaps.
 - `prd-mvp.md`: protected MVP product requirements; do not change requirements casually.
 - `CampusConnect/docs/architecture.md`: frontend/backend architecture and auth flow.
 - `CampusConnect/docs/api.md`: current API surface and domain behavior.
@@ -99,7 +107,7 @@ Frontend:
 - SCSS component styles.
 - npm 11.6.2 package manager metadata.
 - TypeScript 5.9, RxJS 7.8, Zone.js 0.15.
-- Angular CLI/build 21.2.7, Vitest 4, jsdom 28, Prettier 3.8.
+- Angular CLI/build 21.2.7, Vitest 4, Playwright 1.61, jsdom 28, Prettier 3.8.
 
 Backend:
 
@@ -120,7 +128,7 @@ Data and external systems:
 
 Infrastructure status:
 
-- GitHub Actions CI is implemented in `CampusConnect/.github/workflows/ci.yml` with backend restore/build/test and frontend install/test/build jobs.
+- GitHub Actions CI is implemented in `CampusConnect/.github/workflows/ci.yml` with backend restore/build/test, frontend install/test/build, and Playwright smoke-test jobs.
 - `CampusConnect/docker-compose.yml` is still a placeholder and is not production-ready.
 
 ## Backend Architecture
@@ -436,6 +444,13 @@ cd CampusConnect/frontend
 npm test
 ```
 
+Run frontend Playwright smoke tests:
+
+```powershell
+cd CampusConnect/frontend
+npm run e2e
+```
+
 Restore backend packages:
 
 ```powershell
@@ -480,6 +495,7 @@ Known local build note:
 - For controller, endpoint, or auth behavior changes, add or update tests in `CampusConnect.API.Tests`.
 - For application service rules, add or update tests in `CampusConnect.Application.Tests`.
 - For frontend service, guard, interceptor, or component behavior changes, add or update the nearest `.spec.ts` file.
+- For browser-level user flows, add or update Playwright smoke tests under `CampusConnect/frontend/e2e`.
 - Run the smallest relevant build/test command that validates the change.
 - If a change touches both frontend and backend contracts, validate both sides.
 - If tests cannot be run, say why in the final response.

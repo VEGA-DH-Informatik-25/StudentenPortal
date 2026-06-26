@@ -67,6 +67,15 @@
               }
             </div>
           </section>
+
+          <section class="navbar__settings-section">
+            <h2>{{ 'legal.navigation' | translate }}</h2>
+            <div class="navbar__legal-links">
+              <a routerLink="/legal/impressum" (click)="closeMenu()">{{ 'legal.impressum.link' | translate }}</a>
+              <a routerLink="/legal/datenschutz" (click)="closeMenu()">{{ 'legal.privacy.link' | translate }}</a>
+              <a routerLink="/legal/nutzungsordnung" (click)="closeMenu()">{{ 'legal.usage.link' | translate }}</a>
+            </div>
+          </section>
         </div>
       </details>
       <details #profileMenu class="navbar__profile-menu">

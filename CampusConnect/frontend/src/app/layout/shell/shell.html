@@ -2,4 +2,11 @@
 <main class="main-content">
   <router-outlet />
 </main>
+<footer class="app-footer">
+  <nav class="app-footer__links" [attr.aria-label]="'legal.navigation' | translate">
+    <a routerLink="/legal/impressum">{{ 'legal.impressum.link' | translate }}</a>
+    <a routerLink="/legal/datenschutz">{{ 'legal.privacy.link' | translate }}</a>
+    <a routerLink="/legal/nutzungsordnung">{{ 'legal.usage.link' | translate }}</a>
+  </nav>
+</footer>
 <app-guided-tour />

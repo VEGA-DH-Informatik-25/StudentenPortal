@@ -17,7 +17,7 @@ CampusConnect is a student portal for DHBW Loerrach. The application brings toge
 | Backend | ASP.NET Core 10 |
 | Database | SQLite with Entity Framework Core migrations |
 | Authentication | JWT Bearer API clients and HttpOnly browser cookie sessions |
-| CI | GitHub Actions for backend restore/build/test and frontend install/test/build |
+| CI | GitHub Actions for backend restore/build/test, frontend install/test/build, and Playwright smoke tests |
 | Containerization | `docker-compose.yml` exists as a placeholder and is not production-ready |
 
 ## Local Development
@@ -50,6 +50,13 @@ cd CampusConnect/frontend
 npm start
 ```
 
+Run the Playwright smoke tests:
+
+```powershell
+cd CampusConnect/frontend
+npm run e2e
+```
+
 Expected local URLs:
 
 - Frontend: `http://localhost:4200`
@@ -62,9 +69,13 @@ Expected local URLs:
 - [API Reference](api.md)
 - [Frontend Notes](frontend.md)
 - [Testing](testing.md)
+- [QA Evidence](qa-nachweis.md)
+- [Demo Checklist](demo-checkliste.md)
+- [Delivery And Handover](abgabe-und-uebergabe.md)
 - [Contributing](contributing.md)
 - [Roles And Responsibilities](roles.md)
 - [Project Description](product/projektbeschreibung.md)
+- [Requirements Status](anforderungsstatus.md)
 - [MVP PRD](../../prd-mvp.md)
 
 Live code and configuration are authoritative for implemented behavior. Update the affected central document in this folder when API contracts, setup, architecture, testing conventions, or project scope change.

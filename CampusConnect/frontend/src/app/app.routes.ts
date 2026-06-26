@@ -4,6 +4,21 @@ import { adminGuard } from './core/guards/admin-guard';
 
 export const routes: Routes = [
   {
+    path: 'legal/impressum',
+    loadComponent: () => import('./features/legal/legal-page/legal-page').then(m => m.LegalPage),
+    data: { legalPage: 'impressum' },
+  },
+  {
+    path: 'legal/datenschutz',
+    loadComponent: () => import('./features/legal/legal-page/legal-page').then(m => m.LegalPage),
+    data: { legalPage: 'datenschutz' },
+  },
+  {
+    path: 'legal/nutzungsordnung',
+    loadComponent: () => import('./features/legal/legal-page/legal-page').then(m => m.LegalPage),
+    data: { legalPage: 'nutzungsordnung' },
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login-page/login-page').then(m => m.LoginPage),
   },

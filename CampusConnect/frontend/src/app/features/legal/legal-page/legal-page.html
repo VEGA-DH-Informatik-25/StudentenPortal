@@ -1,0 +1,42 @@
+<main class="legal-page">
+  <nav class="legal-page__nav" [attr.aria-label]="'legal.navigation' | translate">
+    <a class="legal-page__brand" routerLink="/login">
+      <span aria-hidden="true"></span>
+      <strong>{{ 'app.name' | translate }}</strong>
+    </a>
+    <div class="legal-page__links">
+      @for (link of _links; track link.kind) {
+        <a [routerLink]="link.href" [class.legal-page__link--active]="link.kind === pageKind">{{ link.label | translate }}</a>
+      }
+    </div>
+  </nav>
+
+  <section class="legal-page__hero">
+    <p>{{ content.eyebrow | translate }}</p>
+    <h1>{{ content.title | translate }}</h1>
+    <span>{{ content.body | translate }}</span>
+  </section>
+
+  <section class="legal-page__notice" [attr.aria-label]="'legal.placeholderTitle' | translate">
+    <strong>{{ 'legal.placeholderTitle' | translate }}</strong>
+    <p>{{ 'legal.placeholderBody' | translate }}</p>
+  </section>
+
+  <div class="legal-page__content">
+    @for (section of content.sections; track section.title) {
+      <section class="legal-page__section">
+        <h2>{{ section.title | translate }}</h2>
+        <ul>
+          @for (item of section.items; track item) {
+            <li>{{ item | translate }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+
+  <footer class="legal-page__footer">
+    <span>{{ 'legal.updatedLabel' | translate }} {{ 'legal.updatedValue' | translate }}</span>
+    <a routerLink="/login">{{ 'legal.backToLogin' | translate }}</a>
+  </footer>
+</main>

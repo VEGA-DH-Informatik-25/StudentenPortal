@@ -333,7 +333,7 @@
 	display: grid;
 	gap: 1rem;
 	left: 50%;
-	max-height: calc(100vh - 3rem);
+	max-height: calc(100dvh - 3rem);
 	max-width: 820px;
 	overflow-x: hidden;
 	overflow-y: auto;
@@ -466,13 +466,56 @@
 		flex-direction: column;
 	}
 
+	.user-table__row:not(.user-table__row--head) > [data-label],
+	.course-table__row:not(.course-table__row--head) > [data-label] {
+		align-items: start;
+		display: grid;
+		gap: 0.25rem 0.8rem;
+		grid-template-columns: minmax(7rem, 0.34fr) minmax(0, 1fr);
+		width: 100%;
+	}
+
+	.user-table__row:not(.user-table__row--head) > [data-label]::before,
+	.course-table__row:not(.course-table__row--head) > [data-label]::before {
+		color: var(--dhbw-text-muted);
+		content: attr(data-label);
+		font-size: 0.72rem;
+		font-weight: 900;
+		line-height: 1.25;
+		text-transform: uppercase;
+	}
+
+	.user-table__row:not(.user-table__row--head) > .admin-status[data-label],
+	.course-table__row:not(.course-table__row--head) > .admin-status[data-label] {
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		color: var(--dhbw-success-text) !important;
+		display: grid !important;
+		justify-content: start;
+		padding: 0;
+		text-align: left;
+	}
+
+	.user-table__row:not(.user-table__row--head) > .admin-status--inactive[data-label],
+	.course-table__row:not(.course-table__row--head) > .admin-status--inactive[data-label] {
+		color: var(--dhbw-red-dark) !important;
+	}
+
 	.user-table__row--head,
 	.course-table__row--head {
 		display: none;
 	}
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
+	.admin-page__header {
+		align-items: stretch;
+		flex-direction: column;
+	}
+}
+
+@media (max-width: 820px) {
 	.admin-page__header,
 	.admin-quick-actions,
 	.admin-password-field,
@@ -499,7 +542,7 @@
 	}
 
 	.admin-editor {
-		max-height: calc(100vh - 2rem);
+		max-height: calc(100dvh - 2rem);
 		padding: 1rem;
 		width: calc(100vw - 1rem);
 	}

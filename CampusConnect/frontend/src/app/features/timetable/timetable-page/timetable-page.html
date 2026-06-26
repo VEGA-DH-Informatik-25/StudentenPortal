@@ -1,4 +1,4 @@
-<div data-tour="timetable-page" class="timetable-page">
+<div data-tour="timetable-page" class="timetable-page" [class.timetable-page--calendar]="_course() && _activeView() !== 'list'">
   @if (!_course()) {
     <section class="course-setup">
       <header class="timetable-hero">
@@ -122,9 +122,16 @@
       <div class="calendar-grid">
         <aside class="calendar-time-axis" aria-hidden="true">
           <span class="calendar-time-axis__header"></span>
-          <div class="calendar-time-axis__track" [style.min-height.px]="_calendarTimeline().height">
+          <div class="calendar-time-axis__track">
             @for (hour of _calendarTimeline().hours; track hour) {
-              <span class="calendar-time-axis__label" [style.top.%]="timelineHourOffset(hour)">{{ timelineHourLabel(hour) }}</span>
+              <span
+                class="calendar-time-axis__label"
+                [class.calendar-time-axis__label--start]="hour * 60 === _calendarTimeline().startMinutes"
+                [class.calendar-time-axis__label--end]="hour * 60 === _calendarTimeline().endMinutes"
+                [style.top.%]="timelineHourOffset(hour)">{{ timelineHourLabel(hour) }}</span>
+            }
+            @if (_currentTimeMarker(); as marker) {
+              <span class="calendar-time-axis__now" [style.top.%]="marker.offset">{{ marker.label }}</span>
             }
           </div>
         </aside>
@@ -136,9 +143,14 @@
               <strong>{{ day.date | date:'shortDate':'':_i18n.locale() }}</strong>
             </header>
 
-            <div class="calendar-day__timeline" [style.min-height.px]="_calendarTimeline().height">
+            <div class="calendar-day__timeline">
               @for (hour of _calendarTimeline().hours; track hour) {
                 <span class="calendar-day__hour-line" [style.top.%]="timelineHourOffset(hour)"></span>
+              }
+              @if (_currentTimeMarker(); as marker) {
+                @if (marker.date === day.date) {
+                  <span class="calendar-now-line" [style.top.%]="marker.offset" aria-hidden="true"></span>
+                }
               }
 
               @if (day.events.length === 0) {

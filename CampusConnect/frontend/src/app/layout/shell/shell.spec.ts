@@ -21,4 +21,13 @@ describe('Shell', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('renders legal footer links', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const links = Array.from(host.querySelectorAll<HTMLAnchorElement>('.app-footer a')).map((link) => link.getAttribute('href'));
+
+    expect(links).toEqual(['/legal/impressum', '/legal/datenschutz', '/legal/nutzungsordnung']);
+  });
 });

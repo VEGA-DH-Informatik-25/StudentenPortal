@@ -156,17 +156,17 @@
 
           @for (user of _filteredUsers(); track user.id) {
             <div class="user-table__row">
-              <div class="user-table__account">
+              <div class="user-table__account" [attr.data-label]="'common.account' | translate">
                 <strong>{{ user.displayName }}</strong>
                 <span>{{ user.email }}</span>
               </div>
-              <div>
+              <div [attr.data-label]="'common.study' | translate">
                 <strong>{{ user.studyProgram || ('common.notSet' | translate) }}</strong>
               </div>
-              <span>{{ user.course || ('common.notSet' | translate) }}</span>
-              <span>{{ roleLabel(user.role) }}</span>
-              <span class="admin-status" [class.admin-status--inactive]="!user.isActive">{{ statusLabel(user.isActive) }}</span>
-              <span>{{ user.createdAt | date:'mediumDate':'':_i18n.locale() }}</span>
+              <span [attr.data-label]="'common.course' | translate">{{ user.course || ('common.notSet' | translate) }}</span>
+              <span [attr.data-label]="'common.role' | translate">{{ roleLabel(user.role) }}</span>
+              <span class="admin-status" [class.admin-status--inactive]="!user.isActive" [attr.data-label]="'admin.status' | translate">{{ statusLabel(user.isActive) }}</span>
+              <span [attr.data-label]="'admin.createdAt' | translate">{{ user.createdAt | date:'mediumDate':'':_i18n.locale() }}</span>
               <button type="button" class="user-table__manage" (click)="openEditUser(user)">
                 {{ 'admin.manageUser' | translate }}
               </button>
@@ -217,10 +217,10 @@
 
           @for (row of _courseRows(); track row.course.code) {
             <div class="course-table__row">
-              <strong>{{ row.course.code }}</strong>
-              <span>{{ row.course.studyProgram }}</span>
-              <span>{{ row.userCount }}</span>
-              <span class="admin-status" [class.admin-status--inactive]="!row.course.isActive">
+              <strong [attr.data-label]="'common.courseCode' | translate">{{ row.course.code }}</strong>
+              <span [attr.data-label]="'common.studyProgram' | translate">{{ row.course.studyProgram }}</span>
+              <span [attr.data-label]="'admin.assignedUsers' | translate">{{ row.userCount }}</span>
+              <span class="admin-status" [class.admin-status--inactive]="!row.course.isActive" [attr.data-label]="'admin.status' | translate">
                 {{ row.course.isActive ? ('admin.statusActive' | translate) : ('admin.statusInactive' | translate) }}
               </span>
             </div>

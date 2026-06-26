@@ -72,12 +72,13 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   .contact-search-modal {
-    padding-top: 1rem;
+    padding: 1rem;
 
     &__dialog {
       max-width: none;
+      width: 100%;
     }
   }
 }

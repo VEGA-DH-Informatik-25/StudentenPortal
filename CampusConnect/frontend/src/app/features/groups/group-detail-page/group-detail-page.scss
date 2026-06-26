@@ -431,7 +431,7 @@
   input { accent-color: var(--dhbw-red); }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 1024px) {
   .group-detail-page__header {
     grid-template-columns: 1fr;
   }

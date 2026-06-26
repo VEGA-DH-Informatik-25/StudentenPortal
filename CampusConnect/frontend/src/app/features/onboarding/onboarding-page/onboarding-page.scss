@@ -1,5 +1,5 @@
 :host { display: block; }
-.onboarding { display: grid; min-height: 70vh; place-items: center; padding: 2rem; }
+.onboarding { display: grid; min-height: 70dvh; place-items: center; padding: 2rem; }
 .onboarding__card { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); border-radius: 12px; box-shadow: var(--dhbw-shadow); display: grid; gap: 1rem; max-width: 38rem; padding: 2rem; width: 100%; }
 .onboarding__card h1 { color: var(--dhbw-ink); margin: 0; }
 .onboarding__card p { color: var(--dhbw-text-muted); margin: 0; }
@@ -9,3 +9,15 @@
 .onboarding__card button.secondary { background: var(--dhbw-surface-muted); color: var(--dhbw-ink); margin-right: .6rem; }
 .onboarding__card article { border-top: 1px solid var(--dhbw-border); display: grid; gap: .4rem; padding-top: 1rem; }
 .onboarding__error { background: var(--dhbw-red-soft); color: var(--dhbw-red-dark); padding: 1rem; }
+
+@media (max-width: 1024px) {
+  .onboarding { min-height: calc(100dvh - 150px); padding: 1rem; place-items: start center; }
+  .onboarding__card { max-width: 42rem; }
+  .onboarding__card input,
+  .onboarding__card button { min-height: 2.75rem; }
+}
+
+@media (max-width: 560px) {
+  .onboarding__card { padding: 1.25rem; }
+  .onboarding__card button.secondary { margin-bottom: .6rem; margin-right: 0; }
+}

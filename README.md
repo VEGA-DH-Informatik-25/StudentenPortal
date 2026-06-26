@@ -9,6 +9,10 @@ Dieses Repository enthält das Anwendungsprojekt **CampusConnect**, ein Studiere
 - [Arbeitsanweisungen für KI-Agenten](AGENTS.md)
 - [Produktbeschreibung](CampusConnect/docs/product/projektbeschreibung.md)
 - [MVP-PRD](prd-mvp.md)
+- [Abgabe- und Übergabenachweise](CampusConnect/docs/abgabe-und-uebergabe.md)
+- [Anforderungsstatus](CampusConnect/docs/anforderungsstatus.md)
+- [Demo-Checkliste](CampusConnect/docs/demo-checkliste.md)
+- [QA-Nachweis](CampusConnect/docs/qa-nachweis.md)
 
 ## Dokumentstatus
 

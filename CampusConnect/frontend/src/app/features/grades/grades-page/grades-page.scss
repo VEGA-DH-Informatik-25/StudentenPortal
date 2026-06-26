@@ -223,7 +223,11 @@ button:hover {
 }
 
 .table-wrapper {
+  border: 1px solid var(--dhbw-border, #dce4ef);
+  border-radius: 8px;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -341,12 +345,28 @@ th {
   padding: 0.3rem 0.6rem;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1024px) {
   .hero,
   .content-grid,
-  .stats,
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 560px) {
+  .stats,
+  .section-header {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    display: grid;
+  }
 }

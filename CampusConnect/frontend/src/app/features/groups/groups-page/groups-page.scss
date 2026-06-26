@@ -378,7 +378,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .groups-layout {
     grid-template-columns: 1fr;
   }
@@ -390,9 +390,17 @@
   .group-tabs {
     grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
   }
+
+  .group-card__title-row {
+    display: grid;
+  }
+
+  .group-card__actions {
+    justify-content: flex-start;
+  }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .group-directory__create-row {
     align-items: stretch;
     flex-direction: column;

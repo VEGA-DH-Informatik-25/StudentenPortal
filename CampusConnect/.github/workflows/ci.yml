@@ -54,3 +54,39 @@ jobs:
       - name: Build frontend
         working-directory: CampusConnect/frontend
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: CampusConnect/frontend/package-lock.json
+
+      - name: Restore backend
+        working-directory: CampusConnect/backend
+        run: dotnet restore ./CampusConnect.slnx
+
+      - name: Install frontend dependencies
+        working-directory: CampusConnect/frontend
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: CampusConnect/frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        working-directory: CampusConnect/frontend
+        run: npm run e2e

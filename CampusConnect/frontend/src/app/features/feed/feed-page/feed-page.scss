@@ -476,7 +476,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .feed-layout {
     grid-template-columns: 1fr;
   }
@@ -496,6 +496,10 @@
 
   .daily-schedule {
     order: 3;
+  }
+
+  .quick-access__list {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   }
 }
 

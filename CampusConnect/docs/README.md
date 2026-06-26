@@ -8,13 +8,17 @@ This folder is the canonical documentation home for CampusConnect. Outside this 
 - [Architecture](architecture.md)
 - [API Reference](api.md)
 - [Testing](testing.md)
+- [QA Evidence](qa-nachweis.md)
 - [Development Demo Data](demo-data.md)
+- [Demo Checklist](demo-checkliste.md)
+- [Delivery And Handover](abgabe-und-uebergabe.md)
 - [Contributing](contributing.md)
 - [Frontend Notes](frontend.md)
 
 ## Product And Planning
 
 - [Project Description](product/projektbeschreibung.md)
+- [Requirements Status](anforderungsstatus.md)
 - [MVP PRD](../../prd-mvp.md) remains the protected requirements document and must not be changed casually.
 - [Market Analysis](marktanalyse.md)
 - [Presentation Slides](presentation-slides.md)

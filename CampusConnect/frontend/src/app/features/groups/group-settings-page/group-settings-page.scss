@@ -110,12 +110,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 @media (max-width: 900px) {
   .settings-grid,
   .settings-grid--primary { grid-template-columns: 1fr; }
+
+  .settings-hero { align-items: start; grid-template-columns: 1fr; }
+  .search-row,
+  .course-add { grid-template-columns: 1fr; }
+  .danger-card { align-items: stretch; flex-direction: column; }
+  .danger-card__confirm { justify-items: stretch; width: 100%; }
 }
 
-@media (max-width: 640px) {
-  .settings-hero { align-items: start; grid-template-columns: 1fr; }
+@media (max-width: 760px) {
   .settings-state--note,
-  .danger-card,
   .moderation-row,
   .person-row { align-items: stretch; flex-direction: column; }
   .settings-card__head--inline { align-items: flex-start; }
@@ -123,7 +127,4 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .role-select { width: 100%; }
   .row-actions > button { flex: 1; }
   .icon-button { align-self: flex-end; }
-  .search-row,
-  .course-add { grid-template-columns: 1fr; }
-  .danger-card__confirm { justify-items: stretch; width: 100%; }
 }
