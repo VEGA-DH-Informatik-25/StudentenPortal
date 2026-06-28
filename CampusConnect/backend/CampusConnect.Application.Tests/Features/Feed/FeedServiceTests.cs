@@ -1,4 +1,5 @@
 using CampusConnect.Application.Features.Feed;
+using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
@@ -154,6 +155,86 @@ public class FeedServiceTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Published", result.Value!.Status);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_WithTranslations_StoresGermanContentAndReturnsTranslations()
+    {
+        var user = Student("Alice", "alice@dhbw-loerrach.de");
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(user.Id);
+        var feed = new FakeFeedRepository();
+        var service = new FeedService(feed, new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(
+            user.Id,
+            group.Id,
+            string.Empty,
+            Translations: new FeedPostTranslationInput("Deutsch", "English", "Français")));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Deutsch", result.Value!.Content);
+        Assert.Equal("English", result.Value.Translations!.En);
+        Assert.Equal("Deutsch", feed.Posts.Single().Content);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_RejectsIncompleteTranslations()
+    {
+        var user = Student("Alice", "alice@dhbw-loerrach.de");
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(user.Id);
+        var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(user));
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(
+            user.Id,
+            group.Id,
+            string.Empty,
+            Translations: new FeedPostTranslationInput("Deutsch", "", "Français")));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Fill in all translation fields.", result.Error);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_WithAttachment_SavesMetadata()
+    {
+        var user = Student("Alice", "alice@dhbw-loerrach.de");
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(user.Id);
+        var feed = new FakeFeedRepository();
+        var storage = new FakeAttachmentStorage();
+        var service = new FeedService(feed, new FakeGroupRepository(group), new FakeUserRepository(user), storage);
+        await using var content = new MemoryStream("hello"u8.ToArray());
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(
+            user.Id,
+            group.Id,
+            "With file",
+            Attachments: [new CreatePostAttachment("notice.pdf", "application/pdf", content.Length, content)]));
+
+        Assert.True(result.IsSuccess);
+        var attachment = Assert.Single(result.Value!.Attachments);
+        Assert.Equal("notice.pdf", attachment.FileName);
+        Assert.Equal("application/pdf", attachment.ContentType);
+        Assert.Single(storage.SavedAttachments);
+    }
+
+    [Fact]
+    public async Task CreatePostAsync_RejectsTooManyAttachments()
+    {
+        var user = Student("Alice", "alice@dhbw-loerrach.de");
+        var group = CourseGroup("TIF25A");
+        group.AssignedUserIds.Add(user.Id);
+        var service = new FeedService(new FakeFeedRepository(), new FakeGroupRepository(group), new FakeUserRepository(user), new FakeAttachmentStorage());
+        var attachments = Enumerable.Range(0, 6)
+            .Select(index => new CreatePostAttachment($"file-{index}.pdf", "application/pdf", 1, new MemoryStream([1])))
+            .ToList();
+
+        var result = await service.CreatePostAsync(new CreatePostCommand(user.Id, group.Id, "Too many", Attachments: attachments));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("A post can contain at most 5 attachments.", result.Error);
     }
 
     [Fact]
@@ -477,6 +558,40 @@ public class FeedServiceTests
         Settings = new GroupSettings { AllowStudentPosts = true, AllowComments = true, RequiresApproval = false, IsDiscoverable = isDiscoverable },
         AssignedUserIds = [ownerId]
     };
+
+    private sealed class FakeAttachmentStorage : IFeedAttachmentStorage
+    {
+        public List<FeedAttachment> SavedAttachments { get; } = [];
+
+        public Task<FeedAttachment> SaveAsync(Stream content, string originalFileName, string contentType, long sizeBytes, CancellationToken cancellationToken = default)
+        {
+            var attachment = new FeedAttachment
+            {
+                OriginalFileName = originalFileName,
+                StoredFileName = $"{Guid.NewGuid():N}{Path.GetExtension(originalFileName)}",
+                ContentType = contentType,
+                SizeBytes = sizeBytes,
+                IsImage = Path.GetExtension(originalFileName).Equals(".png", StringComparison.OrdinalIgnoreCase)
+            };
+            SavedAttachments.Add(attachment);
+            return Task.FromResult(attachment);
+        }
+
+        public Task<Stream?> OpenReadAsync(FeedAttachment attachment, CancellationToken cancellationToken = default) =>
+            Task.FromResult<Stream?>(new MemoryStream("hello"u8.ToArray()));
+
+        public Task DeleteAsync(FeedAttachment attachment, CancellationToken cancellationToken = default)
+        {
+            SavedAttachments.RemoveAll(item => item.Id == attachment.Id);
+            return Task.CompletedTask;
+        }
+
+        public async Task DeleteManyAsync(IEnumerable<FeedAttachment> attachments, CancellationToken cancellationToken = default)
+        {
+            foreach (var attachment in attachments)
+                await DeleteAsync(attachment, cancellationToken);
+        }
+    }
 
     private sealed class FakeFeedRepository(params FeedPost[] posts) : IFeedRepository
     {

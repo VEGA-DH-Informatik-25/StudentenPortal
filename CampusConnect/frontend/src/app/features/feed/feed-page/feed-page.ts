@@ -15,6 +15,9 @@ import { UiPreferences } from '../../../core/services/ui-preferences';
 import { ProfileHoverCard } from '../../../shared/ui/profile-hover-card/profile-hover-card';
 
 const FEED_SELECTED_GROUP_KEY = 'campusconnect.feed.selectedGroupId';
+const MAX_ATTACHMENT_COUNT = 5;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'txt', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
 
 @Component({
   selector: 'app-feed-page',
@@ -39,6 +42,10 @@ export class FeedPage implements OnInit {
   protected readonly _error = signal('');
   protected readonly _notice = signal('');
   protected readonly _newContent = signal('');
+  protected readonly _useTranslations = signal(false);
+  protected readonly _translationDraft = signal({ de: '', en: '', fr: '' });
+  protected readonly _selectedFiles = signal<File[]>([]);
+  protected readonly _attachmentError = signal('');
   protected readonly _allowComments = signal(true);
   protected readonly _commentDrafts = signal<Record<string, string>>({});
   protected readonly _openCommentPostIds = signal<string[]>([]);
@@ -63,6 +70,12 @@ export class FeedPage implements OnInit {
   protected readonly _scheduleIsLoading = signal(false);
   protected readonly _scheduleError = signal('');
   protected readonly _scheduleTitle = computed(() => this._formatDateLong(this._scheduleDate()));
+  protected readonly _canSubmitPost = computed(() => {
+    const hasText = this._useTranslations()
+      ? Object.values(this._translationDraft()).every(value => value.trim())
+      : !!this._newContent().trim();
+    return hasText && !this._isLoading() && !this._isPosting() && !!this._selectedGroup() && !this._attachmentError();
+  });
   protected readonly _emojiOptions = ['👍', '❤️', '🙌', '👏', '🎉', '🔥', '💡', '✅', '🚀', '👀', '🙂', '😂', '😮', '🤔', '🙏', '💪', '📌', '⭐', '☕', '🍀'];
 
   ngOnInit(): void {
@@ -81,8 +94,15 @@ export class FeedPage implements OnInit {
   }
 
   protected onPost(): void {
-    const content = this._newContent().trim();
-    if (!content || this._isPosting()) return;
+    const translations = this._useTranslations()
+      ? {
+        de: this._translationDraft().de.trim(),
+        en: this._translationDraft().en.trim(),
+        fr: this._translationDraft().fr.trim(),
+      }
+      : null;
+    const content = translations?.de ?? this._newContent().trim();
+    if (!this._canSubmitPost() || this._isPosting()) return;
     const group = this._selectedGroup();
     if (!group) {
       this._error.set(this._i18n.translate('feed.selectGroupFirst'));
@@ -92,7 +112,13 @@ export class FeedPage implements OnInit {
     this._error.set('');
     this._notice.set('');
     this._isPosting.set(true);
-    this._feedService.createPost({ content, groupId: group.id, allowComments: group.settings.allowComments && this._allowComments() }).subscribe({
+    this._feedService.createPost({
+      content,
+      groupId: group.id,
+      allowComments: group.settings.allowComments && this._allowComments(),
+      translations,
+      attachments: this._selectedFiles(),
+    }).subscribe({
       next: post => {
         if (post.status === 'Published') {
           this._posts.update(posts => [post, ...posts]);
@@ -100,6 +126,10 @@ export class FeedPage implements OnInit {
           this._notice.set(this._i18n.translate('feed.pendingNotice'));
         }
         this._newContent.set('');
+        this._translationDraft.set({ de: '', en: '', fr: '' });
+        this._useTranslations.set(false);
+        this._selectedFiles.set([]);
+        this._attachmentError.set('');
         this._allowComments.set(true);
         this._isPosting.set(false);
       },
@@ -180,6 +210,34 @@ export class FeedPage implements OnInit {
     this._newContent.set(value);
   }
 
+  protected updateUseTranslations(value: boolean): void {
+    this._useTranslations.set(value);
+    if (value && !this._translationDraft().de.trim() && this._newContent().trim()) {
+      this._translationDraft.update(draft => ({ ...draft, de: this._newContent() }));
+    }
+  }
+
+  protected updateTranslation(language: 'de' | 'en' | 'fr', value: string): void {
+    this._translationDraft.update(draft => ({ ...draft, [language]: value }));
+  }
+
+  protected onFilesSelected(files: FileList | null): void {
+    const selected = [...this._selectedFiles(), ...Array.from(files ?? [])];
+    const validationError = this._validateFiles(selected);
+    if (validationError) {
+      this._attachmentError.set(validationError);
+      return;
+    }
+
+    this._selectedFiles.set(selected);
+    this._attachmentError.set('');
+  }
+
+  protected removeSelectedFile(index: number): void {
+    this._selectedFiles.update(files => files.filter((_, itemIndex) => itemIndex !== index));
+    this._attachmentError.set(this._validateFiles(this._selectedFiles()) ?? '');
+  }
+
   protected updateSelectedGroup(value: string): void {
     this._selectedGroupId.set(value);
     this._uiPreferences.setString(FEED_SELECTED_GROUP_KEY, value);
@@ -246,6 +304,27 @@ export class FeedPage implements OnInit {
 
   protected isCommenting(postId: string): boolean {
     return this._commentingPostIds().includes(postId);
+  }
+
+  protected localizedPostContent(post: FeedPost): string {
+    if (!post.translations) {
+      return post.content;
+    }
+
+    const language = this._i18n.language();
+    return post.translations[language] || post.translations.de || post.content;
+  }
+
+  protected formatFileSize(bytes: number): string {
+    if (bytes < 1024 * 1024) {
+      return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  protected attachmentAlt(fileName: string): string {
+    return this._i18n.translate('feed.attachmentImageAlt', { fileName });
   }
 
   protected canReactToPost(post: FeedPost): boolean {
@@ -446,6 +525,25 @@ export class FeedPage implements OnInit {
     const [year, month, day] = value.split('-').map(Number);
     return new Intl.DateTimeFormat(this._i18n.locale(), { weekday: 'long', day: '2-digit', month: 'long' })
       .format(new Date(year, month - 1, day));
+  }
+
+  private _validateFiles(files: File[]): string | null {
+    if (files.length > MAX_ATTACHMENT_COUNT) {
+      return this._i18n.translate('feed.attachmentTooMany', { count: MAX_ATTACHMENT_COUNT });
+    }
+
+    for (const file of files) {
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        return this._i18n.translate('feed.attachmentTooLarge', { size: '10 MB' });
+      }
+
+      const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!ALLOWED_ATTACHMENT_EXTENSIONS.includes(extension)) {
+        return this._i18n.translate('feed.attachmentTypeError');
+      }
+    }
+
+    return null;
   }
 }
 

@@ -80,19 +80,82 @@
             </label>
           }
 
-          <label class="visually-hidden" for="feed-content">{{ 'feed.composeLabel' | translate }}</label>
-          <textarea
-            id="feed-content"
-            [value]="_newContent()"
-            (input)="updateContent($any($event.target).value)"
-            placeholder="{{ 'feed.placeholder' | translate }}"
-            title="{{ 'feed.composeLabel' | translate }}"
-            maxlength="600"
-            rows="4">
-          </textarea>
+          <label class="composer__comment-setting">
+            <input type="checkbox" [ngModel]="_useTranslations()" (ngModelChange)="updateUseTranslations($event)" name="feed-use-translations" title="{{ 'feed.addTranslations' | translate }}">
+            <span>{{ 'feed.addTranslations' | translate }}</span>
+          </label>
+
+          @if (_useTranslations()) {
+            <div class="composer__translations">
+              <label for="feed-content-de">{{ 'feed.translationGerman' | translate }}</label>
+              <textarea
+                id="feed-content-de"
+                [value]="_translationDraft().de"
+                (input)="updateTranslation('de', $any($event.target).value)"
+                placeholder="{{ 'feed.translationGermanPlaceholder' | translate }}"
+                title="{{ 'feed.translationGerman' | translate }}"
+                maxlength="600"
+                rows="3"></textarea>
+
+              <label for="feed-content-en">{{ 'feed.translationEnglish' | translate }}</label>
+              <textarea
+                id="feed-content-en"
+                [value]="_translationDraft().en"
+                (input)="updateTranslation('en', $any($event.target).value)"
+                placeholder="{{ 'feed.translationEnglishPlaceholder' | translate }}"
+                title="{{ 'feed.translationEnglish' | translate }}"
+                maxlength="600"
+                rows="3"></textarea>
+
+              <label for="feed-content-fr">{{ 'feed.translationFrench' | translate }}</label>
+              <textarea
+                id="feed-content-fr"
+                [value]="_translationDraft().fr"
+                (input)="updateTranslation('fr', $any($event.target).value)"
+                placeholder="{{ 'feed.translationFrenchPlaceholder' | translate }}"
+                title="{{ 'feed.translationFrench' | translate }}"
+                maxlength="600"
+                rows="3"></textarea>
+            </div>
+          } @else {
+            <label class="visually-hidden" for="feed-content">{{ 'feed.composeLabel' | translate }}</label>
+            <textarea
+              id="feed-content"
+              [value]="_newContent()"
+              (input)="updateContent($any($event.target).value)"
+              placeholder="{{ 'feed.placeholder' | translate }}"
+              title="{{ 'feed.composeLabel' | translate }}"
+              maxlength="600"
+              rows="4">
+            </textarea>
+          }
+
+          <div class="composer__attachments">
+            <label for="feed-attachments">{{ 'feed.addAttachments' | translate }}</label>
+            <input
+              id="feed-attachments"
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+              (change)="onFilesSelected($any($event.target).files); $any($event.target).value = ''">
+            <small>{{ 'feed.attachmentHint' | translate }}</small>
+            @if (_selectedFiles().length > 0) {
+              <ul class="composer__attachment-list">
+                @for (file of _selectedFiles(); track file.name + file.size; let index = $index) {
+                  <li>
+                    <span>{{ file.name }} · {{ formatFileSize(file.size) }}</span>
+                    <button type="button" (click)="removeSelectedFile(index)" [attr.aria-label]="'feed.removeAttachment' | translate:{ fileName: file.name }">×</button>
+                  </li>
+                }
+              </ul>
+            }
+            @if (_attachmentError()) {
+              <p class="composer__attachment-error">{{ _attachmentError() }}</p>
+            }
+          </div>
           <div class="composer__footer">
-            <span>{{ 'feed.characterCount' | translate:{ count: _newContent().trim().length } }}</span>
-            <button type="submit" [disabled]="!_newContent().trim() || _isLoading() || _isPosting() || !_selectedGroup()">
+            <span>{{ 'feed.characterCount' | translate:{ count: (_useTranslations() ? _translationDraft().de.trim().length : _newContent().trim().length) } }}</span>
+            <button type="submit" [disabled]="!_canSubmitPost()">
               {{ _isPosting() ? ('feed.posting' | translate) : ('feed.post' | translate) }}
             </button>
           </div>
@@ -142,7 +205,31 @@
                 </span>
                 <small>{{ groupTypeLabel(post.group.type) }} · {{ commentPolicyLabel(post.group) }}</small>
               </div>
-              <p class="post-card__content">{{ post.content }}</p>
+              <p class="post-card__content">{{ localizedPostContent(post) }}</p>
+
+              @if ((post.attachments?.length ?? 0) > 0) {
+                <div class="post-card__attachments" [attr.aria-label]="'feed.attachments' | translate">
+                  <div class="post-card__image-grid">
+                    @for (attachment of post.attachments ?? []; track attachment.id) {
+                      @if (attachment.isImage) {
+                        <a [href]="attachment.downloadUrl" target="_blank" rel="noopener noreferrer">
+                          <img [src]="attachment.downloadUrl" [alt]="attachmentAlt(attachment.fileName)" loading="lazy">
+                        </a>
+                      }
+                    }
+                  </div>
+                  <div class="post-card__file-list">
+                    @for (attachment of post.attachments ?? []; track attachment.id) {
+                      @if (!attachment.isImage) {
+                        <a [href]="attachment.downloadUrl">
+                          <span>{{ attachment.fileName }}</span>
+                          <small>{{ formatFileSize(attachment.sizeBytes) }}</small>
+                        </a>
+                      }
+                    }
+                  </div>
+                </div>
+              }
 
               <div class="post-card__actions" [attr.aria-label]="'common.action' | translate">
                 <div class="reaction-bar" [attr.aria-label]="'feed.reactionBar' | translate">

@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { I18n } from './i18n';
+import { translations } from './translations';
 
 describe('I18n', () => {
   beforeEach(() => {
@@ -29,6 +30,17 @@ describe('I18n', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
+  it('loads a stored French language preference', () => {
+    localStorage.setItem('campusconnect.language', 'fr');
+
+    const service = TestBed.inject(I18n);
+
+    expect(service.language()).toBe('fr');
+    expect(service.locale()).toBe('fr-FR');
+    expect(service.translate('login.login')).toBe('Se connecter');
+    expect(document.documentElement.lang).toBe('fr');
+  });
+
   it('normalizes a stored language preference', () => {
     localStorage.setItem('campusconnect.language', ' DE ');
 
@@ -42,14 +54,14 @@ describe('I18n', () => {
   it('ignores invalid language values', () => {
     const service = TestBed.inject(I18n);
 
-    service.setLanguage('fr');
+    service.setLanguage('es');
 
     expect(service.language()).toBe('de');
     expect(localStorage.getItem('campusconnect.language')).toBeNull();
   });
 
   it('removes invalid stored language values', () => {
-    localStorage.setItem('campusconnect.language', 'fr');
+    localStorage.setItem('campusconnect.language', 'es');
 
     const service = TestBed.inject(I18n);
 
@@ -65,6 +77,34 @@ describe('I18n', () => {
     expect(service.language()).toBe('en');
     expect(localStorage.getItem('campusconnect.language')).toBe('en');
     expect(document.documentElement.lang).toBe('en');
+  });
+
+  it('normalizes and persists French when language changes', () => {
+    const service = TestBed.inject(I18n);
+
+    service.setLanguage('FR');
+
+    expect(service.language()).toBe('fr');
+    expect(service.locale()).toBe('fr-FR');
+    expect(localStorage.getItem('campusconnect.language')).toBe('fr');
+    expect(document.documentElement.lang).toBe('fr');
+  });
+
+  it('keeps translation keys and interpolation parameters aligned across languages', () => {
+    const otherLanguages: Array<keyof typeof translations> = ['en', 'fr'];
+    const referenceTranslations = translations.de;
+    const referenceKeys = Object.keys(referenceTranslations).sort();
+
+    for (const language of otherLanguages) {
+      const localizedTranslations = translations[language];
+      expect(Object.keys(localizedTranslations).sort()).toEqual(referenceKeys);
+
+      for (const key of referenceKeys) {
+        expect(interpolationTokens(localizedTranslations[key as keyof typeof localizedTranslations])).toEqual(
+          interpolationTokens(referenceTranslations[key as keyof typeof referenceTranslations])
+        );
+      }
+    }
   });
 
   it('interpolates translation parameters', () => {
@@ -93,3 +133,7 @@ describe('I18n', () => {
     expect(service.readError(error, 'login.failed')).toBe('Anmeldung fehlgeschlagen.');
   });
 });
+
+function interpolationTokens(template: string): string[] {
+  return Array.from(template.matchAll(/{{\s*(\w+)\s*}}/g), match => match[1]).sort();
+}

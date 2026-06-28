@@ -66,6 +66,7 @@ describe('Navbar', () => {
     fixture.detectChanges();
 
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('.navbar__choice')) as HTMLButtonElement[];
+    expect(buttons.map(button => button.textContent?.trim())).toContain('Français');
     buttons.find(button => button.textContent?.trim() === 'English')?.click();
     fixture.detectChanges();
 
@@ -74,6 +75,25 @@ describe('Navbar', () => {
     expect(localStorage.getItem('campusconnect.language')).toBe('en');
     expect(fixture.nativeElement.textContent).toContain('Language');
     expect(buttons.find(button => button.textContent?.trim() === 'English')?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('should switch and persist French from the language menu', () => {
+    fixture.detectChanges();
+
+    const settingsMenu = fixture.nativeElement.querySelector('.navbar__settings-menu') as HTMLDetailsElement;
+    settingsMenu.open = true;
+    fixture.detectChanges();
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('.navbar__choice')) as HTMLButtonElement[];
+    buttons.find(button => button.textContent?.trim() === 'Français')?.click();
+    fixture.detectChanges();
+
+    const i18n = TestBed.inject(I18n);
+    expect(i18n.language()).toBe('fr');
+    expect(localStorage.getItem('campusconnect.language')).toBe('fr');
+    expect(fixture.nativeElement.textContent).toContain('Langue');
+    expect(fixture.nativeElement.textContent).toContain('Paramètres');
+    expect(buttons.find(button => button.textContent?.trim() === 'Français')?.getAttribute('aria-pressed')).toBe('true');
   });
 
   it('should switch and persist the selected theme preference', () => {

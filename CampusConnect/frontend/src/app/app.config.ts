@@ -1,6 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import localeEn from '@angular/common/locales/en';
+import localeFr from '@angular/common/locales/fr';
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -11,6 +12,7 @@ import { errorHandlerInterceptor } from './core/interceptors/error-handler-inter
 
 registerLocaleData(localeDe);
 registerLocaleData(localeEn);
+registerLocaleData(localeFr);
 
 export const appConfig: ApplicationConfig = {
   providers: [

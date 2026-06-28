@@ -23,12 +23,14 @@ public sealed class InMemoryFeedRepositoryTests
 
         firstRead!.Content = "Mutated outside repository";
         firstRead.Comments.Add(new FeedComment { AuthorId = Guid.NewGuid(), AuthorName = "Bob", Content = "Leaked" });
+        firstRead.Attachments.Add(new FeedAttachment { OriginalFileName = "leaked.pdf", StoredFileName = "leaked.pdf", SizeBytes = 1 });
 
         var secondRead = await repository.FindByIdAsync(post.Id);
 
         Assert.NotNull(secondRead);
         Assert.Equal("Original", secondRead!.Content);
         Assert.Empty(secondRead.Comments);
+        Assert.Empty(secondRead.Attachments);
     }
 
     [Fact]

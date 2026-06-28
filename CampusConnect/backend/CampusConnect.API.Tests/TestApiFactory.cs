@@ -14,6 +14,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
 
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-{Guid.NewGuid():N}.db");
     private readonly string _dataProtectionPath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-keys-{Guid.NewGuid():N}");
+    private readonly string _uploadPath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-uploads-{Guid.NewGuid():N}");
 
     public TestApiFactory()
     {
@@ -46,7 +47,8 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
                 ["Mensa:ApiKey"] = "test-key",
                 ["Mensa:BaseUrl"] = "https://example.invalid",
                 ["Mensa:LocationId"] = "677",
-                ["Mensa:Days"] = "5"
+                ["Mensa:Days"] = "5",
+                ["FeedAttachments:UploadPath"] = _uploadPath
             });
         });
     }
@@ -60,6 +62,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         {
             File.Delete(_databasePath);
             Directory.Delete(_dataProtectionPath, recursive: true);
+            Directory.Delete(_uploadPath, recursive: true);
         }
         catch (IOException)
         {
@@ -84,6 +87,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", "https://example.invalid");
         Environment.SetEnvironmentVariable("Mensa__LocationId", "677");
         Environment.SetEnvironmentVariable("Mensa__Days", "5");
+        Environment.SetEnvironmentVariable("FeedAttachments__UploadPath", _uploadPath);
     }
 
     private static void ClearTestConfiguration()
@@ -101,5 +105,6 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Mensa__BaseUrl", null);
         Environment.SetEnvironmentVariable("Mensa__LocationId", null);
         Environment.SetEnvironmentVariable("Mensa__Days", null);
+        Environment.SetEnvironmentVariable("FeedAttachments__UploadPath", null);
     }
 }

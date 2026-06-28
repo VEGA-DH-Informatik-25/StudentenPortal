@@ -1,4 +1,5 @@
 using CampusConnect.Application.Common;
+using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Application.Features.Contacts;
 using CampusConnect.Application.Features.Groups;
 using CampusConnect.Domain.Entities;
@@ -9,9 +10,20 @@ using System.Text;
 
 namespace CampusConnect.Application.Features.Feed;
 
-public record CreatePostCommand(Guid AuthorId, Guid? GroupId, string Content, bool AllowComments = true);
+public record CreatePostCommand(
+    Guid AuthorId,
+    Guid? GroupId,
+    string Content,
+    bool AllowComments = true,
+    FeedPostTranslationInput? Translations = null,
+    IReadOnlyList<CreatePostAttachment>? Attachments = null);
+public record FeedPostTranslationInput(string? De, string? En, string? Fr);
+public record CreatePostAttachment(string FileName, string ContentType, long SizeBytes, Stream Content);
 public record CreateCommentCommand(Guid PostId, Guid AuthorId, string Content);
 public record ToggleReactionCommand(Guid PostId, Guid UserId, string Emoji);
+public record FeedPostTranslationDto(string De, string En, string Fr);
+public record FeedAttachmentDto(Guid Id, string FileName, string ContentType, long SizeBytes, bool IsImage, string DownloadUrl);
+public record FeedAttachmentDownloadResult(FeedAttachment Attachment, Stream Content);
 public record FeedCommentDto(Guid Id, string AuthorName, ContactProfileDto? Author, string Content, DateTime CreatedAt, bool CanDelete);
 public record FeedReactionDto(string Emoji, int Count, bool ReactedByCurrentUser);
 public record FeedPostDto(
@@ -20,6 +32,8 @@ public record FeedPostDto(
     ContactProfileDto? Author,
     CampusGroupDto Group,
     string Content,
+    FeedPostTranslationDto? Translations,
+    IReadOnlyList<FeedAttachmentDto> Attachments,
     DateTime CreatedAt,
     string Status,
     bool AllowComments,
@@ -28,8 +42,17 @@ public record FeedPostDto(
     IReadOnlyList<FeedCommentDto> Comments,
     IReadOnlyList<FeedReactionDto> Reactions);
 
-public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, IUserRepository userRepo)
+public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, IUserRepository userRepo, IFeedAttachmentStorage? attachmentStorage = null)
 {
+    public const int MaxAttachmentCount = 5;
+    public const long MaxAttachmentBytes = 10 * 1024 * 1024;
+
+    private static readonly HashSet<string> AllowedAttachmentExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".txt", ".csv",
+        ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"
+    };
+
     public async Task<IReadOnlyList<FeedPostDto>> GetFeedAsync(Guid currentUserId, int page = 1, int pageSize = 20)
     {
         await SyncCourseGroupAssignmentsAsync();
@@ -52,8 +75,17 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
 
     public async Task<Result<FeedPostDto>> CreatePostAsync(CreatePostCommand cmd)
     {
-        if (string.IsNullOrWhiteSpace(cmd.Content))
+        var translationsResult = NormalizeTranslations(cmd.Translations);
+        if (!translationsResult.IsSuccess)
+            return Result<FeedPostDto>.Failure(translationsResult.Error ?? "Content cannot be empty.");
+
+        var content = translationsResult.Value?.De ?? cmd.Content.Trim();
+        if (string.IsNullOrWhiteSpace(content))
             return Result<FeedPostDto>.Failure("Content cannot be empty.");
+
+        var attachmentValidationError = ValidateAttachments(cmd.Attachments ?? []);
+        if (attachmentValidationError is not null)
+            return Result<FeedPostDto>.Failure(attachmentValidationError);
 
         var user = await userRepo.FindByIdAsync(cmd.AuthorId);
         if (user is null)
@@ -77,12 +109,37 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             AuthorId = cmd.AuthorId,
             AuthorName = user.DisplayName,
             GroupId = group.Id,
-            Content = cmd.Content.Trim(),
+            Content = content,
+            Translations = translationsResult.Value,
             Status = group.Settings.RequiresApproval && GroupDtoMapper.GroupRoleFor(user.Id, group) == GroupRole.Member
                 ? FeedPostStatus.Pending
                 : FeedPostStatus.Published,
             AllowComments = group.Settings.AllowComments && cmd.AllowComments
         };
+
+        var savedAttachments = new List<FeedAttachment>();
+        try
+        {
+            foreach (var attachment in cmd.Attachments ?? [])
+            {
+                if (attachmentStorage is null)
+                    return Result<FeedPostDto>.Failure("Attachment storage is not available.");
+
+                savedAttachments.Add(await attachmentStorage.SaveAsync(
+                    attachment.Content,
+                    attachment.FileName,
+                    attachment.ContentType,
+                    attachment.SizeBytes));
+            }
+        }
+        catch
+        {
+            if (attachmentStorage is not null)
+                await attachmentStorage.DeleteManyAsync(savedAttachments);
+            throw;
+        }
+
+        post.Attachments = savedAttachments;
         await feedRepo.AddAsync(post);
         return Result<FeedPostDto>.Success(await ToDtoAsync(post, group, cmd.AuthorId, user));
     }
@@ -192,7 +249,38 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             return Result<bool>.Failure("Permission denied.");
 
         await feedRepo.DeleteAsync(postId);
+        if (attachmentStorage is not null)
+            await attachmentStorage.DeleteManyAsync(post.Attachments);
+
         return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<FeedAttachmentDownloadResult>> GetAttachmentAsync(Guid postId, Guid attachmentId, Guid userId)
+    {
+        if (attachmentStorage is null)
+            return Result<FeedAttachmentDownloadResult>.Failure("Attachment storage is not available.");
+
+        var user = await userRepo.FindByIdAsync(userId);
+        if (user is null)
+            return Result<FeedAttachmentDownloadResult>.Failure("User profile was not found.");
+
+        var post = await feedRepo.FindByIdAsync(postId);
+        if (post is null)
+            return Result<FeedAttachmentDownloadResult>.Failure("Post was not found.");
+
+        await SyncCourseGroupAssignmentsAsync();
+        var group = await ResolvePostGroupAsync(post);
+        if (!CanReadPost(user, post, group))
+            return Result<FeedAttachmentDownloadResult>.Failure("Permission denied.");
+
+        var attachment = post.Attachments.FirstOrDefault(item => item.Id == attachmentId);
+        if (attachment is null)
+            return Result<FeedAttachmentDownloadResult>.Failure("Attachment was not found.");
+
+        var content = await attachmentStorage.OpenReadAsync(attachment);
+        return content is null
+            ? Result<FeedAttachmentDownloadResult>.Failure("Attachment was not found.")
+            : Result<FeedAttachmentDownloadResult>.Success(new FeedAttachmentDownloadResult(attachment, content));
     }
 
     public async Task<Result<IReadOnlyList<FeedPostDto>>> GetPendingPostsAsync(Guid groupId, Guid userId)
@@ -290,6 +378,8 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             AuthorFor(post.AuthorId, usersById),
             GroupDtoMapper.ToDto(group, currentUser),
             post.Content,
+            ToDto(post.Translations),
+            post.Attachments.Select(attachment => ToDto(post.Id, attachment)).ToList(),
             post.CreatedAt,
             post.Status.ToString(),
             post.AllowComments,
@@ -298,6 +388,17 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
             comments,
             reactions);
     }
+
+    private static FeedPostTranslationDto? ToDto(FeedPostTranslations? translations) =>
+        translations is null ? null : new FeedPostTranslationDto(translations.De, translations.En, translations.Fr);
+
+    private static FeedAttachmentDto ToDto(Guid postId, FeedAttachment attachment) => new(
+        attachment.Id,
+        attachment.OriginalFileName,
+        attachment.ContentType,
+        attachment.SizeBytes,
+        attachment.IsImage,
+        $"/api/feed/{postId}/attachments/{attachment.Id}");
 
     private static ContactProfileDto? AuthorFor(Guid authorId, IReadOnlyDictionary<Guid, User> usersById) =>
         usersById.TryGetValue(authorId, out var user) ? ContactsService.ToDto(user) : null;
@@ -318,6 +419,49 @@ public class FeedService(IFeedRepository feedRepo, IGroupRepository groupRepo, I
     }
 
     private static bool CanParticipate(User user, CampusGroup group) => GroupDtoMapper.CanInteract(user, group);
+
+    private static bool CanReadPost(User user, FeedPost post, CampusGroup group) =>
+        post.Status == FeedPostStatus.Published
+            ? GroupDtoMapper.CanReadPosts(user, group)
+            : post.AuthorId == user.Id || GroupDtoMapper.CanManage(user, group);
+
+    private static Result<FeedPostTranslations?> NormalizeTranslations(FeedPostTranslationInput? input)
+    {
+        if (input is null)
+            return Result<FeedPostTranslations?>.Success(null);
+
+        var de = input.De?.Trim() ?? string.Empty;
+        var en = input.En?.Trim() ?? string.Empty;
+        var fr = input.Fr?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(de) || string.IsNullOrWhiteSpace(en) || string.IsNullOrWhiteSpace(fr))
+            return Result<FeedPostTranslations?>.Failure("Fill in all translation fields.");
+
+        if (de.Length > 4000 || en.Length > 4000 || fr.Length > 4000)
+            return Result<FeedPostTranslations?>.Failure("Post content must be at most 4000 characters long.");
+
+        return Result<FeedPostTranslations?>.Success(new FeedPostTranslations { De = de, En = en, Fr = fr });
+    }
+
+    private static string? ValidateAttachments(IReadOnlyList<CreatePostAttachment> attachments)
+    {
+        if (attachments.Count > MaxAttachmentCount)
+            return "A post can contain at most 5 attachments.";
+
+        foreach (var attachment in attachments)
+        {
+            if (attachment.SizeBytes <= 0)
+                return "Attachment files cannot be empty.";
+
+            if (attachment.SizeBytes > MaxAttachmentBytes)
+                return "Each attachment must be at most 10 MB.";
+
+            var extension = Path.GetExtension(attachment.FileName);
+            if (string.IsNullOrWhiteSpace(extension) || !AllowedAttachmentExtensions.Contains(extension))
+                return "This attachment type is not allowed.";
+        }
+
+        return null;
+    }
 
     private static bool IsSupportedEmoji(string emoji)
     {

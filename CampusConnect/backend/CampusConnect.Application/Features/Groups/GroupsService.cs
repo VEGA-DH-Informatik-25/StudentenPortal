@@ -1,4 +1,5 @@
 using CampusConnect.Application.Common;
+using CampusConnect.Application.Common.Interfaces;
 using CampusConnect.Domain.Entities;
 using CampusConnect.Domain.Enums;
 using CampusConnect.Domain.Interfaces;
@@ -49,7 +50,7 @@ public record GroupRequestDto(Guid Id, string DisplayName, string Email, string 
 public record GroupCandidateDto(Guid Id, string DisplayName, string Email, string Role, string Course);
 public record GroupSettingsDetailsDto(CampusGroupDto Group, IReadOnlyList<GroupMemberDto> Members, IReadOnlyList<GroupRequestDto> JoinRequests, IReadOnlyList<GroupRequestDto> Invitations);
 
-public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo, IFeedRepository? feedRepo = null)
+public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo, IFeedRepository? feedRepo = null, IFeedAttachmentStorage? attachmentStorage = null)
 {
     public const string PermissionError = "You are not allowed to manage this group.";
     private const string CourseManagedError = "Course group membership is managed through course assignments.";
@@ -178,7 +179,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo,
         if (feedRepo is null)
             return Result<bool>.Failure("Group deletion is not available.");
 
-        await feedRepo.DeleteByGroupAsync(groupId);
+        await DeleteGroupPostsAsync(groupId);
         await groupRepo.DeleteAsync(groupId);
         return Result<bool>.Success(true);
     }
@@ -325,7 +326,7 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo,
             if (feedRepo is null)
                 return Result<LeaveGroupResultDto>.Failure("Group deletion is not available.");
 
-            await feedRepo.DeleteByGroupAsync(groupId);
+            await DeleteGroupPostsAsync(groupId);
             await groupRepo.DeleteAsync(groupId);
             return Result<LeaveGroupResultDto>.Success(new LeaveGroupResultDto(null, Deleted: true));
         }
@@ -634,6 +635,22 @@ public class GroupsService(IGroupRepository groupRepo, IUserRepository userRepo,
             return "GR";
 
         return string.Concat(words.Take(2).Select(word => char.ToUpperInvariant(word[0])));
+    }
+
+    private async Task DeleteGroupPostsAsync(Guid groupId)
+    {
+        if (feedRepo is null)
+            return;
+
+        if (attachmentStorage is null)
+        {
+            await feedRepo.DeleteByGroupAsync(groupId);
+            return;
+        }
+
+        var posts = await feedRepo.GetByGroupAsync(groupId);
+        await feedRepo.DeleteByGroupAsync(groupId);
+        await attachmentStorage.DeleteManyAsync(posts.SelectMany(post => post.Attachments));
     }
 
     private sealed record GroupEditContext(CampusGroup Group, User User);

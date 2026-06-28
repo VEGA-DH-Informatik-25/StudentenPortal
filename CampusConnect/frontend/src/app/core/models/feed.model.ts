@@ -7,6 +7,8 @@ export interface FeedPost {
   author?: ContactProfile | null;
   group: CampusGroup;
   content: string;
+  translations?: FeedPostTranslations | null;
+  attachments?: FeedAttachment[] | null;
   createdAt: string;
   status: 'Pending' | 'Published';
   allowComments: boolean;
@@ -20,6 +22,23 @@ export interface CreatePostRequest {
   content: string;
   groupId?: string | null;
   allowComments?: boolean;
+  translations?: FeedPostTranslations | null;
+  attachments?: File[];
+}
+
+export interface FeedPostTranslations {
+  de: string;
+  en: string;
+  fr: string;
+}
+
+export interface FeedAttachment {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  isImage: boolean;
+  downloadUrl: string;
 }
 
 export interface FeedComment {

@@ -1,6 +1,7 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import localeEn from '@angular/common/locales/en';
+import localeFr from '@angular/common/locales/fr';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { CampusGroup } from '../models/group.model';
@@ -17,9 +18,13 @@ const STORAGE_KEY = 'campusconnect.language';
 
 registerLocaleData(localeDe);
 registerLocaleData(localeEn);
+registerLocaleData(localeFr);
 
 const apiErrorTranslations: Record<string, TranslationKey> = {
   'A course group already exists for this course.': 'apiError.courseGroupExists',
+  'A post can contain at most 5 attachments.': 'apiError.attachmentCount',
+  'Attachment files cannot be empty.': 'apiError.attachmentEmpty',
+  'Attachment was not found.': 'apiError.attachmentNotFound',
   'Audience must be at most 80 characters long.': 'apiError.groupAudienceTooLong',
   'Change the initial password before completing onboarding.': 'apiError.changeInitialPasswordFirst',
   'Choose a course.': 'apiError.courseRequired',
@@ -42,9 +47,11 @@ const apiErrorTranslations: Record<string, TranslationKey> = {
   'Enter a course code for the course group.': 'apiError.courseCodeRequired',
   'Enter a valid email address.': 'apiError.emailInvalid',
   'Enter an official category for the official group.': 'apiError.officialCategoryRequired',
+  'Each attachment must be at most 10 MB.': 'apiError.attachmentTooLarge',
   'Fill in all course fields.': 'apiError.courseFieldsRequired',
   'Fill in all group fields.': 'apiError.groupFieldsRequired',
   'Fill in all profile fields.': 'apiError.profileFieldsRequired',
+  'Fill in all translation fields.': 'apiError.translationFieldsRequired',
   'First name and last name are required.': 'apiError.firstLastRequired',
   'First name and last name must be at most 60 characters long.': 'apiError.firstLastTooLong',
   'Grade must be between 1.0 and 5.0.': 'apiError.gradeRange',
@@ -88,6 +95,7 @@ const apiErrorTranslations: Record<string, TranslationKey> = {
   'This course already exists.': 'apiError.courseAlreadyExists',
   'This email address is already registered.': 'apiError.emailAlreadyRegistered',
   'This global role cannot create this group type.': 'apiError.globalRoleCannotCreateGroup',
+  'This attachment type is not allowed.': 'apiError.attachmentType',
   'This post is not waiting for approval.': 'apiError.postNotWaitingApproval',
   'This post is waiting for approval.': 'apiError.postWaitingApproval',
   'This role is invalid.': 'apiError.invalidRole',
@@ -110,6 +118,7 @@ export class I18n {
   readonly languages: LanguageOption[] = [
     { code: 'de', label: 'Deutsch', shortLabel: 'DE', locale: 'de-DE' },
     { code: 'en', label: 'English', shortLabel: 'EN', locale: 'en-US' },
+    { code: 'fr', label: 'Français', shortLabel: 'FR', locale: 'fr-FR' },
   ];
 
   private readonly _language = signal<LanguageCode>(this._initialLanguage());
@@ -230,7 +239,7 @@ export class I18n {
   }
 
   private _isLanguageCode(language: string): language is LanguageCode {
-    return language === 'en' || language === 'de';
+    return language === 'en' || language === 'de' || language === 'fr';
   }
 
   private _applyDocumentLanguage(language: LanguageCode): void {

@@ -63,7 +63,7 @@ describe('FeedPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', translations: null, attachments: [], createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
     feedApi = {
       getFeed: vi.fn(() => of([])),
       createPost: vi.fn(() => of(post)),
@@ -153,7 +153,7 @@ describe('FeedPage', () => {
 
   it('opens the comment composer from the compact comment button', () => {
     fixture.detectChanges();
-    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published', allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] }]);
+    (component as any)._posts.set([{ id: 'post-1', authorName: 'Alice', group, content: 'Hello', translations: null, attachments: [], createdAt: new Date().toISOString(), status: 'Published', allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] }]);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.comment-composer')).toBeNull();
@@ -166,7 +166,7 @@ describe('FeedPage', () => {
 
   it('submits a picked emoji reaction', () => {
     fixture.detectChanges();
-    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
+    const post = { id: 'post-1', authorName: 'Alice', group, content: 'Hello', translations: null, attachments: [], createdAt: new Date().toISOString(), status: 'Published' as const, allowComments: true, canDelete: true, canComment: true, comments: [], reactions: [] };
     (component as any)._posts.set([post]);
 
     (component as any).onPickReaction(post, '🚀');
@@ -239,6 +239,48 @@ describe('FeedPage', () => {
     component['onPost']();
 
     expect(feedApi.createPost).not.toHaveBeenCalled();
+  });
+
+  it('submits translated posts with selected files', () => {
+    fixture.detectChanges();
+    const file = new File(['hello'], 'notice.pdf', { type: 'application/pdf' });
+
+    component['updateUseTranslations'](true);
+    component['updateTranslation']('de', 'Hallo');
+    component['updateTranslation']('en', 'Hello');
+    component['updateTranslation']('fr', 'Bonjour');
+    component['onFilesSelected']({ 0: file, length: 1, item: (index: number) => index === 0 ? file : null, [Symbol.iterator]: function* () { yield file; } } as unknown as FileList);
+    component['onPost']();
+
+    expect(feedApi.createPost).toHaveBeenCalledWith({
+      content: 'Hallo',
+      groupId: 'group-1',
+      allowComments: true,
+      translations: { de: 'Hallo', en: 'Hello', fr: 'Bonjour' },
+      attachments: [file],
+    });
+  });
+
+  it('uses the active language for translated post content', () => {
+    const post = {
+      id: 'post-1',
+      authorName: 'Alice',
+      group,
+      content: 'Deutsch',
+      translations: { de: 'Deutsch', en: 'English', fr: 'Français' },
+      attachments: [],
+      createdAt: new Date().toISOString(),
+      status: 'Published' as const,
+      allowComments: true,
+      canDelete: true,
+      canComment: true,
+      comments: [],
+      reactions: [],
+    };
+
+    component['_i18n'].setLanguage('en');
+
+    expect(component['localizedPostContent'](post)).toBe('English');
   });
 });
 

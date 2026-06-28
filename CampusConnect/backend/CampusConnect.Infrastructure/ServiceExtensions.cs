@@ -28,6 +28,7 @@ public static class ServiceExtensions
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.SectionName));
         services.Configure<DemoDataOptions>(configuration.GetSection(DemoDataOptions.SectionName));
         services.Configure<DhbwTimetableOptions>(configuration.GetSection(DhbwTimetableOptions.SectionName));
+        services.Configure<FeedAttachmentStorageOptions>(configuration.GetSection(FeedAttachmentStorageOptions.SectionName));
         services.AddMemoryCache();
 
         services.AddScoped<IUserRepository, EntityUserRepository>();
@@ -39,6 +40,7 @@ public static class ServiceExtensions
 
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<ILoginRateLimiter, InMemoryLoginRateLimiter>();
+        services.AddSingleton<IFeedAttachmentStorage, LocalFeedAttachmentStorage>();
         services.Configure<MensaOptions>(configuration.GetSection(MensaOptions.SectionName));
         services.AddHttpClient<IMensaService, MensaApiClient>();
         services.AddHttpClient<ITimetableService, DhbwTimetableService>();

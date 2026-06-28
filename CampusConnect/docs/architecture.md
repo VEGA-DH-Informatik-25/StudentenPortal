@@ -18,18 +18,18 @@ Das Frontend basiert auf **Angular 21** und verwendet ausschließlich eigenstän
 
 ### Internationalisierung
 
-Das Frontend besitzt eine eigene, signalbasierte Englisch-/Deutsch-Übersetzungsschicht unter `src/app/core/i18n/`:
+Das Frontend besitzt eine eigene, signalbasierte Englisch-/Deutsch-/Französisch-Übersetzungsschicht unter `src/app/core/i18n/`:
 
-- `translations.ts` definiert die zulässigen Übersetzungsschlüssel und beide Sprachwerte.
+- `translations.ts` definiert die zulässigen Übersetzungsschlüssel und die Sprachwerte für Deutsch, Englisch und Französisch.
 - Der standalone `TranslatePipe` wird für übersetzte Template-Texte importiert.
 - Der `I18n`-Service übersetzt Texte in TypeScript und liefert mit `locale()` die Locale für `Intl`-Formatierung.
 - Der `I18n`-Service bildet bekannte Backend-Fehlertexte mit `readError()` auf Übersetzungsschlüssel ab. Unbekannte API-Details werden nicht roh im UI angezeigt, sondern über den lokalisierten Fallback der jeweiligen Komponente.
 - Die Sprachauswahl wird als nicht sensible UI-Präferenz unter `campusconnect.language` in `localStorage` gespeichert.
 - Die Startsprache folgt einer gespeicherten Auswahl oder fällt auf Deutsch zurück.
 - Die Sprache wird im Zahnrad-Menü der Navbar über Buttons gewählt; `document.documentElement.lang` folgt der aktiven Auswahl.
-- `app.config.ts` registriert deutsche und englische Locale-Daten und verwendet für Angulars statisches `LOCALE_ID` `de-DE`. Dynamisch lokalisierte Datums- und Zahlenformate verwenden weiterhin `I18n.locale()`.
+- `app.config.ts` registriert deutsche, englische und französische Locale-Daten und verwendet für Angulars statisches `LOCALE_ID` `de-DE`. Dynamisch lokalisierte Datums- und Zahlenformate verwenden weiterhin `I18n.locale()`.
 
-Neue nutzerseitige Texte werden nicht direkt in Templates oder Komponenten geschrieben, sondern als englischer und deutscher Schlüssel ergänzt.
+Neue nutzerseitige Texte werden nicht direkt in Templates oder Komponenten geschrieben, sondern als englischer, deutscher und französischer Schlüssel ergänzt.
 
 ### Darstellung und Theme
 
@@ -58,7 +58,9 @@ Domain besitzt keine Projektabhängigkeit. Application referenziert Domain. Infr
 
 ## Persistenz und Repository-Strategie
 
-Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge in SQLite über Entity Framework Core. EF-Migrations verwalten das Datenbankschema; bestehende lokale SQLite-Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen, damit sie ohne Datenverlust weiter migriert werden können. Feed-Kommentare, Reaktionen sowie Gruppeneinstellungen und Gruppenrollen der Mitglieder werden als strukturierte JSON-Spalten gespeichert. Services, die Kurszuordnungen ändern, synchronisieren weiterhin die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht konsistent bleiben.
+Die aktuelle Implementierung persistiert Benutzer, Kurse, Gruppen, Feed-Beiträge, Noten und Prüfungseinträge in SQLite über Entity Framework Core. EF-Migrations verwalten das Datenbankschema; bestehende lokale SQLite-Datenbanken aus der früheren `EnsureCreated`-Initialisierung werden beim Start in die Migration-History übernommen, damit sie ohne Datenverlust weiter migriert werden können. Feed-Kommentare, Reaktionen, Übersetzungen, Anhang-Metadaten sowie Gruppeneinstellungen und Gruppenrollen der Mitglieder werden als strukturierte JSON-Spalten gespeichert. Services, die Kurszuordnungen ändern, synchronisieren weiterhin die abgeleiteten Kursgruppen, damit Benutzer-, Kurs- und Gruppenansicht konsistent bleiben.
+
+Feed-Anhänge werden nicht als öffentliche statische Dateien ausgeliefert. Die lokale Storage-Implementierung speichert Uploads standardmäßig unter `App_Data/feed-uploads` relativ zum API-Content-Root; der Pfad ist über `FeedAttachments:UploadPath` konfigurierbar. Die Datenbank speichert nur Metadaten und serverseitig generierte Dateinamen. Downloads laufen über authentifizierte API-Endpunkte, die vor dem Ausliefern die Leseberechtigung für den zugehörigen Beitrag prüfen.
 
 ## Externe APIs
 

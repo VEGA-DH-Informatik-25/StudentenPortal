@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-26. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
+This file is the repo-level operating guide and primary source of truth for AI agents working on CampusConnect. It reflects the current workspace state as verified on 2026-06-28. Prefer live code and configuration over prose docs when they disagree, and update this file when project-wide facts change.
 
 ## Project Identity
 
@@ -19,7 +19,7 @@ Core product areas:
 - Contact book for campus contacts and profile details.
 - Admin user and course management.
 
-The interface supports German and English. Add both translations for new user-facing text; use German terminology as the product-language reference when choosing labels.
+The interface supports German, English, and French. Add all three translations for new user-facing text; use German terminology as the product-language reference when choosing labels.
 
 ## Repository Shape
 
@@ -102,7 +102,7 @@ Frontend:
 - Signals for component-local state where practical.
 - Zoneless change detection through `provideZonelessChangeDetection()`.
 - Functional guards and functional HTTP interceptors.
-- A custom English/German translation layer under `core/i18n/`.
+- A custom English/German/French translation layer under `core/i18n/`.
 - A frontend theme service under `core/services/theme.ts` with light, dark, and system modes.
 - SCSS component styles.
 - npm 11.6.2 package manager metadata.
@@ -202,7 +202,7 @@ Persisted entities currently include:
 - Grades
 - ExamEntries
 
-Structured JSON columns currently store feed comments, feed reactions, group settings, assigned user IDs, and group member roles. Feed posts also persist a publication status (`Pending` or `Published`) and their own comment setting.
+Structured JSON columns currently store feed comments, feed reactions, feed translations, feed attachment metadata, group settings, assigned user IDs, and group member roles. Feed posts also persist a publication status (`Pending` or `Published`) and their own comment setting. Feed attachment files are stored outside SQLite through the configured feed attachment storage path, defaulting to `App_Data/feed-uploads` under the API content root.
 
 Repository registrations currently use entity-backed EF repositories for users, courses, feed, groups, grades, and exams. Legacy in-memory repository classes still exist but are not the normal runtime registrations.
 
@@ -289,6 +289,7 @@ Implemented endpoints:
 | POST | `/api/feed` | User |
 | DELETE | `/api/feed/{id}` | User |
 | POST | `/api/feed/{id}/approve` | User with group-management permission |
+| GET | `/api/feed/{postId}/attachments/{attachmentId}` | User with post read permission |
 | POST | `/api/feed/{id}/comments` | User |
 | DELETE | `/api/feed/{postId}/comments/{commentId}` | User |
 | POST | `/api/feed/{id}/reactions` | User |
@@ -371,7 +372,7 @@ Frontend internationalization rules:
 - User-facing interface text uses translation keys from `core/i18n/translations.ts`; do not hard-code new labels, messages, button text, or accessibility text in templates or components.
 - Import the standalone `TranslatePipe` in components that render translated template text and use `{{ 'translation.key' | translate }}`.
 - Use the injected `I18n` service for translated text or locale-sensitive formatting in TypeScript.
-- Add both English and German values for every new `TranslationKey`.
+- Add English, German, and French values for every new `TranslationKey`.
 - Use `I18n.readError(error, fallbackKey)` for HTTP/API errors shown in the UI. Do not display raw backend `error` strings directly in components.
 - The selected language is a non-sensitive UI preference stored under `campusconnect.language` in `localStorage`. This does not relax the prohibition on storing authentication tokens in browser storage.
 - The initial language follows the saved preference or defaults to German. `LOCALE_ID` is `de-DE`; runtime date and number formatting that follows the selected language uses `I18n.locale()`.
@@ -386,7 +387,7 @@ Frontend theme rules:
 
 Frontend configuration facts:
 
-- `app.config.ts` registers German and English locale data, sets the static Angular `LOCALE_ID` to `de-DE`, and enables zoneless change detection, router input binding, and auth/error interceptors. `App` initializes `I18n` and `Theme` so document language and theme are applied before the shell is used.
+- `app.config.ts` registers German, English, and French locale data, sets the static Angular `LOCALE_ID` to `de-DE`, and enables zoneless change detection, router input binding, and auth/error interceptors. `App` initializes `I18n` and `Theme` so document language and theme are applied before the shell is used.
 - `proxy.conf.json` proxies `/api` to `http://localhost:5135`.
 - Start the API before using API-backed frontend pages locally.
 

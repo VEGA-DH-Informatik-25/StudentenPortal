@@ -31,6 +31,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
 | POST | `/api/feed/{id}/approve` | Ausstehenden Beitrag veröffentlichen (Gruppenverwaltung) | Ja |
 | DELETE | `/api/feed/{id}` | Eigenen oder moderierbaren Beitrag löschen | Ja |
+| GET | `/api/feed/{postId}/attachments/{attachmentId}` | Anhang eines lesbaren Beitrags herunterladen | Ja |
 | POST | `/api/feed/{id}/comments` | Kommentar unter einem Beitrag erstellen | Ja |
 | DELETE | `/api/feed/{postId}/comments/{commentId}` | Eigenen Kommentar löschen | Ja |
 | POST | `/api/feed/{id}/reactions` | Emoji-Reaktion an einem Beitrag umschalten | Ja |
@@ -92,7 +93,9 @@ Feed-Antworten enthalten nur veröffentlichte Beiträge aus Gruppen, für deren 
 
 Wer posten darf, ergibt sich aus der Gruppenrolle: Besitzer und Moderatoren dürfen immer posten, einfache Mitglieder nur, wenn `allowStudentPosts` aktiv ist (`canPost`). Ist `requiresApproval` aktiv, starten Beiträge einfacher Mitglieder mit Status `Pending`; Beiträge von Besitzern, Moderatoren, berechtigten Kurslehrenden und Admins werden direkt als `Published` gespeichert. Berechtigte Gruppenverwalter rufen die Warteschlange über `GET /api/groups/{id}/pending-posts` ab und veröffentlichen Beiträge über `POST /api/feed/{id}/approve`. Ablehnen löscht den ausstehenden Beitrag über `DELETE /api/feed/{id}`.
 
-`POST /api/feed` akzeptiert neben `content` und `groupId` das optionale Feld `allowComments`. Kommentare sind nur möglich, wenn sowohl `group.settings.allowComments` als auch `post.allowComments` aktiv sind. Besitzer, Moderatoren, berechtigte Kurslehrende und Admins dürfen fremde Beiträge und Kommentare innerhalb ihrer verwalteten Gruppen entfernen.
+`POST /api/feed` akzeptiert neben `content` und `groupId` das optionale Feld `allowComments`. Einfache Textbeiträge können weiterhin als JSON gesendet werden. Für Anhänge oder manuelle Übersetzungen nutzt der Client `multipart/form-data` mit `content`, `groupId`, `allowComments`, optional `translations.de`, `translations.en`, `translations.fr` und bis zu fünf `attachments`. Jeder Anhang darf höchstens 10 MB groß sein; erlaubt sind Bilder (`jpg`, `png`, `webp`, `gif`), PDF, Text/CSV und Office-Dokumente. Sind Übersetzungen gesetzt, müssen Deutsch, Englisch und Französisch befüllt sein; der deutsche Text wird zusätzlich als `content` gespeichert. Feed-Antworten liefern `translations` und `attachments` mit geschützten `downloadUrl`s. Kommentare sind nur möglich, wenn sowohl `group.settings.allowComments` als auch `post.allowComments` aktiv sind. Besitzer, Moderatoren, berechtigte Kurslehrende und Admins dürfen fremde Beiträge und Kommentare innerhalb ihrer verwalteten Gruppen entfernen.
+
+Anhänge werden nicht öffentlich statisch ausgeliefert. `GET /api/feed/{postId}/attachments/{attachmentId}` prüft die Leseberechtigung für den Beitrag und gibt die Datei nur für berechtigte Nutzer zurück. Ausstehende Beiträge sind für ihre Autoren und berechtigte Gruppenverwalter abrufbar; veröffentlichte Beiträge folgen der normalen Gruppen-Leseberechtigung.
 
 Emoji-Reaktionen sind als Toggle modelliert: sendet derselbe Nutzer dasselbe Emoji erneut, wird die Reaktion entfernt. Es gibt keine feste Emoji-Liste; akzeptiert werden gültige Emoji-Zeichen oder Emoji-Sequenzen, nicht freier Text.
 

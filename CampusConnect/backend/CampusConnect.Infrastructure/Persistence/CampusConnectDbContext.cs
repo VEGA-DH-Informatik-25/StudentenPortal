@@ -99,6 +99,16 @@ public sealed class CampusConnectDbContext(DbContextOptions<CampusConnectDbConte
         feedPost.HasIndex(entity => entity.GroupId);
         feedPost.Property(entity => entity.AuthorName).HasMaxLength(120).IsRequired();
         feedPost.Property(entity => entity.Content).HasMaxLength(4000).IsRequired();
+        feedPost.Property(entity => entity.Translations)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize<FeedPostTranslations?>(value, () => null))
+            .Metadata.SetValueComparer(JsonComparer<FeedPostTranslations?>());
+        feedPost.Property(entity => entity.Attachments)
+            .HasConversion(
+                value => Serialize(value),
+                value => Deserialize(value, () => new List<FeedAttachment>()))
+            .Metadata.SetValueComparer(JsonComparer<List<FeedAttachment>>());
         feedPost.Property(entity => entity.Status)
             .HasConversion(status => status.ToString(), value => Enum.Parse<FeedPostStatus>(value))
             .HasMaxLength(16)

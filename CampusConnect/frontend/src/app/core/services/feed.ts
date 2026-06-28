@@ -12,6 +12,25 @@ export class Feed {
   }
 
   createPost(req: CreatePostRequest): Observable<FeedPost> {
+    if (req.attachments?.length || req.translations) {
+      const form = new FormData();
+      form.append('content', req.content);
+      if (req.groupId) {
+        form.append('groupId', req.groupId);
+      }
+      form.append('allowComments', String(req.allowComments ?? true));
+      if (req.translations) {
+        form.append('translations.de', req.translations.de);
+        form.append('translations.en', req.translations.en);
+        form.append('translations.fr', req.translations.fr);
+      }
+      for (const attachment of req.attachments ?? []) {
+        form.append('attachments', attachment, attachment.name);
+      }
+
+      return this._http.post<FeedPost>('/api/feed', form);
+    }
+
     return this._http.post<FeedPost>('/api/feed', req);
   }
 

@@ -139,6 +139,8 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
         target.GroupId = source.GroupId;
         target.AuthorName = source.AuthorName;
         target.Content = source.Content;
+        target.Translations = Clone(source.Translations);
+        target.Attachments = source.Attachments.Select(Clone).ToList();
         target.Status = source.Status;
         target.AllowComments = source.AllowComments;
         target.Comments = source.Comments.Select(Clone).ToList();
@@ -152,11 +154,34 @@ public sealed class EntityFeedRepository(CampusConnectDbContext dbContext) : IFe
         GroupId = post.GroupId,
         AuthorName = post.AuthorName,
         Content = post.Content,
+        Translations = Clone(post.Translations),
+        Attachments = post.Attachments.Select(Clone).ToList(),
         Status = post.Status,
         AllowComments = post.AllowComments,
         CreatedAt = post.CreatedAt,
         Comments = post.Comments.Select(Clone).ToList(),
         Reactions = post.Reactions.Select(Clone).ToList()
+    };
+
+    private static FeedPostTranslations? Clone(FeedPostTranslations? translations) =>
+        translations is null
+            ? null
+            : new FeedPostTranslations
+            {
+                De = translations.De,
+                En = translations.En,
+                Fr = translations.Fr
+            };
+
+    private static FeedAttachment Clone(FeedAttachment attachment) => new()
+    {
+        Id = attachment.Id,
+        OriginalFileName = attachment.OriginalFileName,
+        StoredFileName = attachment.StoredFileName,
+        ContentType = attachment.ContentType,
+        SizeBytes = attachment.SizeBytes,
+        IsImage = attachment.IsImage,
+        CreatedAt = attachment.CreatedAt
     };
 
     private static FeedComment Clone(FeedComment comment) => new()

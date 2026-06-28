@@ -50,6 +50,18 @@ public sealed class EntityFeatureRepositoryTests
                     AuthorName = "Alice",
                     GroupId = groupId,
                     Content = "First meeting on Thursday.",
+                    Translations = new FeedPostTranslations { De = "Erstes Treffen am Donnerstag.", En = "First meeting on Thursday.", Fr = "Première réunion jeudi." },
+                    Attachments =
+                    [
+                        new FeedAttachment
+                        {
+                            OriginalFileName = "agenda.pdf",
+                            StoredFileName = "stored-agenda.pdf",
+                            ContentType = "application/pdf",
+                            SizeBytes = 1234,
+                            IsImage = false
+                        }
+                    ],
                     Comments =
                     [
                         new FeedComment { AuthorId = userId, AuthorName = "Alice", Content = "Room follows." }
@@ -94,6 +106,8 @@ public sealed class EntityFeatureRepositoryTests
                 var persistedPost = await feed.FindByIdAsync(postId);
                 Assert.NotNull(persistedPost);
                 Assert.Equal("First meeting on Thursday.", persistedPost!.Content);
+                Assert.Equal("Première réunion jeudi.", persistedPost.Translations!.Fr);
+                Assert.Equal("agenda.pdf", persistedPost.Attachments.Single().OriginalFileName);
                 Assert.Single(persistedPost.Comments);
                 Assert.Contains(userId, persistedPost.Reactions.Single().UserIds);
 
@@ -140,12 +154,14 @@ public sealed class EntityFeatureRepositoryTests
 
             firstRead!.Content = "Mutated outside repository";
             firstRead.Comments.Add(new FeedComment { AuthorId = Guid.NewGuid(), AuthorName = "Bob", Content = "Leaked" });
+            firstRead.Attachments.Add(new FeedAttachment { OriginalFileName = "leaked.pdf", StoredFileName = "leaked.pdf", SizeBytes = 1 });
 
             var secondRead = await repository.FindByIdAsync(post.Id);
 
             Assert.NotNull(secondRead);
             Assert.Equal("Original", secondRead!.Content);
             Assert.Empty(secondRead.Comments);
+            Assert.Empty(secondRead.Attachments);
         }
         finally
         {
