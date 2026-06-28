@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CampusConnect.API.Tests;
 
@@ -10,6 +13,7 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
     public const string AdminPassword = "Admin123!";
 
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-{Guid.NewGuid():N}.db");
+    private readonly string _dataProtectionPath = Path.Combine(Path.GetTempPath(), $"campusconnect-api-tests-keys-{Guid.NewGuid():N}");
 
     public TestApiFactory()
     {
@@ -19,6 +23,13 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.ConfigureLogging(logging => logging.ClearProviders());
+        builder.ConfigureServices(services =>
+        {
+            services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(_dataProtectionPath))
+                .SetApplicationName("CampusConnect.API.Tests");
+        });
         builder.ConfigureAppConfiguration((_, configuration) =>
         {
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
@@ -48,8 +59,12 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
         try
         {
             File.Delete(_databasePath);
+            Directory.Delete(_dataProtectionPath, recursive: true);
         }
         catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
         {
         }
     }
