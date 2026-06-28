@@ -33,9 +33,9 @@ export class GradesPage implements OnInit {
   protected moduleName = '';
   protected grade = 2.0;
   protected ects = 5;
-  protected simulationGrade = 2.0;
-  protected simulationEcts = 5;
-  protected targetAverage = 2.5;
+  protected readonly simulationGrade = signal(2.0);
+  protected readonly simulationEcts = signal(5);
+  protected readonly targetAverage = signal(2.5);
 
   protected readonly grades = computed(() => this._summary().grades);
   protected readonly totalEcts = computed(() => this._summary().totalEcts);
@@ -53,21 +53,21 @@ export class GradesPage implements OnInit {
       {
         id: 'simulation',
         moduleName: 'Simulation',
-        value: this.normalizeGrade(this.simulationGrade),
-        ects: this.normalizeEcts(this.simulationEcts),
+        value: this.normalizeGrade(this.simulationGrade()),
+        ects: this.normalizeEcts(this.simulationEcts()),
         createdAt: '',
       },
     ]),
   );
   protected readonly requiredGradeForTarget = computed(() => {
-    const ects = this.normalizeEcts(this.simulationEcts);
+    const ects = this.normalizeEcts(this.simulationEcts());
     const currentEcts = this.totalEcts();
 
     if (currentEcts === 0) {
-      return this.targetAverage;
+      return this.targetAverage();
     }
 
-    return (this.targetAverage * (currentEcts + ects) - this.weightedSum(this.grades())) / ects;
+    return (this.targetAverage() * (currentEcts + ects) - this.weightedSum(this.grades())) / ects;
   });
   protected readonly moduleSummaries = computed<ModuleSummary[]>(() => {
     const modules = new Map<string, Grade[]>();

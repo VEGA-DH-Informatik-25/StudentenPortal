@@ -76,9 +76,11 @@ h2 {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  min-width: 0;
 }
 
 .panel {
+  min-width: 0;
   padding: 1.5rem;
 }
 
@@ -99,6 +101,7 @@ label {
   display: grid;
   font-weight: 700;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 input,
@@ -109,7 +112,9 @@ select {
   color: var(--dhbw-ink);
   font: inherit;
   min-height: 2.6rem;
+  min-width: 0;
   padding: 0.55rem 0.75rem;
+  width: 100%;
 
   &:focus {
     background: var(--dhbw-surface);

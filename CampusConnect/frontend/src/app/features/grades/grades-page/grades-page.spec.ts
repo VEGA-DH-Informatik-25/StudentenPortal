@@ -80,10 +80,12 @@ describe('GradesPage', () => {
     component['grade'] = 3;
     component['ects'] = 10;
     component['addGrade']();
-    component['simulationGrade'] = 1;
-    component['simulationEcts'] = 5;
+    component['simulationGrade'].set(1);
+    component['simulationEcts'].set(5);
+    component['targetAverage'].set(2.5);
 
     expect(component['simulatedAverage']()).toBeCloseTo(2.33, 1);
+    expect(component['targetHint']()).toBe('Benötigte Zusatznote: 1,5');
     expect(component['grades']().length).toBe(1);
   });
 
