@@ -14,7 +14,7 @@
   border-bottom: 1px solid var(--dhbw-border);
   padding: 0.4rem 0 1.35rem;
 
-  p {
+  p:not(.groups-page__eyebrow) {
     color: var(--dhbw-text-muted);
     font-size: var(--type-page-body);
     line-height: 1.65;
@@ -24,10 +24,10 @@
 }
 
 .groups-page__eyebrow {
-  color: var(--dhbw-red) !important;
+  color: var(--dhbw-red);
   font-size: var(--type-page-eyebrow);
   font-weight: 800;
-  margin-bottom: 0.45rem !important;
+  margin: 0 0 0.45rem;
   text-transform: uppercase;
 }
 

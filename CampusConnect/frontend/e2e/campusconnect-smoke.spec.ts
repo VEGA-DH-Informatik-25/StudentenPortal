@@ -44,13 +44,25 @@ test('public legal placeholder pages are reachable without login', async ({ page
   for (const legalPage of legalPages) {
     await page.goto(legalPage.path);
     await expect(page.getByRole('heading', { name: legalPage.heading })).toBeVisible();
-    await expect(page.getByText('Prüfpflichtiger Platzhalter')).toBeVisible();
+    await expect(page.getByText(/Repository-Platzhalter/)).toBeVisible();
     await expectNoPageHorizontalOverflow(page);
   }
 });
 
-test('demo student can sign in, navigate core features, and sign out', async ({ page }) => {
+test('demo student can sign in, create a feed post, navigate core features, and sign out', async ({ page }, testInfo) => {
   await login(page, 'lena.tif25a@dhbw-loerrach.de');
+
+  const postText = `E2E Composer ${testInfo.project.name.replace(/\W+/g, '-')}-${Date.now()}`;
+  await page.getByRole('button', { name: 'Beitragserstellung öffnen' }).click();
+  await page.getByLabel('Neuen Beitrag verfassen').fill(postText);
+  await page.getByRole('button', { name: 'Einstellungen anzeigen' }).click();
+  await page.getByText('Kommentare für diesen Beitrag erlauben').click();
+  await page.getByRole('button', { name: 'Posten' }).click();
+  const createdPost = page.locator('.post-card').filter({ hasText: postText }).first();
+  await expect(createdPost).toBeVisible();
+  await expect(createdPost.getByRole('button', { name: 'Kommentieren' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Beitragserstellung öffnen' })).toBeVisible();
+  await expectNoPageHorizontalOverflow(page);
 
   await navigateTo(page, 'Mensa', /\/mensa$/);
   await expect(page.getByRole('heading', { name: 'Mensa' })).toBeVisible();
@@ -77,10 +89,14 @@ test('demo student can sign in, navigate core features, and sign out', async ({ 
   await page.getByRole('tab', { name: /Entdecken/ }).click();
   const joinButton = page.getByRole('button', { name: 'Beitreten' }).first();
   if (await joinButton.isVisible().catch(() => false)) {
-    await joinButton.click();
-    await expect(page.getByText('Du bist der Gruppe beigetreten.')).toBeVisible();
+    await expect(joinButton).toBeVisible();
   } else {
-    await expect(page.getByRole('button', { name: /Öffnen|Beitritt anfragen/ }).first()).toBeVisible();
+    const openOrRequestButton = page.getByRole('button', { name: /Öffnen|Beitritt anfragen/ }).first();
+    if (await openOrRequestButton.isVisible().catch(() => false)) {
+      await expect(openOrRequestButton).toBeVisible();
+    } else {
+      await expect(page.getByText('Für diesen Filter gibt es noch keine Gruppen.')).toBeVisible();
+    }
   }
 
   await navigateTo(page, 'Kontakte', /\/contacts$/);

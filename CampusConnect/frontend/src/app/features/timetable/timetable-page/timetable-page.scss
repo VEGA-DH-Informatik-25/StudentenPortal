@@ -84,32 +84,27 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .calendar-view { min-width: 0; overflow: hidden; }
 .timetable-page--calendar .calendar-view {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  height: min(56rem, calc(100dvh - 142px - clamp(1.5rem, 4vw, 2rem)));
-  min-height: min(30rem, calc(100dvh - 142px));
-  position: sticky;
-  top: calc(76px + clamp(0.75rem, 2vw, 1.25rem));
+  grid-template-rows: auto auto;
 }
 .calendar-nav { align-items: center; border-bottom: 1px solid var(--dhbw-border); display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.65rem 0.8rem; }
 .calendar-nav strong { color: var(--dhbw-red); flex: 1; text-align: center; }
 .calendar-nav button { background: var(--dhbw-surface); border: 1px solid var(--dhbw-border); color: var(--dhbw-red); font-weight: 800; padding: 0 0.7rem; }
 
 .calendar-grid { display: grid; grid-template-columns: 4.25rem repeat(6, minmax(9.5rem, 1fr)); min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-.timetable-page--calendar .calendar-grid { height: 100%; min-height: 0; overflow-y: auto; }
+.timetable-page--calendar .calendar-grid { min-height: 0; overflow-y: hidden; }
 .calendar-view--day .calendar-grid { grid-template-columns: 4.25rem minmax(0, 1fr); }
 .calendar-time-axis { background: var(--dhbw-surface); border-right: 1px solid var(--dhbw-border); min-width: 4.25rem; position: sticky; left: 0; z-index: 3; }
 .timetable-page--calendar .calendar-time-axis,
 .timetable-page--calendar .calendar-day {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   min-height: 0;
 }
 .calendar-time-axis__header { background: var(--dhbw-bg-accent); border-bottom: 1px solid var(--dhbw-border); display: block; min-height: 3.8rem; }
 .calendar-time-axis__track { min-height: 26rem; position: relative; }
 .timetable-page--calendar .calendar-time-axis__track,
 .timetable-page--calendar .calendar-day__timeline {
-  height: 100%;
-  min-height: 0;
+  min-height: 26rem;
 }
 .calendar-time-axis__label { color: var(--dhbw-text-muted); font-size: 0.72rem; font-weight: 800; left: 0.65rem; position: absolute; transform: translateY(-50%); }
 .calendar-time-axis__label--start { transform: translateY(0); }

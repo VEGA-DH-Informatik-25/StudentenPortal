@@ -53,7 +53,9 @@ describe('Feed', () => {
     expect(body.get('translations.de')).toBe('Hallo');
     expect(body.get('translations.en')).toBe('Hello');
     expect(body.get('translations.fr')).toBe('Bonjour');
-    expect(body.get('attachments')).toBe(file);
+    const attachment = body.get('attachments') as File;
+    expect(attachment.name).toBe(file.name);
+    expect(attachment.size).toBe(file.size);
     request.flush({});
   });
 

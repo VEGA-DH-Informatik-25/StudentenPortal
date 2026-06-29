@@ -14,7 +14,7 @@
     margin: 0 0 0.7rem;
   }
 
-  p {
+  p:not(.mensa-hero__eyebrow) {
     color: var(--dhbw-text-muted);
     font-size: var(--type-page-body);
     line-height: 1.65;
@@ -26,10 +26,9 @@
     color: var(--dhbw-red);
     font-size: var(--type-page-eyebrow);
     font-weight: 800;
-    margin-bottom: 0.45rem;
+    margin: 0 0 0.45rem;
     text-transform: uppercase;
   }
-
 }
 
 .mensa-layout {

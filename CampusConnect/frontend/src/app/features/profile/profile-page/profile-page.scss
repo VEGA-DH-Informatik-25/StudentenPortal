@@ -25,7 +25,7 @@
       text-transform: uppercase;
     }
 
-    p {
+    p:not(.profile-page__eyebrow) {
       color: var(--dhbw-text-muted);
       font-size: var(--type-page-body);
       margin: 0.25rem 0 0;

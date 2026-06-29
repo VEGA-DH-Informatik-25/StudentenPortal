@@ -1,8 +1,11 @@
 # Testing
 
 Stand der letzten vollständigen lokalen Verifikation: **2026-06-24**.
+Stand der Testfall-Dokumentation: **2026-06-29**.
 
 CampusConnect has tests for the backend API boundary, backend application services, Angular frontend services, guards, interceptors, selected feature pages, and Playwright smoke coverage for central browser flows.
+
+Der detaillierte Testfallkatalog lebt in [Testfallkatalog](testfallkatalog.md). Er beschreibt fuer jeden aktuellen xUnit-, Vitest/Angular- und Playwright-Test, was geprueft wird und wie der Test vorgeht.
 
 ## Backend
 

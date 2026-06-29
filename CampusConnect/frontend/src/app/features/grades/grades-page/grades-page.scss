@@ -47,7 +47,7 @@ h2 {
   font-size: var(--type-section-title);
 }
 
-.hero p {
+.hero p:not(.eyebrow) {
   color: var(--dhbw-text-muted);
   font-size: var(--type-page-body);
   line-height: 1.65;

@@ -152,6 +152,7 @@
                       class="reaction-picker__trigger"
                       [attr.aria-expanded]="isReactionMenuOpen(post.id)"
                       [attr.aria-controls]="'group-reaction-menu-' + post.id"
+                      [attr.aria-label]="'feed.emojiPicker' | translate"
                       (click)="toggleReactionMenu(post)">
                       +
                     </button>

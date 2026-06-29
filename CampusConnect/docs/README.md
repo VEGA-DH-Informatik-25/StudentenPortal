@@ -8,6 +8,7 @@ This folder is the canonical documentation home for CampusConnect. Outside this 
 - [Architecture](architecture.md)
 - [API Reference](api.md)
 - [Testing](testing.md)
+- [Testfallkatalog](testfallkatalog.md)
 - [QA Evidence](qa-nachweis.md)
 - [Development Demo Data](demo-data.md)
 - [Demo Checklist](demo-checkliste.md)

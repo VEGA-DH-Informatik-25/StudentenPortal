@@ -49,7 +49,7 @@ export class GroupDetailPage implements OnInit {
     : this._i18n.translate('groups.postCount', { count: this._posts().length }));
   protected readonly _displayName = computed(() => this._auth.displayName() || this._i18n.roleLabel('Student'));
   protected readonly _profileInitials = computed(() => this.initialsFor(this._displayName()));
-  protected readonly _emojiOptions = ['👍', '❤️', '🙌', '👏', '🎉', '🔥', '💡', '✅', '🚀', '👀', '🙂', '😂', '😮', '🤔', '🙏', '💪', '📌', '⭐', '☕', '🍀'];
+  protected readonly _emojiOptions = ['👍', '❤️', '😂', '🎉', '🙌', '🚀', '👀', '🙏'];
 
   ngOnInit(): void {
     const groupId = this._route.snapshot.paramMap.get('id');

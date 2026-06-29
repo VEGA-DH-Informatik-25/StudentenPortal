@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "e2e": "npm run build && playwright test"
+    "e2e": "node ./node_modules/@angular/cli/bin/ng.js build && node ./node_modules/@playwright/test/cli.js test"
   },
   "private": true,
   "packageManager": "npm@11.6.2",

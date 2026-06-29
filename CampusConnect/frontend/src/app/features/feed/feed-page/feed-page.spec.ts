@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { WritableSignal, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
 
 import { FeedPage } from './feed-page';
@@ -125,6 +127,73 @@ describe('FeedPage', () => {
     expect(localStorage.getItem('campusconnect.feed.selectedGroupId')).toBe('group-1');
   });
 
+  it('starts with a compact composer and expands from the prompt', () => {
+    fixture.detectChanges();
+
+    expect(component['_isComposerOpen']()).toBe(false);
+    expect(fixture.nativeElement.querySelector('#feed-composer-panel')).toBeNull();
+
+    const prompt = fixture.nativeElement.querySelector('.composer__prompt') as HTMLButtonElement;
+    expect(prompt.getAttribute('aria-expanded')).toBe('false');
+    prompt.click();
+    fixture.detectChanges();
+
+    expect(component['_isComposerOpen']()).toBe(true);
+    expect(fixture.nativeElement.querySelector('#feed-composer-panel')).not.toBeNull();
+  });
+
+  it('updates composer switch states from the settings panel', () => {
+    fixture.detectChanges();
+
+    (component as any).openComposer();
+    (component as any).updateContent('Hallo Kurs');
+    (component as any).toggleComposerSettings();
+    fixture.detectChanges();
+
+    const commentSwitch = fixture.debugElement.query(By.css('input[name="feed-allow-comments"]'));
+    commentSwitch.triggerEventHandler('ngModelChange', false);
+    fixture.detectChanges();
+
+    expect(component['_allowComments']()).toBe(false);
+
+    const translationSwitch = fixture.debugElement.query(By.css('input[name="feed-use-translations"]'));
+    translationSwitch.triggerEventHandler('ngModelChange', true);
+    fixture.detectChanges();
+
+    expect(component['_useTranslations']()).toBe(true);
+    expect(component['_translationDraft']().de).toBe('Hallo Kurs');
+    expect(fixture.nativeElement.querySelector('#feed-content-de')).not.toBeNull();
+  });
+
+  it('shows, removes, and validates selected attachments', () => {
+    fixture.detectChanges();
+    const file = new File(['hello'], 'notice.pdf', { type: 'application/pdf' });
+
+    (component as any).openComposer();
+    (component as any).toggleComposerSettings();
+    (component as any).onFilesSelected(fileList([file]));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('notice.pdf');
+
+    (component as any).removeSelectedFile(0);
+    fixture.detectChanges();
+
+    expect(component['_selectedFiles']()).toEqual([]);
+    expect(fixture.nativeElement.textContent).toContain('Keine Dateien ausgewählt.');
+
+    (component as any).onFilesSelected(fileList([new File(['bad'], 'malware.exe')]));
+    fixture.detectChanges();
+
+    expect(component['_attachmentError']()).toBe('Dieser Dateityp wird nicht unterstützt.');
+    expect(fixture.nativeElement.textContent).toContain('Dieser Dateityp wird nicht unterstützt.');
+
+    const files = Array.from({ length: 6 }, (_, index) => new File(['hello'], `notice-${index}.pdf`, { type: 'application/pdf' }));
+    (component as any).onFilesSelected(fileList(files));
+
+    expect(component['_attachmentError']()).toBe('Du kannst höchstens 5 Dateien anhängen.');
+  });
+
   it('renders DHBW quick access links as external redirects', () => {
     fixture.detectChanges();
 
@@ -149,6 +218,52 @@ describe('FeedPage', () => {
       'https://dhbw-loerrach.de/bibliothek/aktuelle-informationen',
     ]);
     expect(links.every(link => link.target === '_blank' && link.rel === 'noopener noreferrer')).toBe(true);
+  });
+
+  it('opens image attachments in a preview with a download action', () => {
+    fixture.detectChanges();
+    const imageAttachment = {
+      id: 'attachment-1',
+      fileName: 'campus.png',
+      contentType: 'image/png',
+      sizeBytes: 2048,
+      isImage: true,
+      downloadUrl: '/api/feed/post-1/attachments/attachment-1',
+    };
+    (component as any)._posts.set([{
+      id: 'post-1',
+      authorName: 'Alice',
+      group,
+      content: 'Hello',
+      translations: null,
+      attachments: [imageAttachment],
+      createdAt: new Date().toISOString(),
+      status: 'Published',
+      allowComments: true,
+      canDelete: true,
+      canComment: true,
+      comments: [],
+      reactions: [],
+    }]);
+    fixture.detectChanges();
+
+    const previewButton = fixture.nativeElement.querySelector('.post-card__image-preview') as HTMLButtonElement;
+    expect(previewButton.getAttribute('aria-label')).toBe('Bildvorschau für campus.png öffnen');
+
+    previewButton.click();
+    fixture.detectChanges();
+
+    const viewer = fixture.nativeElement.querySelector('.attachment-viewer') as HTMLElement;
+    expect(viewer).not.toBeNull();
+    expect(viewer.textContent).toContain('campus.png');
+    const download = viewer.querySelector('.attachment-viewer__download') as HTMLAnchorElement;
+    expect(download.getAttribute('href')).toBe('/api/feed/post-1/attachments/attachment-1');
+    expect(download.getAttribute('download')).toBe('campus.png');
+
+    component['closeAttachmentPreviewFromEscape']();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.attachment-viewer')).toBeNull();
   });
 
   it('opens the comment composer from the compact comment button', () => {
@@ -245,6 +360,7 @@ describe('FeedPage', () => {
     fixture.detectChanges();
     const file = new File(['hello'], 'notice.pdf', { type: 'application/pdf' });
 
+    component['openComposer']();
     component['updateUseTranslations'](true);
     component['updateTranslation']('de', 'Hallo');
     component['updateTranslation']('en', 'Hello');
@@ -259,6 +375,26 @@ describe('FeedPage', () => {
       translations: { de: 'Hallo', en: 'Hello', fr: 'Bonjour' },
       attachments: [file],
     });
+    expect(component['_isComposerOpen']()).toBe(false);
+    expect(component['_isComposerSettingsOpen']()).toBe(false);
+    expect(component['_useTranslations']()).toBe(false);
+    expect(component['_selectedFiles']()).toEqual([]);
+    expect(component['_allowComments']()).toBe(true);
+  });
+
+  it('keeps the composer open and shows translated backend validation errors', () => {
+    fixture.detectChanges();
+    feedApi.createPost.mockReturnValueOnce(throwError(() => new HttpErrorResponse({
+      status: 400,
+      error: { error: 'Fill in all translation fields.' },
+    })));
+
+    component['openComposer']();
+    component['updateContent']('Hallo');
+    component['onPost']();
+
+    expect(component['_isComposerOpen']()).toBe(true);
+    expect(component['_error']()).toBe('Bitte fülle alle Übersetzungsfelder aus.');
   });
 
   it('uses the active language for translated post content', () => {
@@ -303,4 +439,14 @@ function createEvent(id: string, start: string, end: string) {
     isAllDay: false,
     isOnline: false,
   };
+}
+
+function fileList(files: File[]): FileList {
+  return Object.assign({}, files, {
+    length: files.length,
+    item: (index: number) => files[index] ?? null,
+    [Symbol.iterator]: function* () {
+      yield* files;
+    },
+  }) as unknown as FileList;
 }

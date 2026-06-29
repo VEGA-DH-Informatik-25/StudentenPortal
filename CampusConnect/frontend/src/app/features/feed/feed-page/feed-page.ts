@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, HostListener, computed, inject, signal, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,7 +6,7 @@ import { I18n } from '../../../core/i18n/i18n';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { Auth } from '../../../core/services/auth';
 import { Feed } from '../../../core/services/feed';
-import { FeedPost } from '../../../core/models/feed.model';
+import { FeedAttachment, FeedPost } from '../../../core/models/feed.model';
 import { CampusGroup, GroupType } from '../../../core/models/group.model';
 import { Groups } from '../../../core/services/groups';
 import { TimetableEvent } from '../../../core/models/timetable.model';
@@ -41,6 +41,8 @@ export class FeedPage implements OnInit {
   protected readonly _isPosting = signal(false);
   protected readonly _error = signal('');
   protected readonly _notice = signal('');
+  protected readonly _isComposerOpen = signal(false);
+  protected readonly _isComposerSettingsOpen = signal(false);
   protected readonly _newContent = signal('');
   protected readonly _useTranslations = signal(false);
   protected readonly _translationDraft = signal({ de: '', en: '', fr: '' });
@@ -52,6 +54,7 @@ export class FeedPage implements OnInit {
   protected readonly _commentingPostIds = signal<string[]>([]);
   protected readonly _openReactionPostId = signal<string | null>(null);
   protected readonly _reactingKeys = signal<string[]>([]);
+  protected readonly _previewAttachment = signal<FeedAttachment | null>(null);
   protected readonly _groups = signal<CampusGroup[]>([]);
   protected readonly _groupsLoading = signal(false);
   protected readonly _groupsError = signal('');
@@ -63,6 +66,7 @@ export class FeedPage implements OnInit {
   });
   protected readonly _displayName = computed(() => this._auth.displayName() || this._i18n.roleLabel('Student'));
   protected readonly _profileInitials = computed(() => this._initialsFor(this._displayName()));
+  protected readonly _emojiOptions = ['👍', '❤️', '😂', '🎉', '🙌', '🚀', '👀', '🙏'];
   protected readonly _scheduleEvents = signal<TimetableEvent[]>([]);
   protected readonly _scheduleCourse = signal('');
   protected readonly _scheduleDate = signal(this._dateKey(new Date()));
@@ -76,7 +80,9 @@ export class FeedPage implements OnInit {
       : !!this._newContent().trim();
     return hasText && !this._isLoading() && !this._isPosting() && !!this._selectedGroup() && !this._attachmentError();
   });
-  protected readonly _emojiOptions = ['👍', '❤️', '🙌', '👏', '🎉', '🔥', '💡', '✅', '🚀', '👀', '🙂', '😂', '😮', '🤔', '🙏', '💪', '📌', '⭐', '☕', '🍀'];
+  protected readonly _composerCharacterCount = computed(() =>
+    this._useTranslations() ? this._translationDraft().de.trim().length : this._newContent().trim().length
+  );
 
   ngOnInit(): void {
     this._loadGroups();
@@ -89,7 +95,7 @@ export class FeedPage implements OnInit {
     this._error.set('');
     this._feedService.getFeed().subscribe({
       next: posts => { this._posts.set(posts); this._error.set(''); this._isLoading.set(false); },
-      error: () => { this._error.set(this._i18n.translate('feed.loadError')); this._isLoading.set(false); },
+      error: error => { this._error.set(this._i18n.readError(error, 'feed.loadError')); this._isLoading.set(false); },
     });
   }
 
@@ -131,9 +137,15 @@ export class FeedPage implements OnInit {
         this._selectedFiles.set([]);
         this._attachmentError.set('');
         this._allowComments.set(true);
+        this._isComposerOpen.set(false);
+        this._isComposerSettingsOpen.set(false);
         this._isPosting.set(false);
       },
-      error: () => { this._error.set(this._i18n.translate('feed.createPostError')); this._isPosting.set(false); },
+      error: error => {
+        this._error.set(this._i18n.readError(error, 'feed.createPostError'));
+        this._isComposerOpen.set(true);
+        this._isPosting.set(false);
+      },
     });
   }
 
@@ -145,7 +157,7 @@ export class FeedPage implements OnInit {
     this._error.set('');
     this._feedService.deletePost(id).subscribe({
       next: () => this._posts.update(posts => posts.filter(post => post.id !== id)),
-      error: () => this._error.set(this._i18n.translate('feed.deletePostError')),
+      error: error => this._error.set(this._i18n.readError(error, 'feed.deletePostError')),
     });
   }
 
@@ -164,8 +176,8 @@ export class FeedPage implements OnInit {
         this._openCommentPostIds.update(ids => ids.filter(id => id !== post.id));
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
-      error: () => {
-        this._error.set(this._i18n.translate('feed.createCommentError'));
+      error: error => {
+        this._error.set(this._i18n.readError(error, 'feed.createCommentError'));
         this._commentingPostIds.update(ids => ids.filter(id => id !== post.id));
       },
     });
@@ -174,7 +186,7 @@ export class FeedPage implements OnInit {
   protected onDeleteComment(postId: string, commentId: string): void {
     this._feedService.deleteComment(postId, commentId).subscribe({
       next: updatedPost => this._replacePost(updatedPost),
-      error: () => this._error.set(this._i18n.translate('feed.deleteCommentError')),
+      error: error => this._error.set(this._i18n.readError(error, 'feed.deleteCommentError')),
     });
   }
 
@@ -199,18 +211,52 @@ export class FeedPage implements OnInit {
         }
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
-      error: () => {
-        this._error.set(this._i18n.translate('feed.saveReactionError'));
+      error: error => {
+        this._error.set(this._i18n.readError(error, 'feed.saveReactionError'));
         this._reactingKeys.update(keys => keys.filter(item => item !== key));
       },
     });
   }
 
+  protected openComposer(): void {
+    this._isComposerOpen.set(true);
+  }
+
+  protected openAttachmentPreview(attachment: FeedAttachment): void {
+    if (!attachment.isImage) {
+      return;
+    }
+
+    this._previewAttachment.set(attachment);
+  }
+
+  protected closeAttachmentPreview(): void {
+    this._previewAttachment.set(null);
+  }
+
+  protected toggleComposerSettings(): void {
+    this._isComposerOpen.set(true);
+    this._isComposerSettingsOpen.update(isOpen => !isOpen);
+  }
+
+  protected cancelComposer(): void {
+    if (this._isPosting()) {
+      return;
+    }
+
+    this._resetComposerDraft();
+    this._isComposerOpen.set(false);
+    this._isComposerSettingsOpen.set(false);
+  }
+
   protected updateContent(value: string): void {
+    this._isComposerOpen.set(true);
     this._newContent.set(value);
   }
 
   protected updateUseTranslations(value: boolean): void {
+    this._isComposerOpen.set(true);
+    this._isComposerSettingsOpen.set(true);
     this._useTranslations.set(value);
     if (value && !this._translationDraft().de.trim() && this._newContent().trim()) {
       this._translationDraft.update(draft => ({ ...draft, de: this._newContent() }));
@@ -218,10 +264,13 @@ export class FeedPage implements OnInit {
   }
 
   protected updateTranslation(language: 'de' | 'en' | 'fr', value: string): void {
+    this._isComposerOpen.set(true);
     this._translationDraft.update(draft => ({ ...draft, [language]: value }));
   }
 
   protected onFilesSelected(files: FileList | null): void {
+    this._isComposerOpen.set(true);
+    this._isComposerSettingsOpen.set(true);
     const selected = [...this._selectedFiles(), ...Array.from(files ?? [])];
     const validationError = this._validateFiles(selected);
     if (validationError) {
@@ -234,17 +283,21 @@ export class FeedPage implements OnInit {
   }
 
   protected removeSelectedFile(index: number): void {
+    this._isComposerOpen.set(true);
     this._selectedFiles.update(files => files.filter((_, itemIndex) => itemIndex !== index));
     this._attachmentError.set(this._validateFiles(this._selectedFiles()) ?? '');
   }
 
   protected updateSelectedGroup(value: string): void {
+    this._isComposerOpen.set(true);
     this._selectedGroupId.set(value);
     this._uiPreferences.setString(FEED_SELECTED_GROUP_KEY, value);
     this._allowComments.set(true);
   }
 
   protected updateAllowComments(value: boolean): void {
+    this._isComposerOpen.set(true);
+    this._isComposerSettingsOpen.set(true);
     this._allowComments.set(value);
   }
 
@@ -325,6 +378,15 @@ export class FeedPage implements OnInit {
 
   protected attachmentAlt(fileName: string): string {
     return this._i18n.translate('feed.attachmentImageAlt', { fileName });
+  }
+
+  protected attachmentPreviewLabel(fileName: string): string {
+    return this._i18n.translate('feed.openImagePreview', { fileName });
+  }
+
+  @HostListener('document:keydown.escape')
+  protected closeAttachmentPreviewFromEscape(): void {
+    this.closeAttachmentPreview();
   }
 
   protected canReactToPost(post: FeedPost): boolean {
@@ -479,6 +541,15 @@ export class FeedPage implements OnInit {
 
   private _replacePost(updatedPost: FeedPost): void {
     this._posts.update(posts => posts.map(post => post.id === updatedPost.id ? updatedPost : post));
+  }
+
+  private _resetComposerDraft(): void {
+    this._newContent.set('');
+    this._translationDraft.set({ de: '', en: '', fr: '' });
+    this._useTranslations.set(false);
+    this._selectedFiles.set([]);
+    this._attachmentError.set('');
+    this._allowComments.set(true);
   }
 
   private _resolveScheduleCourse(): string {

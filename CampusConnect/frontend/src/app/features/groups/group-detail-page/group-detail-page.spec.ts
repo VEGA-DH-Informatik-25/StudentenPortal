@@ -148,6 +148,14 @@ describe('GroupDetailPage', () => {
     expect(feedApi.createComment).toHaveBeenCalledWith('post-1', { content: 'Bin dabei' });
   });
 
+  it('submits a picked emoji reaction', () => {
+    fixture.detectChanges();
+
+    (component as any).onPickReaction(posts[0], '🚀');
+
+    expect(feedApi.toggleReaction).toHaveBeenCalledWith('post-1', { emoji: '🚀' });
+  });
+
   it('does not delete group posts when confirmation is cancelled', () => {
     vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
 
