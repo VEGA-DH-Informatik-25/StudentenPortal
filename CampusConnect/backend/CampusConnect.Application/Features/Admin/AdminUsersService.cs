@@ -23,6 +23,7 @@ public record UpdateUserCourseCommand(Guid UserId, string CourseCode);
 public record CreateAdminUserCommand(string FirstName, string LastName, string Email, string Role, string CourseCode, string InitialPassword, bool IsActive = true);
 public record UpdateAdminUserCommand(Guid UserId, string DisplayName, string Email, string Role, string CourseCode, bool IsActive, Guid CurrentAdminId);
 public record UpdateUserStatusCommand(Guid UserId, bool IsActive, Guid CurrentAdminId);
+public record ResetUserPasswordCommand(Guid UserId, string InitialPassword);
 
 public class AdminUsersService(IUserRepository userRepository, ICourseRepository courseRepository, IGroupRepository groupRepository)
 {
@@ -188,6 +189,25 @@ public class AdminUsersService(IUserRepository userRepository, ICourseRepository
         await userRepository.UpdateAsync(user, cancellationToken);
         await SyncCourseAssignmentsAsync(course.Code, previousCourse, cancellationToken);
 
+        return Result<AdminUserDto>.Success(ToDto(user));
+    }
+
+    public async Task<Result<AdminUserDto>> ResetPasswordAsync(ResetUserPasswordCommand command, CancellationToken cancellationToken = default)
+    {
+        var password = command.InitialPassword.Trim();
+        if (string.IsNullOrWhiteSpace(password))
+            return Result<AdminUserDto>.Failure("Initial password is required.");
+
+        var user = await userRepository.FindByIdAsync(command.UserId, cancellationToken);
+        if (user is null)
+            return Result<AdminUserDto>.Failure("User was not found.");
+
+        user.PasswordHash = PasswordHasher.Hash(password);
+        user.MustChangePassword = true;
+        user.OnboardingCompleted = false;
+        user.OnboardingCompletedAt = null;
+
+        await userRepository.UpdateAsync(user, cancellationToken);
         return Result<AdminUserDto>.Success(ToDto(user));
     }
 

@@ -16,11 +16,13 @@ public sealed class ContactsServiceTests
         var service = new ContactsService(new FakeUserRepository(currentUser, bob, clara));
 
         var byNote = await service.SearchAsync(currentUser.Id, "project group");
+        var byLocation = await service.SearchAsync(currentUser.Id, "Library");
         var byCourse = await service.SearchAsync(currentUser.Id, "TIF25B");
 
-        var noteResult = Assert.Single(byNote);
-        Assert.Equal(bob.Id, noteResult.Id);
-        Assert.Equal("Library", noteResult.Location);
+        Assert.Empty(byNote);
+        var locationResult = Assert.Single(byLocation);
+        Assert.Equal(bob.Id, locationResult.Id);
+        Assert.Equal("Library", locationResult.Location);
         Assert.DoesNotContain(byCourse, contact => contact.Id == currentUser.Id);
         Assert.Contains(byCourse, contact => contact.Id == clara.Id && contact.PhoneNumber == "+49 7621 123456");
     }

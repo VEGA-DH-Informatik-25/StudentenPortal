@@ -26,6 +26,7 @@ Die API-Tests laufen gegen `WebApplicationFactory<Program>` oder gezielt konfigu
 
 - `AdminCanCreateAndUpdateUser`: prueft den Admin-Workflow fuer Nutzeranlage und -bearbeitung. Vorgehen: Admin-Client erstellt einen Nutzer, liest die Antwort, aktualisiert Profildaten/Rolle/Kurs ueber Admin-Endpunkte und vergleicht die gespeicherten Werte.
 - `AdminCannotDeactivateSelf`: prueft Selbstschutz fuer Admin-Konten. Vorgehen: angemeldeter Admin versucht, den eigenen Status zu deaktivieren, und der Test erwartet eine abweisende Antwort statt erfolgreicher Deaktivierung.
+- `AdminCanResetPasswordAndUserMustChangeItOnNextLogin`: prueft den Admin-Passwort-Reset. Vorgehen: Admin setzt ein neues Initialpasswort, altes Passwort wird abgewiesen, Login mit neuem Passwort liefert `mustChangePassword = true` und `onboardingCompleted = false`.
 
 ### `CampusConnect.API.Tests/AuthLoginRateLimitApiTests.cs`
 
@@ -96,6 +97,7 @@ Die Application-Tests rufen Services direkt mit kleinen Fake-Repositories auf. S
 - `UpdateStatusAsync_PreventsCurrentAdminDeactivatingSelf`: prueft Selbstschutz im Status-Endpunkt. Vorgehen: aktueller Admin versucht, sich selbst zu deaktivieren, und der Service gibt Fehler zurueck.
 - `UpdateUserAsync_PreventsCurrentAdminDeactivatingSelf`: prueft denselben Selbstschutz beim vollstaendigen Nutzerupdate. Vorgehen: eigenes Admin-Konto mit `IsActive = false` aktualisieren wollen und Ablehnung erwarten.
 - `UpdateRoleAsync_AllowsAssigningManagementRole`: prueft Rollen-Patch fuer Management. Vorgehen: Nutzer vorbereiten, Rolle auf `Management` setzen und gespeicherte Rolle kontrollieren.
+- `ResetPasswordAsync_SetsNewHashAndReopensInitialPasswordFlow`: prueft Passwort-Reset im Service. Vorgehen: Nutzer mit abgeschlossenem Onboarding vorbereiten, neues Initialpasswort setzen, neuen Hash sowie `MustChangePassword = true`, `OnboardingCompleted = false` und geloeschtes Abschlussdatum erwarten.
 
 ### `Features/Auth/AuthServiceTests.cs`
 
@@ -123,7 +125,7 @@ Die Application-Tests rufen Services direkt mit kleinen Fake-Repositories auf. S
 
 ### `Features/Contacts/ContactsServiceTests.cs`
 
-- `SearchAsync_ShouldFindUsersByCourseAndProfileDetails`: prueft Kontaktsuche ueber Kurs und Profildaten. Vorgehen: Nutzer mit unterschiedlichen Profilfeldern vorbereiten, Suchtext senden und passende Kontakte in Ergebnisform erwarten.
+- `SearchAsync_ShouldFindUsersByCourseAndProfileDetails`: prueft Kontaktsuche ueber Kurs, Telefon und Standort ohne Profilnotiz. Vorgehen: Nutzer mit Legacy-Profilnotiz und Kontaktdaten vorbereiten, Suche nach Notiz leer erwarten und Suche nach Standort/Telefon erfolgreich validieren.
 - `SearchAsync_ShouldRespectRequestedLimit`: prueft Ergebnislimit. Vorgehen: mehrere passende Nutzer vorbereiten, kleines Limit anfordern und nur die begrenzte Anzahl erwarten.
 - `SearchAsync_ShouldClampLimitToAtLeastOne`: prueft Limit-Untergrenze. Vorgehen: Limit kleiner eins senden und trotzdem mindestens ein Ergebnis zulassen.
 
@@ -231,6 +233,7 @@ Frontend-Tests laufen mit Angular TestBed, Vitest und jsdom. Service-Tests verwe
 - `admin.spec.ts / should create courses through the admin endpoint`: prueft `POST /api/admin/courses`. Vorgehen: Service aufrufen, Methode/URL/Body im HTTP-Testrequest vergleichen.
 - `admin.spec.ts / should update user roles with a patch request`: prueft Rollen-Patch. Vorgehen: Service-Methode aufrufen und PATCH auf `/api/admin/users/{id}/role` mit Rolle erwarten.
 - `admin.spec.ts / should update user status with a patch request`: prueft Status-Patch. Vorgehen: Service-Methode aufrufen und PATCH auf `/api/admin/users/{id}/status` mit Aktivstatus erwarten.
+- `admin.spec.ts / should reset user passwords with a patch request`: prueft Passwort-Reset-Payload. Vorgehen: Service-Methode aufrufen und PATCH auf `/api/admin/users/{id}/password` mit `initialPassword` erwarten.
 - `admin.spec.ts / should delete users through the admin endpoint`: prueft Nutzerloeschung. Vorgehen: Service-Methode aufrufen und DELETE auf `/api/admin/users/{id}` erwarten.
 - `auth.spec.ts / should be created`: prueft Auth-Service-Erzeugung. Vorgehen: Service aus TestBed beziehen und Instanz erwarten.
 - `auth.spec.ts / should store the full profile returned by login`: prueft Login-State. Vorgehen: Login-HTTP-Antwort mit Token/Profil flushen und gespeichertes Profil sowie Token-Signal erwarten.
@@ -292,17 +295,18 @@ Frontend-Tests laufen mit Angular TestBed, Vitest und jsdom. Service-Tests verwe
 - `admin-page.spec.ts / persists admin tabs and filters`: prueft Speichern von Tab- und Filterpraeferenzen. Vorgehen: aktive Admin-Tabs/Filter setzen und localStorage-Werte kontrollieren.
 - `admin-page.spec.ts / restores admin tabs and filters`: prueft Wiederherstellung gespeicherter Admin-Praeferenzen. Vorgehen: localStorage vorbereiten, Komponente initialisieren und aktive UI-Zustaende vergleichen.
 - `admin-page.spec.ts / generates a secure initial password`: prueft Passwortgenerator. Vorgehen: Generator ausfuehren und Laenge sowie Zeichenklassen validieren.
+- `admin-page.spec.ts / resets a selected user password`: prueft Reset-Aktion im Admin-Editor. Vorgehen: Nutzer in den Bearbeitungsdialog laden, Initialpasswort setzen und Service-Aufruf mit Nutzer-ID und Passwort erwarten.
 - `login-page.spec.ts / should create`: prueft LoginPage-Instanziierung. Vorgehen: Komponente mit Auth-Fake rendern.
 - `login-page.spec.ts / should render only the login form`: prueft, dass keine Registrierungs-UI mehr angeboten wird. Vorgehen: DOM rendern und nur Login-Formular erwarten.
 - `login-page.spec.ts / localizes known backend login errors`: prueft Fehlerlokalisierung im Login. Vorgehen: Auth-Login mit bekannter Fehlermeldung scheitern lassen und lokalisierte UI-Meldung erwarten.
 - `calendar-page.spec.ts / should create`: prueft CalendarPage-Instanziierung. Vorgehen: Komponente rendern und Instanz erwarten.
 - `contact-book-page.spec.ts / should show the search entry point and favorites section without a full contact list`: prueft Kontaktbuch-Startzustand. Vorgehen: Seite rendern und Suchkarte/Favoriten statt Vollkontaktliste erwarten.
 - `contact-book-page.spec.ts / should open the contact search modal from the search card`: prueft Suchmodal-Oeffnung. Vorgehen: Suchkarte klicken und Dialog im DOM erwarten.
-- `contact-book-page.spec.ts / should add and remove a favorite from the search results`: prueft Favoriteninteraktion. Vorgehen: Suchergebnis im Modal favorisieren, Favorit im Kontaktbuch erwarten, danach entfernen und Verschwinden pruefen.
+- `contact-book-page.spec.ts / should add and remove a favorite from the search results`: prueft Favoriteninteraktion und sichtbare Kontaktdaten. Vorgehen: Suchergebnis mit Telefon/Standort im Modal favorisieren, Favorit im Kontaktbuch erwarten, danach entfernen und Verschwinden pruefen.
 - `contact-book-page.spec.ts / restores saved favorite contacts`: prueft Persistenz der Favoriten. Vorgehen: localStorage mit Favorit vorbereiten, Seite initialisieren und Favoritenkarte erwarten.
 - `contact-search-modal.spec.ts / should show a minimum length hint before searching`: prueft Mindestlaengen-Hinweis. Vorgehen: Modal ohne ausreichende Eingabe rendern und Hinweis statt Request erwarten.
 - `contact-search-modal.spec.ts / should wait for at least 3 characters before sending a debounced search request`: prueft Debounce und Mindestlaenge. Vorgehen: kurze und danach gueltige Eingabe setzen, Timer fortschreiben und erst dann Service-Suche erwarten.
-- `contact-search-modal.spec.ts / should render compact search results`: prueft Ergebnisdarstellung. Vorgehen: Suchservice liefert Kontakte, Modal zeigt kompakte Karten mit relevanten Feldern.
+- `contact-search-modal.spec.ts / should render compact search results`: prueft Ergebnisdarstellung. Vorgehen: Suchservice liefert Kontakte, Modal zeigt Name, Kurs, Studiengang, Telefon, Standort und E-Mail.
 - `feed-page.spec.ts / should create`: prueft FeedPage-Instanziierung. Vorgehen: Komponente mit Auth-, Feed-, Groups- und Timetable-Fakes rendern.
 - `feed-page.spec.ts / persists the selected posting group`: prueft ausgewaehlte Posting-Gruppe. Vorgehen: interne Auswahl setzen und localStorage-Key `campusconnect.feed.selectedGroupId` vergleichen.
 - `feed-page.spec.ts / starts with a compact composer and expands from the prompt`: prueft Composer-Initialzustand. Vorgehen: Seite rendern, geschlossenes Panel erwarten, Prompt klicken und offenes Panel erwarten.
@@ -359,7 +363,7 @@ Frontend-Tests laufen mit Angular TestBed, Vitest und jsdom. Service-Tests verwe
 - `mensa-page.spec.ts / persists the selected menu day by date`: prueft Tagespraeferenz. Vorgehen: geladenen Tag waehlen und Datum im localStorage speichern.
 - `mensa-page.spec.ts / should derive readable category markers`: prueft Kategorien aus Gerichtsnamen. Vorgehen: Menuezeilen mit Markern auswerten und lesbare Kategorien erwarten.
 - `mensa-page.spec.ts / should fall back to the dish name when no pre-split name lines exist`: prueft Fallback fuer Gerichtsanzeige. Vorgehen: Gericht ohne vorgeteilte Namenszeilen rendern und Namen als Anzeige verwenden.
-- `profile-page.spec.ts / should load the current user profile`: prueft Profilseite. Vorgehen: Auth-Service liefert aktuelles Profil und Formular/Anzeige werden befuellt.
+- `profile-page.spec.ts / should load the current user profile`: prueft Profilseite ohne Profilnotiz-Feld. Vorgehen: Auth-Service liefert aktuelles Profil und Formular/Anzeige werden befuellt; Profilnotiz-Text darf nicht erscheinen.
 - `profile-page.spec.ts / shows the assigned course as read-only profile data`: prueft Kurs-Readonly-Regel. Vorgehen: Profil rendern und Kurs als nicht editierbare Information statt Eingabe erwarten.
 - `timetable-page.spec.ts / should create`: prueft TimetablePage-Instanziierung. Vorgehen: Komponente mit Timetable-Service-Fake rendern.
 - `timetable-page.spec.ts / should restore and persist the selected timetable view`: prueft Ansichtspraeferenz. Vorgehen: gespeicherte Ansicht laden, Ansicht wechseln und localStorage aktualisieren.

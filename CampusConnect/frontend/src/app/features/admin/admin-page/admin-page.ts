@@ -53,6 +53,7 @@ export class AdminPage implements OnInit {
   protected readonly _isCreatingCourse = signal(false);
   protected readonly _isSaving = signal(false);
   protected readonly _isChangingStatus = signal(false);
+  protected readonly _isResettingPassword = signal(false);
   protected readonly _error = signal<string | null>(null);
   protected readonly _success = signal<string | null>(null);
   protected readonly _searchQuery = signal('');
@@ -84,6 +85,10 @@ export class AdminPage implements OnInit {
     role: 'Student',
     courseCode: '',
     isActive: true,
+  };
+
+  protected readonly _passwordResetForm = {
+    initialPassword: '',
   };
 
   protected readonly _dashboardStats = computed(() => {
@@ -235,21 +240,11 @@ export class AdminPage implements OnInit {
   }
 
   protected generateInitialPassword(): void {
-    const passwordCharacters = [
-      ...PASSWORD_CHARACTER_SETS.map(characterSet => this._randomCharacter(characterSet)),
-    ];
-    const allCharacters = PASSWORD_CHARACTER_SETS.join('');
+    this._createForm.initialPassword = this._generatePassword();
+  }
 
-    while (passwordCharacters.length < PASSWORD_LENGTH) {
-      passwordCharacters.push(this._randomCharacter(allCharacters));
-    }
-
-    for (let index = passwordCharacters.length - 1; index > 0; index--) {
-      const randomIndex = this._randomIndex(index + 1);
-      [passwordCharacters[index], passwordCharacters[randomIndex]] = [passwordCharacters[randomIndex], passwordCharacters[index]];
-    }
-
-    this._createForm.initialPassword = passwordCharacters.join('');
+  protected generateResetPassword(): void {
+    this._passwordResetForm.initialPassword = this._generatePassword();
   }
 
   protected updateEditRole(role: string): void {
@@ -266,17 +261,19 @@ export class AdminPage implements OnInit {
     this._editForm.role = user.role;
     this._editForm.courseCode = user.course || this._firstCourseCode();
     this._editForm.isActive = user.isActive;
+    this._passwordResetForm.initialPassword = '';
     this._editorMode.set('edit');
   }
 
   protected closeEditor(): void {
-    if (this._isSaving() || this._isChangingStatus()) {
+    if (this._isSaving() || this._isChangingStatus() || this._isResettingPassword()) {
       return;
     }
 
     this._editorMode.set(null);
     this._editingUser.set(null);
     this._statusConfirmationOpen.set(false);
+    this._passwordResetForm.initialPassword = '';
   }
 
   protected createUser(): void {
@@ -343,6 +340,35 @@ export class AdminPage implements OnInit {
       error: error => {
         this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
         this._isSaving.set(false);
+      },
+    });
+  }
+
+  protected resetPassword(): void {
+    const user = this._editingUser();
+    const initialPassword = this._passwordResetForm.initialPassword.trim();
+    if (!user) {
+      return;
+    }
+
+    if (!initialPassword) {
+      this._error.set(this._i18n.translate('admin.passwordRequired'));
+      return;
+    }
+
+    this._isResettingPassword.set(true);
+    this._clearMessages();
+    this._adminService.resetUserPassword(user.id, initialPassword).subscribe({
+      next: updatedUser => {
+        this._users.update(users => users.map(item => item.id === updatedUser.id ? updatedUser : item));
+        this._editingUser.set(updatedUser);
+        this._success.set(this._i18n.translate('admin.passwordReset', { name: updatedUser.displayName }));
+        this._isResettingPassword.set(false);
+        this.loadUsers();
+      },
+      error: error => {
+        this._error.set(this._i18n.readError(error, 'admin.dataLoadError'));
+        this._isResettingPassword.set(false);
       },
     });
   }
@@ -461,6 +487,24 @@ export class AdminPage implements OnInit {
 
   private _randomCharacter(characters: string): string {
     return characters[this._randomIndex(characters.length)];
+  }
+
+  private _generatePassword(): string {
+    const passwordCharacters = [
+      ...PASSWORD_CHARACTER_SETS.map(characterSet => this._randomCharacter(characterSet)),
+    ];
+    const allCharacters = PASSWORD_CHARACTER_SETS.join('');
+
+    while (passwordCharacters.length < PASSWORD_LENGTH) {
+      passwordCharacters.push(this._randomCharacter(allCharacters));
+    }
+
+    for (let index = passwordCharacters.length - 1; index > 0; index--) {
+      const randomIndex = this._randomIndex(index + 1);
+      [passwordCharacters[index], passwordCharacters[randomIndex]] = [passwordCharacters[randomIndex], passwordCharacters[index]];
+    }
+
+    return passwordCharacters.join('');
   }
 
   private _randomIndex(upperBound: number): number {

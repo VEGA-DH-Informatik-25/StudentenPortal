@@ -39,22 +39,23 @@ The Git repository root is this workspace root. The main application lives in `C
     docker-compose.yml
     docs/
       README.md
-      api.md
-      architecture.md
-      abgabe-und-uebergabe.md
-      code-review.md
-      contributing.md
-      demo-checkliste.md
-      demo-data.md
-      frontend.md
       anforderungsstatus.md
-      project-overview.md
-      qa-nachweis.md
-      roles.md
-      testing.md
+      mvp-must-have-kritik.md
+      product/
+        api.md
+        architecture.md
+        projektbeschreibung.md
+        setup.md
+        testing.md
+        testfallkatalog.md
+      information/
+        demo-data.md
+        marktanalyse.md
+      team/
+        presentation-slides.md
+        roles.md
       concepts/
       media/
-      product/
       wireframes/
     backend/
       CampusConnect.slnx
@@ -79,17 +80,14 @@ The Git repository root is this workspace root. The main application lives in `C
 Important source documents:
 
 - `CampusConnect/docs/README.md`: central documentation index.
-- `CampusConnect/docs/project-overview.md`: setup overview, stack summary, local URLs, and documentation map.
+- `CampusConnect/docs/product/setup.md`: setup checklist, demo flows, local URLs, and fallback guidance.
 - `CampusConnect/docs/product/projektbeschreibung.md`: product scope, MVP boundaries, target users, and feature list.
-- `CampusConnect/docs/abgabe-und-uebergabe.md`: delivery, handover, evidence, and readiness checklist.
 - `CampusConnect/docs/anforderungsstatus.md`: current requirements status matrix against the protected MVP PRD.
-- `CampusConnect/docs/demo-checkliste.md`: reproducible demo flows and fallback guidance.
-- `CampusConnect/docs/qa-nachweis.md`: QA evidence, commands, test counts, CI gates, and known QA gaps.
 - `prd-mvp.md`: protected MVP product requirements; do not change requirements casually.
-- `CampusConnect/docs/architecture.md`: frontend/backend architecture and auth flow.
-- `CampusConnect/docs/api.md`: current API surface and domain behavior.
-- `CampusConnect/docs/testing.md`: current testing conventions.
-- `CampusConnect/docs/contributing.md`: branch, commit, PR, and test conventions.
+- `CampusConnect/docs/product/architecture.md`: frontend/backend architecture and auth flow.
+- `CampusConnect/docs/product/api.md`: current API surface and domain behavior.
+- `CampusConnect/docs/product/testing.md`: current testing conventions.
+- `CampusConnect/docs/product/testfallkatalog.md`: documented automated test cases.
 - `CampusConnect/docs/concepts/`: planning concepts. Check live code before treating them as implemented behavior.
 - `.github/copilot-instructions.md`: short GitHub Copilot entry point that defers to this file.
 
@@ -320,7 +318,7 @@ Implemented endpoints:
 | POST | `/api/groups/{id}/invitations/accept` | User |
 | POST | `/api/groups/{id}/invitations/decline` | User |
 
-When adding, removing, or changing endpoints, update `CampusConnect/docs/api.md` and add focused API tests.
+When adding, removing, or changing endpoints, update `CampusConnect/docs/product/api.md` and add focused API tests.
 
 ## Current Frontend Architecture
 
@@ -546,10 +544,10 @@ Pull requests target `main`, request at least one review, address review comment
 
 Update documentation when behavior changes:
 
-- API contracts: update `CampusConnect/docs/api.md`.
-- Architecture or auth flow: update `CampusConnect/docs/architecture.md`.
-- Setup, commands, or stack: update `CampusConnect/docs/project-overview.md` and this file.
-- Testing conventions: update `CampusConnect/docs/testing.md`.
+- API contracts: update `CampusConnect/docs/product/api.md`.
+- Architecture or auth flow: update `CampusConnect/docs/product/architecture.md`.
+- Setup, commands, or stack: update `CampusConnect/docs/product/setup.md` and this file.
+- Testing conventions: update `CampusConnect/docs/product/testing.md`.
 - Project scope changes: update `CampusConnect/docs/product/projektbeschreibung.md` when the requested change affects product boundaries. Do not alter `prd-mvp.md` requirements unless the user explicitly asks for a PRD change.
 
 When docs and implementation disagree, prefer the live implementation for code changes and either update the docs or mention the doc gap in the final response.

@@ -249,6 +249,32 @@ public class AdminUsersServiceTests
         Assert.Equal(UserRole.Management, user.Role);
     }
 
+    [Fact]
+    public async Task ResetPasswordAsync_SetsNewHashAndReopensInitialPasswordFlow()
+    {
+        var user = new User
+        {
+            DisplayName = "Vera",
+            Email = "vera@dhbw-loerrach.de",
+            PasswordHash = PasswordHasher.Hash("OldPassword123!"),
+            Role = UserRole.Student,
+            MustChangePassword = false,
+            OnboardingCompleted = true,
+            OnboardingCompletedAt = DateTime.UtcNow
+        };
+        var service = new AdminUsersService(new FakeUserRepository(user), new FakeCourseRepository(), new FakeGroupRepository());
+
+        var result = await service.ResetPasswordAsync(new ResetUserPasswordCommand(user.Id, " NewPassword123! "));
+
+        Assert.True(result.IsSuccess);
+        Assert.True(PasswordHasher.Verify("NewPassword123!", user.PasswordHash));
+        Assert.False(PasswordHasher.Verify("OldPassword123!", user.PasswordHash));
+        Assert.True(user.MustChangePassword);
+        Assert.False(user.OnboardingCompleted);
+        Assert.Null(user.OnboardingCompletedAt);
+        Assert.Equal("Vera", result.Value!.DisplayName);
+    }
+
     private sealed class FakeUserRepository(params User[] users) : IUserRepository
     {
         private readonly List<User> _users = users.ToList();

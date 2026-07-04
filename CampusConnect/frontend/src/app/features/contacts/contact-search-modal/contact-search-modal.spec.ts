@@ -73,9 +73,8 @@ describe('ContactSearchModal', () => {
       email: 'alice@dhbw-loerrach.de',
       studyProgram: 'Computer Science',
       course: 'TIF25A',
-      phoneNumber: '',
-      location: '',
-      profileNote: '',
+      phoneNumber: '+49 7621 123456',
+      location: 'Library',
       role: 'Student',
     }]);
     fixture.detectChanges();
@@ -84,6 +83,8 @@ describe('ContactSearchModal', () => {
     expect(text).toContain('Alice Example');
     expect(text).toContain('TIF25A');
     expect(text).toContain('Computer Science');
+    expect(text).toContain('+49 7621 123456');
+    expect(text).toContain('Library');
     expect(text).toContain('alice@dhbw-loerrach.de');
     expect(fixture.nativeElement.querySelector('.contact-result-card__favorite')).not.toBeNull();
   });

@@ -5,3 +5,4 @@ public record UpdateAdminUserRequest(string DisplayName, string Email, string Ro
 public record UpdateUserRoleRequest(string Role);
 public record UpdateUserCourseRequest(string CourseCode);
 public record UpdateUserStatusRequest(bool IsActive);
+public record ResetUserPasswordRequest(string InitialPassword);

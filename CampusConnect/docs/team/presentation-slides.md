@@ -58,11 +58,11 @@ Was CampusConnect löst:
 ✓ Eine zentrale Plattform für alle studiumsrelevanten Infos
 ✓ Einheitlicher News-Feed für Ankündigungen und Nachrichten
 ✓ Automatischer Mensa-Speiseplan – täglich aktuell
-✓ Persönlicher Prüfungskalender mit Erinnerungen
+✓ Persönlicher Prüfungskalender
 ✓ Noten- und ECTS-Tracker
-✓ Intelligentes Lerngruppen-Matching
+✓ Gruppen für Kurse, Campus und offizielle Informationen
 ✓ Strukturierter Onboarding-Prozess für Erstsemester
-✓ Schwarzes Brett für WG-Suche, Mitfahrgelegenheiten
+✓ Kontaktbuch und Campusgruppen für Vernetzung
 
 → Ziel: Ein Portal statt zehn Chaos-Kanäle
 ```
@@ -80,25 +80,25 @@ Zentrale Funktionen von CampusConnect:
    • Beiträge mit Kommentaren und Emoji-Reaktionen
    • Kontext: Beiträge werden in Gruppen organisiert
 
-📋 SCHWARZES BRETT
-   • Pinnwand für Angebote und Gesuche
-   • WG-Suche, Mitfahrgelegenheiten, private Angebote
-   • Einträge laufen automatisch ab – kein ewiger Spam
+👥 GRUPPEN
+   • Course-, Official- und Campus-Gruppen
+   • Join-, Request-, Invite- und Leave-Workflows
+   • Moderation und Einstellungen pro Gruppe
 
 🍽️ MENSA-SPEISEPLAN
-   • Automatische tägliche Aktualisierung
-   • Preis, Allergene, Kategorien sichtbar
-   • Integriert in die Startseite – immer im Blick
+   • Tages- und Wochenansicht
+   • Backendgekapselte SWFR-Integration
+   • Freundliche Fehlerzustände bei externer Störung
 
 📅 PRÜFUNGSKALENDER + NOTEN-TRACKER
-   • Persönliche Prüfungstermine + Browser-Benachrichtigungen
+   • Persönliche Prüfungstermine, manuell gepflegt
    • Noteneinträge mit ECTS-Berechnung
    • Notendurchschnitt auf einen Blick
 
-👥 LERNGRUPPEN-MATCHING
-   • Gezielte Suche und Gründung nach Modul/Kurs
+👥 GRUPPEN & KONTAKTE
+   • Kurs-, Campus- und offizielle Gruppen
    • Beitrittsanfragen & Gruppenverwaltung
-   • Vernetzung statt Zufall
+   • Kontaktbuch für Campus-Kontakte
 
 🔐 AUTHENTIFIZIERUNG
    • Konten werden durch Admins erstellt
@@ -154,7 +154,7 @@ Kurz gefasst – Die technische Grundlage:
    Auth:      JWT + HttpOnly-Cookies (sicher gegen XSS)
 
 🔐 Sicherheit ist eingebaut
-   • E-Mails: Nur @student.dhbw-loerrach.de
+   • E-Mails: Nur @dhbw-loerrach.de
    • Tokens: Im Memory, nicht im Browser-Storage
    • API: Rollenbasierter Zugriff (Admin, Lehrbeauftragte, Studierende)
    • CORS & SWFR-Proxy: Externe APIs sicher integriert
@@ -251,7 +251,7 @@ Das bitten wir vom Sponsor:
    • Perspektive für produktiven Betrieb klären
    • Wer macht Updates & Support?
 
-✅ 6. Moderatione von Chat Foren
+✅ 6. Moderation von Gruppenbeiträgen
 ```
 ---
 
@@ -299,7 +299,7 @@ Kontakt – Fragen sind willkommen!
    GitHub Repository:  github.com/VEGA-DH-Informatik-25/StudentenPortal
    Dokumentation:       /CampusConnect/docs/README.md
    Projektbeschreibung: /CampusConnect/docs/product/projektbeschreibung.md
-   Architektur-Doku:    /CampusConnect/docs/architecture.md
-   API-Doku:            /CampusConnect/docs/api.md
+   Architektur-Doku:    /CampusConnect/docs/product/architecture.md
+   API-Doku:            /CampusConnect/docs/product/api.md
 
 ❓ Fragen?

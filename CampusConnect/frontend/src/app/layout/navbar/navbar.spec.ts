@@ -43,7 +43,6 @@ describe('Navbar', () => {
       course: 'TIF25A',
       phoneNumber: '+49 7621 123456',
       location: 'Library',
-      profileNote: 'Looking for a project group.',
       role: 'Student',
       mustChangePassword: false,
       onboardingCompleted: true,

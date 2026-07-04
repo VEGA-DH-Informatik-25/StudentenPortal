@@ -20,7 +20,6 @@ describe('Auth', () => {
     course: 'TIF25A',
     phoneNumber: '+49 7621 123456',
     location: 'Library',
-    profileNote: 'Looking for a project group.',
     role: 'Student',
     mustChangePassword: false,
     onboardingCompleted: true,
@@ -141,7 +140,6 @@ describe('Auth', () => {
       course: updatedProfile.course,
       phoneNumber: updatedProfile.phoneNumber,
       location: updatedProfile.location,
-      profileNote: updatedProfile.profileNote,
     }).subscribe();
 
     const request = http.expectOne('/api/auth/me');

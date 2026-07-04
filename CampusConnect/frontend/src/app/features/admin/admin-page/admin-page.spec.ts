@@ -25,6 +25,7 @@ describe('AdminPage', () => {
             updateUserStatus: () => of({}),
             updateUserRole: () => of({}),
             updateUserCourse: () => of({}),
+            resetUserPassword: () => of({}),
             deleteUser: () => of(undefined),
           },
         },
@@ -88,5 +89,35 @@ describe('AdminPage', () => {
     expect(password).toMatch(/[a-z]/);
     expect(password).toMatch(/[0-9]/);
     expect(password).toMatch(/[!@#$%&*+\-_=]/);
+  });
+
+  it('resets a selected user password', () => {
+    const adminService = TestBed.inject(Admin) as unknown as { resetUserPassword: ReturnType<typeof vi.fn> };
+    adminService.resetUserPassword = vi.fn(() => of({
+      id: 'user-1',
+      displayName: 'Alice Example',
+      email: 'alice@dhbw-loerrach.de',
+      studyProgram: 'Computer Science',
+      course: 'TIF25A',
+      role: 'Student',
+      isActive: true,
+      createdAt: '2026-04-27T10:00:00Z',
+    }));
+    const adminPage = component as any;
+    adminPage.openEditUser({
+      id: 'user-1',
+      displayName: 'Alice Example',
+      email: 'alice@dhbw-loerrach.de',
+      studyProgram: 'Computer Science',
+      course: 'TIF25A',
+      role: 'Student',
+      isActive: true,
+      createdAt: '2026-04-27T10:00:00Z',
+    });
+    adminPage._passwordResetForm.initialPassword = 'ResetStart123!';
+
+    adminPage.resetPassword();
+
+    expect(adminService.resetUserPassword).toHaveBeenCalledWith('user-1', 'ResetStart123!');
   });
 });

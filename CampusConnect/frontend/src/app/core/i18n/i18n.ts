@@ -78,7 +78,6 @@ const apiErrorTranslations: Record<string, TranslationKey> = {
   'Permission denied.': 'apiError.permissionDenied',
   'Phone number must be at most 40 characters long.': 'apiError.phoneTooLong',
   'Post was not found.': 'apiError.postNotFound',
-  'Profile note must be at most 280 characters long.': 'apiError.profileNoteTooLong',
   'Select a course to add.': 'apiError.selectCourseAdd',
   'Select a new owner before leaving this group.': 'apiError.selectNewOwner',
   'Select an existing group member as the new owner.': 'apiError.selectExistingOwner',

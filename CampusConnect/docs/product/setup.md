@@ -1,6 +1,6 @@
 # Setup-Checkliste
 
-Stand: 2026-06-24
+Stand: 2026-07-04
 
 
 ## Vorbereitung
@@ -53,12 +53,13 @@ Alle Demo-Accounts verwenden lokal standardmäßig `CampusDemo2026!`. Die Accoun
 | 2 | Feed zeigen | Gruppenbasierte Beiträge, Schnellzugriffe, Tagesplan |
 | 3 | Mensa öffnen | Wochen-/Tagesansicht oder freundlicher Fehler bei externer API-Störung |
 | 4 | Stundenplan öffnen | Kursbezogene Vorlesungsansicht oder Kursauswahl |
-| 5 | Noten öffnen | Bestehende Demo-Noten, Durchschnitt und Eingabeformular |
-| 6 | Gruppen öffnen | Offizielle, Kurs-, Campus- und Entdecken-Ansicht |
-| 7 | Einer öffentlichen Gruppe beitreten oder Gruppen-Detail öffnen | Join/Request/Leave- und Gruppenbeitragslogik sichtbar |
-| 8 | Kontakte öffnen | Suchkarte, Suche ab drei Zeichen, Kontaktkarten |
-| 9 | Profil öffnen | Anzeigename, Kurs und Kontaktdetails bearbeitbar |
-| 10 | Logout | Sitzung endet, Login wird wieder erreichbar |
+| 5 | Kalender öffnen | Persönliche Prüfungseinträge aus Demo-Daten und Eingabeformular |
+| 6 | Noten öffnen | Bestehende Demo-Noten, Durchschnitt und Eingabeformular |
+| 7 | Gruppen öffnen | Offizielle, Kurs-, Campus- und Entdecken-Ansicht |
+| 8 | Einer öffentlichen Gruppe beitreten oder Gruppen-Detail öffnen | Join/Request/Leave- und Gruppenbeitragslogik sichtbar |
+| 9 | Kontakte öffnen | Suchkarte, Suche ab drei Zeichen, Kontaktkarten mit Telefon und Standort |
+| 10 | Profil öffnen | Anzeigename und Kontaktdetails bearbeitbar; Kurs ist sichtbar und administrativ verwaltet |
+| 11 | Logout | Sitzung endet, Login wird wieder erreichbar |
 
 ## Admin-Flow
 
@@ -69,6 +70,7 @@ Alle Demo-Accounts verwenden lokal standardmäßig `CampusDemo2026!`. Die Accoun
 | 3 | Benutzer-Tab öffnen | Benutzerliste, Filter, Bearbeitungsdialog |
 | 4 | Kurs-Tab öffnen | Kursliste und Kursanlage |
 | 5 | Neuen Demo-Nutzer nur bei Bedarf anlegen | Initialpasswort wird vergeben; keine echten Daten verwenden |
+| 6 | Passwort eines Demo-Nutzers zurücksetzen | Neues Initialpasswort setzen; Nutzer muss es beim nächsten Login ändern |
 
 ## Rechtliche Seiten
 
@@ -93,5 +95,5 @@ Der Smoke-Test startet API und Frontend mit isolierter E2E-SQLite-Datenbank. Er 
 
 - Wenn externe Mensa-/Stundenplanquellen nicht verfügbar sind, den freundlichen Fehlerzustand zeigen und auf Backend-Kapselung verweisen.
 - Wenn eine lokale Datenbank unerwartete alte Demo-Daten enthält, für die Demo eine frische Datenbank verwenden oder die Playwright-E2E-Datenbank als technisches Referenzszenario nutzen.
-- Falls Browser-Demo nicht möglich ist, Screenshots und Werbevideo aus [`media/werbevideo.md`](media/werbevideo.md) verwenden.
+- Falls Browser-Demo nicht möglich ist, Screenshots und Werbevideo aus [`../media/werbevideo.md`](../media/werbevideo.md) verwenden.
 

@@ -126,8 +126,7 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
             displayName = "Changed Course",
             course = "TIF25B",
             phoneNumber = "+49 7621 555555",
-            location = "Campus",
-            profileNote = "Trying to move courses."
+            location = "Campus"
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -138,7 +137,6 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
         Assert.Equal("self-course-change User", profile.DisplayName);
         Assert.Equal(string.Empty, profile.PhoneNumber);
         Assert.Equal(string.Empty, profile.Location);
-        Assert.Equal(string.Empty, profile.ProfileNote);
     }
 
     [Fact]
@@ -196,5 +194,5 @@ public sealed class ApiAuthorizationTests(TestApiFactory factory) : IClassFixtur
 
     private sealed record GradeSummaryResponse(IReadOnlyList<object> Grades, decimal WeightedAverage, int TotalEcts);
     private sealed record CourseResponse(string Code, string StudyProgram, bool IsActive, DateTime CreatedAt);
-    private sealed record UserProfileResponse(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
+    private sealed record UserProfileResponse(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
 }

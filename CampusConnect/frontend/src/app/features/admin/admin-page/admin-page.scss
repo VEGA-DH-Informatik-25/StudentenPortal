@@ -403,6 +403,35 @@
 	}
 }
 
+.admin-password-reset {
+	background: var(--dhbw-bg-accent);
+	border: 1px solid var(--dhbw-border);
+	border-radius: 8px;
+	display: grid;
+	gap: 0.8rem;
+	padding: 1rem;
+
+	h3,
+	p {
+		margin: 0;
+	}
+
+	h3 {
+		color: var(--dhbw-ink);
+		font-size: 1rem;
+	}
+
+	p {
+		color: var(--dhbw-text-muted);
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+
+	.admin-editor__secondary {
+		justify-self: start;
+	}
+}
+
 .admin-editor__actions {
 	align-items: center;
 	display: flex;
@@ -519,6 +548,7 @@
 	.admin-page__header,
 	.admin-quick-actions,
 	.admin-password-field,
+	.admin-password-reset .admin-editor__secondary,
 	.admin-editor__actions,
 	.admin-status-confirmation div {
 		align-items: stretch;
@@ -549,5 +579,9 @@
 
 	.admin-editor__danger {
 		margin-right: 0;
+	}
+
+	.admin-password-reset .admin-editor__secondary {
+		justify-self: stretch;
 	}
 }

@@ -238,7 +238,7 @@
           <p>{{ _editorMode() === 'create' ? ('admin.createUser' | translate) : ('admin.manageUser' | translate) }}</p>
           <h2>{{ _editorMode() === 'create' ? ('admin.createUserTitle' | translate) : ('admin.editUserTitle' | translate) }}</h2>
         </div>
-        <button type="button" class="admin-editor__close" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus()" [attr.aria-label]="'admin.closeEditor' | translate">
+        <button type="button" class="admin-editor__close" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus() || _isResettingPassword()" [attr.aria-label]="'admin.closeEditor' | translate">
           &times;
         </button>
       </header>
@@ -351,20 +351,39 @@
             </div>
           }
 
+          <section class="admin-password-reset admin-field--wide" [attr.aria-label]="'admin.resetPasswordTitle' | translate">
+            <div>
+              <h3>{{ 'admin.resetPasswordTitle' | translate }}</h3>
+              <p>{{ 'admin.resetPasswordBody' | translate }}</p>
+            </div>
+            <label class="admin-field admin-field--wide">
+              <span>{{ 'admin.initialPassword' | translate }}</span>
+              <div class="admin-password-field">
+                <input type="text" name="resetInitialPassword" [(ngModel)]="_passwordResetForm.initialPassword" maxlength="120" />
+                <button type="button" class="admin-editor__secondary" (click)="generateResetPassword()" [disabled]="_isResettingPassword()">
+                  {{ 'admin.generatePassword' | translate }}
+                </button>
+              </div>
+            </label>
+            <button type="button" class="admin-editor__secondary" (click)="resetPassword()" [disabled]="_isResettingPassword() || !_passwordResetForm.initialPassword.trim()">
+              {{ _isResettingPassword() ? ('admin.resettingPassword' | translate) : ('admin.resetPassword' | translate) }}
+            </button>
+          </section>
+
           <footer class="admin-editor__actions admin-field--wide">
             @if (_editingUser()?.isActive && !isEditingCurrentUser()) {
-              <button type="button" class="admin-editor__danger" (click)="requestDeactivateUser()" [disabled]="_isSaving() || _isChangingStatus()">
+              <button type="button" class="admin-editor__danger" (click)="requestDeactivateUser()" [disabled]="_isSaving() || _isChangingStatus() || _isResettingPassword()">
                 {{ 'admin.deactivateUser' | translate }}
               </button>
             } @else if (!_editingUser()?.isActive) {
-              <button type="button" class="admin-editor__secondary" (click)="reactivateUser()" [disabled]="_isSaving() || _isChangingStatus()">
+              <button type="button" class="admin-editor__secondary" (click)="reactivateUser()" [disabled]="_isSaving() || _isChangingStatus() || _isResettingPassword()">
                 {{ _isChangingStatus() ? ('admin.changingStatus' | translate) : ('admin.reactivateUser' | translate) }}
               </button>
             } @else {
               <span class="admin-editor__hint">{{ 'admin.selfStatusLocked' | translate }}</span>
             }
-            <button type="button" class="admin-editor__secondary" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus()">{{ 'common.cancel' | translate }}</button>
-            <button type="submit" class="admin-editor__primary" [disabled]="_isSaving() || _isChangingStatus() || _coursesLoading()">
+            <button type="button" class="admin-editor__secondary" (click)="closeEditor()" [disabled]="_isSaving() || _isChangingStatus() || _isResettingPassword()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="admin-editor__primary" [disabled]="_isSaving() || _isChangingStatus() || _isResettingPassword() || _coursesLoading()">
               {{ _isSaving() ? ('admin.savingUser' | translate) : ('admin.saveUser' | translate) }}
             </button>
           </footer>

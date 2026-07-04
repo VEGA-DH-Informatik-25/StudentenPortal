@@ -135,8 +135,7 @@ public class AuthServiceTests
             "Bob B.",
             "WWI25A",
             " +49 7621 123456 ",
-            " Library ",
-            " Looking for a project partner for web development. "));
+            " Library "));
 
         Assert.True(result.IsSuccess);
         var profile = result.Value!;
@@ -147,7 +146,6 @@ public class AuthServiceTests
         Assert.Equal("WWI25A", profile.Course);
         Assert.Equal("+49 7621 123456", profile.PhoneNumber);
         Assert.Equal("Library", profile.Location);
-        Assert.Equal("Looking for a project partner for web development.", profile.ProfileNote);
 
         var storedUser = await users.FindByIdAsync(user.Id);
         Assert.Equal("hash", storedUser!.PasswordHash);
@@ -172,8 +170,7 @@ public class AuthServiceTests
             "Student New",
             "TIF25A",
             "+49 7621 555555",
-            "Campus",
-            "Updated profile note."));
+            "Campus"));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(AuthService.CourseChangeNotAllowedError, result.Error);
@@ -184,7 +181,6 @@ public class AuthServiceTests
         Assert.Equal("WWI25A", storedUser.Course);
         Assert.Empty(storedUser.PhoneNumber);
         Assert.Empty(storedUser.Location);
-        Assert.Empty(storedUser.ProfileNote);
     }
 
     [Fact]
@@ -202,7 +198,7 @@ public class AuthServiceTests
         await users.AddAsync(user);
         var service = CreateService(users);
 
-        var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand("", "TIF25A", "", "", ""));
+        var result = await service.UpdateProfileAsync(user.Id, new UpdateUserProfileCommand("", "TIF25A", "", ""));
 
         Assert.False(result.IsSuccess);
         Assert.Equal("Fill in all profile fields.", result.Error);

@@ -73,8 +73,7 @@ public class AuthController(AuthService authService) : ControllerBase
             request.DisplayName,
             request.Course,
             request.PhoneNumber,
-            request.Location,
-            request.ProfileNote));
+            request.Location));
 
         if (!result.IsSuccess)
             return ToProfileError(result);
@@ -161,5 +160,5 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     private static UserProfileResponse ToUserProfileResponse(UserProfileResult profile) =>
-        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Course, profile.PhoneNumber, profile.Location, profile.ProfileNote, profile.Role, profile.MustChangePassword, profile.OnboardingCompleted, profile.OnboardingCompletedAt, profile.CreatedAt);
+        new(profile.Id, profile.Email, profile.DisplayName, profile.StudyProgram, profile.Course, profile.PhoneNumber, profile.Location, profile.Role, profile.MustChangePassword, profile.OnboardingCompleted, profile.OnboardingCompletedAt, profile.CreatedAt);
 }

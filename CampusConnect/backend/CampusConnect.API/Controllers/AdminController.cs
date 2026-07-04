@@ -88,6 +88,16 @@ public class AdminController(AdminUsersService adminUsersService, CoursesService
         return Ok(result.Value);
     }
 
+    [HttpPatch("users/{id:guid}/password")]
+    public async Task<IActionResult> ResetUserPassword(Guid id, [FromBody] ResetUserPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await adminUsersService.ResetPasswordAsync(new ResetUserPasswordCommand(id, request.InitialPassword), cancellationToken);
+        if (!result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
     [HttpDelete("users/{id:guid}")]
     public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
     {

@@ -68,11 +68,6 @@
           {{ 'common.location' | translate }}
           <input type="text" name="location" [(ngModel)]="_form.location" maxlength="120" [placeholder]="'profile.locationPlaceholder' | translate" />
         </label>
-
-        <label class="profile-form__wide">
-          {{ 'common.profileNote' | translate }}
-          <textarea name="profileNote" [(ngModel)]="_form.profileNote" maxlength="280" rows="4" [placeholder]="'profile.notePlaceholder' | translate"></textarea>
-        </label>
       </div>
 
       <div class="profile-form__actions">

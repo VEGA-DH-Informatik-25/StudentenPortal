@@ -69,4 +69,38 @@ public sealed class AdminUsersApiTests(TestApiFactory factory) : IClassFixture<T
 
         Assert.Equal(HttpStatusCode.BadRequest, statusResponse.StatusCode);
     }
+
+    [Fact]
+    public async Task AdminCanResetPasswordAndUserMustChangeItOnNextLogin()
+    {
+        var adminClient = await factory.CreateAdminClientAsync();
+        var user = await adminClient.CreateUserAsync("password-reset");
+        var newPassword = "ResetStart123!";
+
+        var resetResponse = await adminClient.PatchAsJsonAsync($"/api/admin/users/{user.Id}/password", new
+        {
+            initialPassword = newPassword
+        });
+
+        Assert.Equal(HttpStatusCode.OK, resetResponse.StatusCode);
+
+        var client = factory.CreateClient();
+        var oldLoginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = user.Email,
+            password = user.Password
+        });
+        Assert.Equal(HttpStatusCode.Unauthorized, oldLoginResponse.StatusCode);
+
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = user.Email,
+            password = newPassword
+        });
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var profile = loginBody.GetProperty("profile");
+        Assert.True(profile.GetProperty("mustChangePassword").GetBoolean());
+        Assert.False(profile.GetProperty("onboardingCompleted").GetBoolean());
+    }
 }

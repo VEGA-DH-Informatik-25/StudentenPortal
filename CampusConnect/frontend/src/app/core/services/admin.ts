@@ -6,6 +6,7 @@ import {
   AdminCourse,
   AdminUser,
   CreateAdminUserRequest,
+  ResetUserPasswordRequest,
   UpdateAdminUserRequest,
   UpdateUserCourseRequest,
   UpdateUserRoleRequest,
@@ -49,6 +50,11 @@ export class Admin {
   updateUserCourse(userId: string, courseCode: string): Observable<AdminUser> {
     const request: UpdateUserCourseRequest = { courseCode };
     return this._http.patch<AdminUser>(`/api/admin/users/${userId}/course`, request);
+  }
+
+  resetUserPassword(userId: string, initialPassword: string): Observable<AdminUser> {
+    const request: ResetUserPasswordRequest = { initialPassword };
+    return this._http.patch<AdminUser>(`/api/admin/users/${userId}/password`, request);
   }
 
   deleteUser(userId: string): Observable<void> {

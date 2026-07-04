@@ -11,7 +11,6 @@ public record ContactProfileDto(
     string Course,
     string PhoneNumber,
     string Location,
-    string ProfileNote,
     string Role);
 
 public class ContactsService(IUserRepository userRepository)
@@ -44,7 +43,6 @@ public class ContactsService(IUserRepository userRepository)
         user.Course,
         user.PhoneNumber,
         user.Location,
-        user.ProfileNote,
         user.Role.ToString());
 
     private static bool Matches(User user, string term) =>
@@ -54,7 +52,6 @@ public class ContactsService(IUserRepository userRepository)
         Contains(user.Course, term) ||
         Contains(user.PhoneNumber, term) ||
         Contains(user.Location, term) ||
-        Contains(user.ProfileNote, term) ||
         Contains(user.Role.ToString(), term);
 
     private static bool Contains(string value, string term) =>

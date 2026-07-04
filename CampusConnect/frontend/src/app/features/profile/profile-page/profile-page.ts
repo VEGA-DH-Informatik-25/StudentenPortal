@@ -28,7 +28,6 @@ export class ProfilePage implements OnInit {
     course: '',
     phoneNumber: '',
     location: '',
-    profileNote: '',
   };
 
   ngOnInit(): void {
@@ -50,7 +49,6 @@ export class ProfilePage implements OnInit {
       course: this._form.course.trim(),
       phoneNumber: this._form.phoneNumber.trim(),
       location: this._form.location.trim(),
-      profileNote: this._form.profileNote.trim(),
     }).subscribe({
       next: profile => {
         this._setProfile(profile);
@@ -94,6 +92,5 @@ export class ProfilePage implements OnInit {
     this._form.course = profile.course;
     this._form.phoneNumber = profile.phoneNumber;
     this._form.location = profile.location;
-    this._form.profileNote = profile.profileNote;
   }
 }

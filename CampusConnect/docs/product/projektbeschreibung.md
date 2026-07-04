@@ -45,38 +45,37 @@ Tabellen oder Notizen verwaltet.
 
 ### Authentifizierung und Profil
 - Benutzerkonten werden durch Admins erstellt; keine öffentliche Selbstregistrierung
-- JWT-basierte Authentifizierung, kein dauerhafter Token im Browser-Speicher
-- Profilseite mit Studiengang, Semester und Kurs
+- JWT- und Cookie-basierte Authentifizierung; kein dauerhafter Auth-Token im Browser-Speicher
+- Profilseite mit Anzeigename, Kurs, Studiengang sowie optional Telefon und Standort
+- Kurszuordnung ist sichtbar, wird aber administrativ verwaltet
 
 ### News-Feed
-- Zentraler Feed für Ankündigungen, Neuigkeiten und Beiträge
-- Beiträge können von Studierenden, Lehrbeauftragten und Admins erstellt werden
-- Kommentar- und Reaktionsfunktion
+- Gruppenbasierter Feed für Kurs-, Campus- und offizielle Beiträge
+- Kommentare, Reaktionen, Anhänge und optional manuelle Übersetzungen
+- Moderation für Gruppen mit Freigabepflicht
 
-### Schwarzes Brett
-- Pinnwand für Angebote, Gesuche und Hinweise (z. B. WG-Suche, Mitfahrgelegenheiten)
-- Einträge laufen nach einem definierten Zeitraum automatisch ab
-
-### Lerngruppen-Matching
-- Erstellung und Suche von Lerngruppen gefiltert nach Modul, Kurs und Semester
-- Beitrittsanfragen und einfache Gruppenverwaltung
+### Gruppen
+- Course-, Official- und Campus-Gruppen mit Rollen für Besitzer, Moderatoren und Mitglieder
+- Join-, Request-, Invite- und Leave-Workflows
+- Gruppeneinstellungen für Sichtbarkeit, Kommentare, Beiträge und Moderation
 
 ### Mensa-Speiseplan
 - Tages- und Wochenansicht des aktuellen Speiseplans der Mensa Lörrach
-- Datenquelle: SWFR XML-API (`swfr.de/apispeiseplan`, Ort-ID 671)
-- Anzeige von Preis, Allergenen und Kategorien (vegetarisch, vegan)
+- Datenquelle: backendgekapselte SWFR XML-API (`swfr.de/apispeiseplan`, Ort-ID 677)
+- Nutzerfreundliche Fehleranzeige bei leerer oder nicht erreichbarer externer Quelle
 
 ### Prüfungskalender
 - Persönlicher Kalender für Prüfungstermine
-- Erinnerungsfunktion (Push-Benachrichtigung im Browser)
+- Manuelle Einträge; keine Push-Erinnerungen und keine offizielle Prüfungsamtsintegration
 
 ### Noten-Tracker
 - Manuelle Erfassung von Noten und ECTS-Punkten
-- Berechnung des aktuellen Notendurchschnitts
+- Berechnung des aktuellen Notendurchschnitts und Simulation weiterer Noten
 
 ### Admin-Bereich
 - Verwaltung von Nutzern und Rollen
-- Erstellen und Pinnen offizieller Ankündigungen
+- Erstellen und Verwalten von Kursen
+- Passwort-Reset, Rollen-, Status- und Kurszuordnung für Nutzer
 
 ---
 
@@ -91,7 +90,7 @@ Tabellen oder Notizen verwaltet.
 | Externe API | SWFR Mensa XML-API |
 | Containerisierung | Docker Compose als Platzhalter |
 | CI/CD | GitHub Actions mit Backend-Restore/-Build/-Tests und Frontend-Install/-Tests/-Build |
-| Testing | xUnit, Angular CLI/Vitest-Setup |
+| Testing | xUnit, Angular/Vitest, Playwright-Smoke-Tests |
 
 ---
 
@@ -103,6 +102,7 @@ Tabellen oder Notizen verwaltet.
 | LMS / Moodle-Ersatz | Keine Lernplattform, kein Upload von Lernmaterialien, keine Kursverwaltung |
 | Echtzeit-Chat | Kein privates Messaging oder Live-Chat zwischen Studierenden |
 | Notenverwaltung der Hochschule | Keine Anbindung an Dualis oder offizielle Notensysteme; nur manueller persönlicher Tracker |
+| Prüfungsimporte und Reminder | Keine automatische Prüfungsamtsintegration und keine Push-Erinnerungen |
 | Multi-Mandant-Betrieb | Keine Unterstützung anderer Hochschulen; Scope ist ausschließlich DHBW Lörrach |
 | Gamification | Keine Punkte- oder Badge-Systeme im MVP |
 

@@ -15,7 +15,6 @@ describe('GuidedTour', () => {
     course: 'TIF25A',
     phoneNumber: '',
     location: '',
-    profileNote: '',
     role: 'Student' as const,
     mustChangePassword: false,
     onboardingCompleted: true,

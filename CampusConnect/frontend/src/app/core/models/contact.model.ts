@@ -6,6 +6,5 @@ export interface ContactProfile {
   course: string;
   phoneNumber: string;
   location: string;
-  profileNote: string;
   role: string;
 }

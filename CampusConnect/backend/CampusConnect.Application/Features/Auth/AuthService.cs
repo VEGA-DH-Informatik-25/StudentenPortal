@@ -8,9 +8,9 @@ using CampusConnect.Domain.Interfaces;
 namespace CampusConnect.Application.Features.Auth;
 
 public record LoginCommand(string Email, string Password, string IpAddress = "", string Device = "");
-public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location, string? ProfileNote);
+public record UpdateUserProfileCommand(string DisplayName, string Course, string? PhoneNumber, string? Location);
 public record ChangeInitialPasswordCommand(string CurrentPassword, string NewPassword);
-public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string ProfileNote, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
+public record UserProfileResult(Guid Id, string Email, string DisplayName, string StudyProgram, string Course, string PhoneNumber, string Location, string Role, bool MustChangePassword, bool OnboardingCompleted, DateTime? OnboardingCompletedAt, DateTime CreatedAt);
 public record AuthResult(string Token, UserProfileResult Profile);
 
 public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICourseRepository courseRepo, IGroupRepository groupRepo, ILoginRateLimiter? loginRateLimiter = null)
@@ -73,7 +73,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         if (validationError is not null)
             return Result<UserProfileResult>.Failure(validationError);
 
-        validationError = ValidateContactFields(cmd.PhoneNumber, cmd.Location, cmd.ProfileNote);
+        validationError = ValidateContactFields(cmd.PhoneNumber, cmd.Location);
         if (validationError is not null)
             return Result<UserProfileResult>.Failure(validationError);
 
@@ -97,7 +97,6 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         user.Course = course.Code;
         user.PhoneNumber = NormalizeOptional(cmd.PhoneNumber);
         user.Location = NormalizeOptional(cmd.Location);
-        user.ProfileNote = NormalizeOptional(cmd.ProfileNote);
 
         await userRepo.UpdateAsync(user);
         await SyncCourseAssignmentsAsync(course.Code, previousCourse);
@@ -143,7 +142,7 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
     }
 
     private static UserProfileResult ToProfileResult(User user) =>
-        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Course, user.PhoneNumber, user.Location, user.ProfileNote, user.Role.ToString(), user.MustChangePassword, user.OnboardingCompleted, user.OnboardingCompletedAt, user.CreatedAt);
+        new(user.Id, user.Email, user.DisplayName, user.StudyProgram, user.Course, user.PhoneNumber, user.Location, user.Role.ToString(), user.MustChangePassword, user.OnboardingCompleted, user.OnboardingCompletedAt, user.CreatedAt);
 
     private async Task<Course?> ResolveCourseAsync(string courseCode, bool requireActive, bool requireStudentCourse)
     {
@@ -210,16 +209,13 @@ public class AuthService(IUserRepository userRepo, IJwtService jwtService, ICour
         return null;
     }
 
-    private static string? ValidateContactFields(string? phoneNumber, string? location, string? profileNote)
+    private static string? ValidateContactFields(string? phoneNumber, string? location)
     {
         if (NormalizeOptional(phoneNumber).Length > 40)
             return "Phone number must be at most 40 characters long.";
 
         if (NormalizeOptional(location).Length > 120)
             return "Location must be at most 120 characters long.";
-
-        if (NormalizeOptional(profileNote).Length > 280)
-            return "Profile note must be at most 280 characters long.";
 
         return null;
     }

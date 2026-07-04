@@ -47,6 +47,15 @@ describe('Admin', () => {
     request.flush({});
   });
 
+  it('should reset user passwords with a patch request', () => {
+    service.resetUserPassword('user-1', 'ResetStart123!').subscribe();
+
+    const request = http.expectOne('/api/admin/users/user-1/password');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ initialPassword: 'ResetStart123!' });
+    request.flush({});
+  });
+
   it('should delete users through the admin endpoint', () => {
     service.deleteUser('user-1').subscribe();
 

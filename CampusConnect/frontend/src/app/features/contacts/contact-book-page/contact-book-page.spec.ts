@@ -65,9 +65,8 @@ describe('ContactBookPage', () => {
       email: 'alice@dhbw-loerrach.de',
       studyProgram: 'Computer Science',
       course: 'TIF25A',
-      phoneNumber: '',
-      location: '',
-      profileNote: '',
+      phoneNumber: '+49 7621 123456',
+      location: 'Library',
       role: 'Student',
     }]);
     fixture.detectChanges();
@@ -79,6 +78,8 @@ describe('ContactBookPage', () => {
     expect(fixture.nativeElement.querySelector('.favorites-dropdown__count')?.textContent.trim()).toBe('1');
     expect(fixture.nativeElement.textContent).toContain('Alice Example');
     expect(fixture.nativeElement.textContent).toContain('alice@dhbw-loerrach.de');
+    expect(fixture.nativeElement.textContent).toContain('+49 7621 123456');
+    expect(fixture.nativeElement.textContent).toContain('Library');
 
     favoriteButton.click();
     fixture.detectChanges();
@@ -95,7 +96,6 @@ describe('ContactBookPage', () => {
       course: 'WWI25A',
       phoneNumber: '',
       location: '',
-      profileNote: '',
       role: 'Student',
     }]));
 

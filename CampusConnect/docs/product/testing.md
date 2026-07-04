@@ -1,7 +1,7 @@
 # Testing
 
-Stand der letzten vollständigen lokalen Verifikation: **2026-06-24**.
-Stand der Testfall-Dokumentation: **2026-06-29**.
+Stand der letzten vollständigen lokalen Verifikation: **2026-07-04**.
+Stand der Testfall-Dokumentation: **2026-07-04**.
 
 CampusConnect has tests for the backend API boundary, backend application services, Angular frontend services, guards, interceptors, selected feature pages, and Playwright smoke coverage for central browser flows.
 
@@ -47,13 +47,14 @@ The `npm run e2e` script builds the Angular app first, then Playwright starts th
 
 ## Verified Baseline
 
-The following commands passed on 2026-06-24:
+The following commands passed on 2026-07-04:
 
-- `dotnet test .\CampusConnect.slnx`: 147 tests passed (102 Application, 45 API).
-- `npm test -- --watch=false`: 33 test files and 134 tests passed.
-- `npm run build`: production build completed successfully with SCSS budget warnings in `group-settings-page.scss`, `navbar.scss`, `admin-page.scss`, and `timetable-page.scss`.
+- `dotnet test .\CampusConnect.slnx --no-restore`: 152 tests passed (107 Application, 45 API).
+- `npm.cmd test -- --watch=false`: 35 test files and 166 tests passed.
+- `npm.cmd run build`: production build completed successfully with SCSS budget warnings in `navbar.scss`, `timetable-page.scss`, `admin-page.scss`, `group-settings-page.scss`, and `feed-page.scss`.
+- `npm.cmd run e2e`: 9 Playwright smoke tests passed across Desktop Chrome, iPad portrait, and iPad landscape.
 
-The latest QA summary lives in [QA Evidence](qa-nachweis.md).
+Die aktuelle Demo- und Abgabe-Checkliste lebt in [Setup Checklist](setup.md).
 
 Counts are a dated baseline, not a permanently expected total. CI and current command output remain authoritative.
 

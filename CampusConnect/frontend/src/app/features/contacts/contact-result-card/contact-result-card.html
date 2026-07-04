@@ -31,6 +31,14 @@
         <dt>{{ 'common.studyProgram' | translate }}</dt>
         <dd>{{ contact().studyProgram || ('common.notSpecified' | translate) }}</dd>
       </div>
+      <div>
+        <dt>{{ 'common.phone' | translate }}</dt>
+        <dd>{{ contact().phoneNumber || ('common.notSpecified' | translate) }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'common.location' | translate }}</dt>
+        <dd>{{ contact().location || ('common.notSpecified' | translate) }}</dd>
+      </div>
     </dl>
 
     <div class="contact-result-card__email">

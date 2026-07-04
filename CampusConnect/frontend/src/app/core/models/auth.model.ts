@@ -24,7 +24,6 @@ export interface UserProfile {
   course: string;
   phoneNumber: string;
   location: string;
-  profileNote: string;
   role: string;
   mustChangePassword: boolean;
   onboardingCompleted: boolean;
@@ -37,5 +36,4 @@ export interface UpdateProfileRequest {
   course: string;
   phoneNumber: string;
   location: string;
-  profileNote: string;
 }

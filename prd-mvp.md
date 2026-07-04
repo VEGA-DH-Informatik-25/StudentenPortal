@@ -1,6 +1,5 @@
 # Produktanforderungsdokument (PRD) – MVP
 
-> **Status: Produktanforderungen und Zielbild.** Dieses Dokument ist keine Beschreibung des aktuellen Implementierungsstands. Für vorhandene Endpunkte, Datenmodelle und technische Regeln sind `AGENTS.md`, `CampusConnect/docs/api.md`, `CampusConnect/docs/architecture.md` und der Live-Code maßgeblich.
 
 ## 1. Produktvision
 
@@ -29,22 +28,22 @@
 
 | Feature                                  | Akzeptanzkriterien                                                                                                                                                                                                                                      |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nutzeranlage (Admin)                    | • Admin kann Nutzerkonten im Admin‑Bereich anlegen (E‑Mail, DisplayName, Kurs, Rolle, Initialpasswort; keine Domain‑Restriktion)<br>• Nutzer kann sich mit Initialpasswort einloggen und wird in den Erstlogin‑Prozess geführt                         |
+| Nutzeranlage (Admin)                    | • Admin kann Nutzerkonten im Admin‑Bereich anlegen (E‑Mail mit `@dhbw-loerrach.de`, DisplayName, Kurs, Rolle, Initialpasswort)<br>• Nutzer kann sich mit Initialpasswort einloggen und wird in den Erstlogin‑Prozess geführt                         |
 | Auth (Login/Logout)                     | • Login/Logout funktionieren für durch Admin angelegte Nutzerkonten (keine Self‑Service‑Registrierung im MVP)<br>• Private Bereiche/Endpunkte sind geschützt; Token wird nicht persistent im Browser gespeichert                                        |
 | Onboarding (Erstlogin)                  | • Nutzer muss beim ersten Login (oder nach Admin‑Reset) das Initialpasswort ändern (verpflichtend)<br>• Nach Passwortwechsel kann der Nutzer die App normal nutzen                                                                                      |
-| Rollen & Berechtigungen                 | • Rollen `Student`, `Lecturer`, `Management`, `Admin` sind nutzbar und in der UI verständlich benannt<br>• Lecturer: kann in Kursgruppen posten/kommentieren/reagieren, Kursgruppen verwalten, in Official posten und Campusgruppen erstellen    |
-| Profil & Kurszuordnung                  | • Nutzer kann Anzeigename + Kurs + Telefon + Standort im Profil pflegen<br>• Kursliste ist abrufbar und im UI auswählbar                                                                                                                               |
+| Rollen & Berechtigungen                 | • Rollen `Student`, `Lecturer`, `Management`, `Admin` sind nutzbar und in der UI verständlich benannt<br>• Lecturer: kann in zugewiesenen Kursgruppen posten/kommentieren/reagieren und Kursgruppen verwalten; Official-Posting erfolgt über passende Gruppenrolle oder Management/Admin; Campusgruppen können erstellt werden    |
+| Profil & Kurszuordnung                  | • Nutzer kann Anzeigename, Telefon und Standort im Profil pflegen<br>• Die Kurszuordnung wird administrativ verwaltet und ist im Profil sichtbar, aber nicht selbst änderbar                                                                                                                               |
 | News‑Feed (gruppenbasiert)              | • Feed zeigt Beiträge aus berechtigten Gruppen (Kurs/Official/Campus) inkl. Kommentare/Reaktionen<br>• Nutzer mit Schreibrecht kann Beitrag erstellen, kommentieren, reagieren; eigener Beitrag/Kommentar ist löschbar                                 |
-| Gruppen                                 | • Nähere Informationen in Dokumentation gruppenfunktion_konzept_campusconnect.md  |                                                   |
+| Gruppen                                 | • Nutzer kann Course-, Official- und Campus-Gruppen sehen und berechtigten Gruppen beitreten beziehungsweise Beitritt anfragen<br>• Besitzer/Moderatoren/Admins können Einstellungen, Mitglieder, Einladungen und ausstehende Beiträge verwalten |
 | Mensa‑Speiseplan                        | • Wochenansicht für Mensa Lörrach (Ort‑ID 677) wird geladen und angezeigt<br>• Fehlerfälle (API down/leer) werden nutzerfreundlich dargestellt                                                                                                          |
 | Noten‑Tracker                           | • Nutzer kann Noten inkl. ECTS erfassen, anzeigen und löschen (manuell; keine Studienplan‑UI im MVP)<br>• Notendurchschnitt wird aus erfassten Noten berechnet und angezeigt                                                                           |
 | Stundenplan                             | • Nutzer kann Stundenplan für Kurs abrufen und anzeigen (`days` optional)<br>• Bei fehlendem Kurs im Profil wird Nutzer geführt (Kurs auswählen)                                                                                                        |
 | Kontaktbuch                             | • Nutzer kann Personen suchen (Name/E‑Mail/Kurs/Studiengang/Ort) und Kontaktdaten einsehen<br>• Sichtbar: Name, E‑Mail, Kurs, Studiengang, Telefon, Standort (keine Profilnotiz)                                                             |
 | Admin‑Bereich                           | • Admin kann Nutzer verwalten (Rolle/Kurs ändern, löschen, Passwort zurücksetzen) und Kurse anlegen/listen<br>• Admin‑Zugriff ist geschützt (nur `Admin`)                                                                                               |
-| Onboarding‑Feed/Guided Start            | • Spezifikation siehe onboarding.md             |
+| Onboarding‑Feed/Guided Start            | • Erstlogin zeigt Willkommen und verpflichtenden Passwortwechsel; danach startet die Guided Tour im Feed<br>• Gruppen-Erklärung kann beim ersten Öffnen der Gruppenansicht erscheinen; Dashboard-Welcome-News, persistente Gruppenvorschläge und Badge-Logik sind optional             |
 | Anpassung auf Laptop und Ipad           | - Website soll auf Laptop als auch Ipad zugeschnitten werden|
 
-<!-- Weitere Features bei Bedarf … -->
+
 
 ## Could Haves
 
@@ -58,7 +57,7 @@
 - LMS/Moodle‑Ersatz (kein Lernmaterial‑Upload, keine Kursverwaltung).
 - Echtzeit‑Chat / privates Messaging.
 - Self‑Service Registrierung / offene Registrierung (Accounts nur zentral durch Admin).
-- Prüfungskalender im UI (Backend darf bestehen, aber nicht MVP‑Feature).
+- Offizielle Prüfungsamts-/Dualis-Integration und automatische Prüfungsimporte.
 - Studienplan‑Ansicht/Modulauswahl im UI (Backend darf bestehen, aber nicht MVP‑Feature).
 - Reminder/Push‑Benachrichtigungen für Prüfungen im MVP.
 - Profilnotiz‑Funktion.

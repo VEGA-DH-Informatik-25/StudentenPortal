@@ -17,7 +17,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | GET | `/api/auth/me` | Aktuelles Benutzerprofil abrufen | Ja |
 | PUT | `/api/auth/me` | Anzeigename und optionale Kontaktdetails des eigenen Profils aktualisieren; die Kurszuordnung muss unverändert bleiben | Ja |
 | GET | `/api/courses` | Aktive Studienkurse für Profil- und Stundenplanauswahl abrufen | Nein |
-| GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang oder Profildetails durchsuchen (`query` optional, `limit` optional) | Ja |
+| GET | `/api/contacts` | Kontaktbuch nach Name, E-Mail, Kurs, Studiengang, Telefon, Standort oder Rolle durchsuchen (`query` optional, `limit` optional); Profilnotizen werden nicht geliefert | Ja |
 | GET | `/api/admin/courses` | Kurse in der Administration auflisten | Ja, Admin |
 | POST | `/api/admin/courses` | Neuen Kurs mit Code und Studiengang anlegen | Ja, Admin |
 | GET | `/api/admin/users` | Benutzer in der Administration auflisten | Ja, Admin |
@@ -26,6 +26,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 | PATCH | `/api/admin/users/{id}/role` | Rolle eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/course` | Kurszuordnung eines Benutzers ändern | Ja, Admin |
 | PATCH | `/api/admin/users/{id}/status` | Benutzer aktiv oder inaktiv setzen | Ja, Admin |
+| PATCH | `/api/admin/users/{id}/password` | Passwort eines Benutzers auf ein neues Initialpasswort setzen; Passwortwechsel wird wieder verpflichtend | Ja, Admin |
 | DELETE | `/api/admin/users/{id}` | Benutzer löschen | Ja, Admin |
 | GET | `/api/feed` | Paginierten News-Feed mit Gruppenkontext abrufen | Ja |
 | POST | `/api/feed` | Neuen Beitrag in einer Gruppe erstellen | Ja |
@@ -71,7 +72,7 @@ Protected endpoints can be tested in Swagger through **Authorize** with the JWT 
 
 ## Nutzer, Kurse und Gruppen
 
-Benutzerkonten werden ausschließlich durch Admins über `POST /api/admin/users` erstellt. Eine öffentliche Selbstregistrierung gibt es nicht. Admins vergeben Initialpasswort, Rolle, Aktivstatus und Kurs; neue Nutzer müssen ihr Initialpasswort im Onboarding ändern.
+Benutzerkonten werden ausschließlich durch Admins über `POST /api/admin/users` erstellt. Eine öffentliche Selbstregistrierung gibt es nicht. Admins vergeben Initialpasswort, Rolle, Aktivstatus und Kurs; neue Nutzer müssen ihr Initialpasswort im Onboarding ändern. Admins können über `PATCH /api/admin/users/{id}/password` ein neues Initialpasswort setzen; dabei werden `MustChangePassword = true`, `OnboardingCompleted = false` und `OnboardingCompletedAt = null` gesetzt, ohne Rolle, Kurs oder Status zu ändern. Admin-created accounts müssen `@dhbw-loerrach.de`-Adressen verwenden.
 
 Kurse sind die Quelle für akademische Profilattribute. Ein Kurs besteht aus `code` (z. B. `TIF25A`), `studyProgram`, `isActive` und `createdAt`. Profiländerungen über `PUT /api/auth/me` dürfen die eigene Kurszuordnung nicht ändern; sendet ein Client dort einen abweichenden Kurscode, antwortet die API mit `400 Bad Request`. Kurswechsel laufen über die Admin-Endpunkte wie `PATCH /api/admin/users/{id}/course` oder `PUT /api/admin/users/{id}`. Die öffentliche Kursliste `/api/courses` liefert nur Studienkurse. Die Admin-Kursliste `/api/admin/courses` enthält zusätzlich die Systemkurse `ADMIN`, `LECTURER` und `MANAGEMENT`, damit Admins, Lehrende und Verwaltung ebenfalls eine Kurszuordnung erhalten können.
 

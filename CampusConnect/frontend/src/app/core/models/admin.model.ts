@@ -29,6 +29,10 @@ export interface CreateAdminUserRequest {
   isActive: boolean;
 }
 
+export interface ResetUserPasswordRequest {
+  initialPassword: string;
+}
+
 export interface UpdateAdminUserRequest {
   displayName: string;
   email: string;

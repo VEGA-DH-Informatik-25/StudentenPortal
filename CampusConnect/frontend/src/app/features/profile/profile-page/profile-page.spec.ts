@@ -18,7 +18,6 @@ describe('ProfilePage', () => {
     course: 'TIF25A',
     phoneNumber: '+49 7621 123456',
     location: 'Library',
-    profileNote: 'Looking for a project group.',
     role: 'Student',
     mustChangePassword: false,
     onboardingCompleted: true,
@@ -66,7 +65,7 @@ describe('ProfilePage', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('alice@dhbw-loerrach.de');
     expect(text).toContain('TIF25A');
-    expect(text).toContain('Profilnotiz');
+    expect(text).not.toContain('Profilnotiz');
   });
 
   it('shows the assigned course as read-only profile data', () => {

@@ -60,7 +60,6 @@ export class ContactBookPage {
       typeof (value as ContactProfile).course === 'string' &&
       typeof (value as ContactProfile).phoneNumber === 'string' &&
       typeof (value as ContactProfile).location === 'string' &&
-      typeof (value as ContactProfile).profileNote === 'string' &&
       typeof (value as ContactProfile).role === 'string';
   }
 }

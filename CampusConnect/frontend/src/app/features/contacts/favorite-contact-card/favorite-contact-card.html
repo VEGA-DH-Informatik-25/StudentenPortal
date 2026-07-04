@@ -12,6 +12,11 @@
       -
       {{ contact().studyProgram || ('common.notSpecified' | translate) }}
     </p>
+    <p>
+      {{ contact().phoneNumber || ('common.notSpecified' | translate) }}
+      -
+      {{ contact().location || ('common.notSpecified' | translate) }}
+    </p>
     <div class="favorite-contact-card__email">
       <span>{{ 'common.email' | translate }}</span>
       <a [href]="'mailto:' + contact().email" [title]="contact().email">{{ contact().email }}</a>

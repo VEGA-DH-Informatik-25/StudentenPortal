@@ -123,7 +123,6 @@ export class Auth {
       course: '',
       phoneNumber: '',
       location: '',
-      profileNote: '',
       role: res.role,
       mustChangePassword: false,
       onboardingCompleted: true,
