@@ -143,3 +143,7 @@ Hinweis fuer Codex-/Sandbox-Laeufe: Angular-Test, Build und E2E koennen im einge
 ## Dokumentationsregel
 
 Live-Code und Konfiguration sind massgeblich, wenn alte Konzepttexte widersprechen. Bei API-, Architektur-, Setup- oder Testaenderungen die Dokumente unter `CampusConnect/docs/product/` im selben Change aktualisieren. Konzeptdokumente unter `CampusConnect/docs/concepts/` sind Planungsunterlagen und nicht automatisch implementierter Produktumfang.
+
+## Lizenz
+
+CampusConnect steht unter der [MIT License](LICENSE).
