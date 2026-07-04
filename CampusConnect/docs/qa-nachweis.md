@@ -1,6 +1,6 @@
 # QA-Nachweis
 
-Stand: 2026-06-24
+Stand: 2026-06-26
 
 Dieses Dokument macht die Qualitätssicherung für CampusConnect sichtbar. Die aktuellen Kommandoausgaben bleiben maßgeblich; die Zahlen hier dokumentieren die lokale Verifikation vom 2026-06-24.
 
@@ -82,7 +82,7 @@ Unit/API-Tests bleiben schnelle Pflicht-Gates. E2E-Smoke prüft nur Kernwege und
 - Kontakte: Suche ab drei Zeichen und Favoriten-UI prüfen.
 - Profil: Kurs und Kontaktdetails ändern.
 - Rechtliche Seiten ohne Login und aus der Navbar öffnen.
-- Desktop, iPad-Breite und schmale Mobile-Breite visuell prüfen.
+- Desktop/Laptop und iPad- oder vergleichbare Tablet-Breite visuell prüfen; Smartphone-/Handy-Breiten sind kein verpflichtender QA-Schritt.
 
 ## Bekannte QA-Lücken
 

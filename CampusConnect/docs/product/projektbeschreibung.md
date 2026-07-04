@@ -99,7 +99,7 @@ Tabellen oder Notizen verwaltet.
 
 | Thema | Abgrenzung |
 |---|---|
-| Mobile App | Keine native iOS- oder Android-App; die Web-App ist responsive, aber kein PWA-Schwerpunkt |
+| Mobile App | Keine native iOS- oder Android-App; die Web-App ist auf Laptop und iPad beziehungsweise vergleichbare Tablets optimiert, aber kein PWA- oder Smartphone-Schwerpunkt |
 | LMS / Moodle-Ersatz | Keine Lernplattform, kein Upload von Lernmaterialien, keine Kursverwaltung |
 | Echtzeit-Chat | Kein privates Messaging oder Live-Chat zwischen Studierenden |
 | Notenverwaltung der Hochschule | Keine Anbindung an Dualis oder offizielle Notensysteme; nur manueller persönlicher Tracker |
