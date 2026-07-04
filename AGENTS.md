@@ -366,6 +366,7 @@ Frontend implementation rules:
 - Preserve nearby private/protected member style, including underscore-prefixed private state where present.
 - Match the existing application shell and operational UI style. Avoid marketing-style landing pages inside the app.
 - Use accessible labels, focus states, semantic HTML, and responsive layouts.
+- Required visual optimization and QA targets are laptop/desktop and iPad or comparable tablets. Smartphone/handy adaptation is only an optional Could-have from the PRD and is not a mandatory test target.
 
 Frontend internationalization rules:
 

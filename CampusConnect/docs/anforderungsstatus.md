@@ -1,6 +1,6 @@
 # Anforderungsstatus
 
-Stand: 2026-06-24
+Stand: 2026-06-26
 
 Dieses Dokument ist die aktuelle Statusmatrix zur geschützten MVP-PRD. Es ändert keine Anforderungen in [`../../prd-mvp.md`](../../prd-mvp.md), sondern ordnet die aktuelle Implementierung, Priorisierung und Nachweise ein.
 
@@ -31,13 +31,13 @@ Dieses Dokument ist die aktuelle Statusmatrix zur geschützten MVP-PRD. Es ände
 | Must | Kontaktbuch | erfüllt | Suche und Favoriten-UI; Datenschutzfreigabe für reale Nutzung bleibt offen |
 | Must | Admin-Bereich | erfüllt | Benutzer-/Kursverwaltung, Admin-Guard, API- und UI-Tests |
 | Must | Onboarding-Feed / Guided Start | teilweise | Onboarding-Seite und Guided-Tour-Service vorhanden; detaillierte fachliche Endabnahme ausstehend |
-| Must | Laptop- und iPad-Anpassung | teilweise | Responsive Layouts vorhanden; visuelle iPad-Browserabnahme als manueller QA-Schritt offen |
+| Must | Laptop- und iPad-/Tablet-Anpassung | teilweise | Responsive Layouts vorhanden; visuelle iPad-/Tablet-Browserabnahme als manueller QA-Schritt offen |
 
 ## Could-have- und Zusatzumfang
 
 | Priorität | Anforderung | Status | Evidenz / Einschränkung |
 |---|---|---|---|
-| Could | Handy-Anpassung | teilweise | Responsive Layouts vorhanden; keine eigene mobile Abnahme vollständig dokumentiert |
+| Could | Handy-Anpassung | nicht im Scope | Laut PRD nur optionales Stretch-Ziel "wenn noch Zeit"; keine Pflicht zur Smartphone-Optimierung oder Smartphone-Abnahme |
 | Could | Darkmode | erfüllt | Theme-Service, Navbar-Einstellung und Tests |
 | Could | Prüfungskalender | erfüllt | Kalenderroute, API, persönliche Einträge und Tests |
 | Zusatz | Rechtliche Seiten | Mockup/Nachweis | `/legal/impressum`, `/legal/datenschutz`, `/legal/nutzungsordnung` als prüfpflichtige Platzhalter |
