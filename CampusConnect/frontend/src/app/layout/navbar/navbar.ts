@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { I18n } from '../../core/i18n/i18n';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { Auth } from '../../core/services/auth';
+import { GuidedTour } from '../../core/services/guided-tour';
 import { Theme, ThemePreference } from '../../core/services/theme';
 
 @Component({
@@ -15,6 +16,7 @@ import { Theme, ThemePreference } from '../../core/services/theme';
 })
 export class Navbar {
   protected readonly _auth = inject(Auth);
+  private readonly _guidedTour = inject(GuidedTour);
   protected readonly _i18n = inject(I18n);
   protected readonly _theme = inject(Theme);
   protected readonly _isMenuOpen = signal(false);
@@ -67,6 +69,11 @@ export class Navbar {
 
   protected closeMenu(): void {
     this._isMenuOpen.set(false);
+  }
+
+  protected openGroups(): void {
+    this.closeMenu();
+    this._guidedTour.startGroupsTour();
   }
 
   protected roleLabel(role: string): string {

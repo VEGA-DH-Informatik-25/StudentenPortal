@@ -23,7 +23,7 @@
       <li><a data-tour="timetable" routerLink="/timetable" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.timetable' | translate }}</a></li>
       <li><a data-tour="calendar" routerLink="/calendar" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.calendar' | translate }}</a></li>
       <li><a data-tour="grades" routerLink="/grades" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.grades' | translate }}</a></li>
-      <li><a data-tour="groups" routerLink="/groups" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.groups' | translate }}</a></li>
+      <li><a data-tour="groups" routerLink="/groups" routerLinkActive="active" (click)="openGroups()">{{ 'nav.groups' | translate }}</a></li>
       <li><a data-tour="contacts" routerLink="/contacts" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.contacts' | translate }}</a></li>
       <li [hidden]="_auth.userRole() !== 'Admin'"><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">{{ 'nav.admin' | translate }}</a></li>
     </ul>

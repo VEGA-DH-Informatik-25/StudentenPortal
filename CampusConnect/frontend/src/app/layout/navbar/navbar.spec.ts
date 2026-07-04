@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { Auth } from '../../core/services/auth';
 import { I18n } from '../../core/i18n/i18n';
+import { GuidedTour } from '../../core/services/guided-tour';
 import { Theme } from '../../core/services/theme';
 import { Navbar } from './navbar';
 
@@ -124,5 +125,16 @@ describe('Navbar', () => {
 
     expect(settingsMenu.open).toBe(false);
     expect(profileMenu.open).toBe(false);
+  });
+
+  it('starts the pending groups tour when groups is opened', () => {
+    const guidedTour = TestBed.inject(GuidedTour);
+    const startGroupsTour = vi.spyOn(guidedTour, 'startGroupsTour');
+    fixture.detectChanges();
+
+    const groupsLink = fixture.nativeElement.querySelector('[data-tour="groups"]') as HTMLAnchorElement;
+    groupsLink.click();
+
+    expect(startGroupsTour).toHaveBeenCalledOnce();
   });
 });
