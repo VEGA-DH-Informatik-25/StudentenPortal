@@ -20,6 +20,7 @@ This folder is the canonical documentation home for CampusConnect. Outside this 
 
 - [Project Description](product/projektbeschreibung.md)
 - [Requirements Status](anforderungsstatus.md)
+- [MVP Must-have Critique](mvp-must-have-kritik.md)
 - [MVP PRD](../../prd-mvp.md) remains the protected requirements document and must not be changed casually.
 - [Market Analysis](marktanalyse.md)
 - [Presentation Slides](presentation-slides.md)
